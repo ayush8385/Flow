@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/reg_back"
+    tools:context=".flow.Addprofile">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="40dp"
+        android:layout_centerInParent="true"
+        app:cardCornerRadius="30dp"
+        android:backgroundTint="#00000000"
+        app:cardElevation="5dp"
+        android:layout_height="wrap_content">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="30dp"
+            android:layout_height="wrap_content">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/img_edt"
+                android:layout_height="wrap_content">
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_alignParentLeft="true"
+                    android:id="@+id/image"
+                    android:src="@drawable/user"/>
+                <androidx.appcompat.widget.AppCompatButton
+                    android:layout_width="wrap_content"
+                    android:background="@drawable/button_reg"
+                    android:textColor="@color/white"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="4dp"
+                    android:textSize="16sp"
+                    android:layout_centerVertical="true"
+                    android:fontFamily="sans-serif"
+                    android:layout_alignParentRight="true"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Image"/>
+            </RelativeLayout>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_edt"
+                android:hint="Insert your name"
+                android:textColor="@color/black"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:layout_marginTop="40dp"
+                android:fontFamily="serif-monospace"
+                android:textStyle="bold"
+                android:cursorVisible="false"
+                android:background="@drawable/addprofileback"
+                android:backgroundTint="@color/white"
+                android:id="@+id/name"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="About"
+                android:layout_marginTop="20dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:fontFamily="serif-monospace"
+                android:textStyle="bold"
+                android:cursorVisible="false"
+                android:text="I'm with the Flow"
+                android:background="@drawable/addprofileback"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/black"
+                android:layout_below="@+id/name"
+                android:id="@+id/about"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:fontFamily="sans-serif"
+                android:layout_below="@+id/about"
+                android:background="@drawable/button_reg"
+                android:layout_marginTop="30dp"
+                android:id="@+id/nxt_btn"
+                android:layout_centerHorizontal="true"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+
+</RelativeLayout>

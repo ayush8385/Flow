@@ -147,7 +147,7 @@ class Register : AppCompatActivity() {
         })
 
         register.setOnClickListener {
-            startActivity(Intent(this,Dashboard::class.java))
+            startActivity(Intent(this,Addprofile::class.java))
             finishAffinity()
         }
 
