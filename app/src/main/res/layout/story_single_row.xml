@@ -4,8 +4,8 @@
     android:layout_marginLeft="20dp"
     android:layout_height="wrap_content">
     <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
         android:id="@+id/story_img"
         android:src="@drawable/user"/>
     <TextView

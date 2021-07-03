@@ -13,8 +13,10 @@
         android:roundIcon="@drawable/flow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow">
-        <activity android:name=".flow.Addprofile"
-            android:windowSoftInputMode="adjustResize"></activity>
+        <activity android:name=".flow.Testing"></activity>
+        <activity
+            android:name=".flow.Addprofile"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".flow.Dashboard" />
         <activity android:name=".flow.Register" />
         <activity android:name=".flow.Splash">
