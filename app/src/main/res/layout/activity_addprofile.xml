@@ -37,11 +37,13 @@
                     android:paddingHorizontal="14dp"
                     android:paddingVertical="4dp"
                     android:textSize="16sp"
+                    android:id="@+id/edt_btn"
                     android:layout_centerVertical="true"
                     android:fontFamily="sans-serif"
                     android:layout_alignParentRight="true"
                     android:layout_height="wrap_content"
                     android:text="Edit Image"/>
+
             </RelativeLayout>
             <EditText
                 android:layout_width="match_parent"
@@ -87,8 +89,42 @@
                 android:id="@+id/nxt_btn"
                 android:layout_centerHorizontal="true"/>
 
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/img_edt"
+                android:layout_marginTop="-20dp"
+                app:cardCornerRadius="14dp"
+                android:layout_alignParentRight="true"
+                android:id="@+id/img_option">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_marginHorizontal="2dp"
+                    android:layout_height="wrap_content">
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="140px"
+                        android:layout_height="140px"
+                        android:layout_margin="10dp"
+                        android:id="@+id/camera"
+                        android:src="@drawable/camera"/>
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="140px"
+                        android:layout_height="140px"
+                        android:layout_margin="10dp"
+                        android:id="@+id/gallery"
+                        android:src="@drawable/gallery"/>
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="140px"
+                        android:layout_height="140px"
+                        android:layout_margin="10dp"
+                        android:id="@+id/delete"
+                        android:src="@drawable/delete"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
+
 
 
 </RelativeLayout>
