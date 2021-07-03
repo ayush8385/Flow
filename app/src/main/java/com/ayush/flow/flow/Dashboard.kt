@@ -100,6 +100,9 @@ class Dashboard : AppCompatActivity() {
 
 
         navigationView.setOnNavigationItemSelectedListener{
+            if(previousMenuItem==null){
+                previousMenuItem=navigationView.menu.findItem(R.id.chat)
+            }
             when(it.itemId){
                 R.id.chat ->{
                     if(previousMenuItem!=it){

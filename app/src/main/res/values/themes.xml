@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.Flow" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimary">#3F60B5</item>
         <item name="colorPrimaryVariant">#2B4483</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:windowDisablePreview">true</item>

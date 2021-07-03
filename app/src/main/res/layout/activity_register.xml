@@ -4,18 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
     android:background="@drawable/reg_back"
     tools:context=".flow.Register">
 
     <TextView
-        android:layout_width="250dp"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:text="Create Account"
         android:textColor="@color/white"
         android:textSize="35sp"
-        android:layout_marginLeft="40dp"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="35sp"
+        app:autoSizeStepGranularity="2sp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="60dp"
         android:id="@+id/create"
-        android:layout_marginBottom="120dp"
+        android:gravity="center_vertical"
         android:layout_above="@+id/details"
         android:autoSizeTextType="uniform"
         android:fontFamily="@font/michroma"/>
@@ -23,8 +29,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
         android:id="@+id/details"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"
         android:layout_marginHorizontal="20dp"
         android:layout_alignParentBottom="true">
         <TextView
@@ -116,7 +123,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Register"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:fontFamily="@font/michroma"
             android:layout_marginTop="30dp"
             android:paddingVertical="10dp"
