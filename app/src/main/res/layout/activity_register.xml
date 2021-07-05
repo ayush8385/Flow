@@ -6,7 +6,15 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:background="@drawable/reg_back"
-    tools:context=".flow.Register">
+    tools:context=".flow.activity.Register">
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="390dp"
+        android:layout_height="430dp"
+        android:rotation="-180"
+        android:layout_marginLeft="-80dp"
+        android:layout_marginTop="-85dp"
+        app:srcCompat="@drawable/bottom_back" />
 
     <TextView
         android:layout_width="230dp"
@@ -181,6 +189,8 @@
             android:textColor="#B5B6B6"
             android:layout_below="@+id/register_button"/>
     </RelativeLayout>
+
+
 
 
 </RelativeLayout>

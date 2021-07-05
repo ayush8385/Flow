@@ -1,4 +1,4 @@
-package com.ayush.flow.flow
+package com.ayush.flow.flow.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +14,7 @@ class Addprofile : AppCompatActivity() {
         next=findViewById(R.id.nxt_btn)
 
         next.setOnClickListener {
-            startActivity(Intent(this,Dashboard::class.java))
+            startActivity(Intent(this, Dashboard::class.java))
         }
 
     }

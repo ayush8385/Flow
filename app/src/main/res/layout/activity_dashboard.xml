@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/reg_back"
-    tools:context=".flow.Dashboard">
+    tools:context=".flow.activity.Dashboard">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -42,6 +42,7 @@
             style="@style/SearchViewStyle"
             android:layout_width="300dp"
             android:layout_height="40dp"
+            app:queryHint="Search for friend..."
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/contact"
             android:layout_marginRight="10dp"

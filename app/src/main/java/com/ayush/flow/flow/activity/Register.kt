@@ -1,4 +1,4 @@
-package com.ayush.flow.flow
+package com.ayush.flow.flow.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -147,7 +147,7 @@ class Register : AppCompatActivity() {
         })
 
         register.setOnClickListener {
-            startActivity(Intent(this,Addprofile::class.java))
+            startActivity(Intent(this, Addprofile::class.java))
             finishAffinity()
         }
 

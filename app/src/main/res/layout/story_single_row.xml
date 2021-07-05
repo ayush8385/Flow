@@ -11,6 +11,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="65dp"
+        android:maxLines="1"
         android:text=""
         android:id="@+id/story_txt"
         android:layout_below="@+id/story_img"

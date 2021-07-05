@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/reg_back"
-    tools:context=".flow.Addprofile">
+    android:background="@drawable/toolbar_back"
+    tools:context=".flow.activity.Addprofile">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -95,6 +95,7 @@
                 android:layout_below="@id/img_edt"
                 android:layout_marginTop="-20dp"
                 app:cardCornerRadius="14dp"
+                android:visibility="gone"
                 android:layout_alignParentRight="true"
                 android:id="@+id/img_option">
                 <LinearLayout

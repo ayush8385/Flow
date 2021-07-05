@@ -1,7 +1,6 @@
-package com.ayush.flow.flow
+package com.ayush.flow.flow.activity
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.animation.AnimationUtils
@@ -43,9 +42,6 @@ class Dashboard : AppCompatActivity() {
         add_text=findViewById(R.id.story_txt)
         chat_text=findViewById(R.id.chats)
 
-        title.setOnClickListener {
-            startActivity(Intent(this,Testing::class.java))
-        }
 
         var obj=Chats("","","Hello how are you doing","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
         chatList.add(obj)
