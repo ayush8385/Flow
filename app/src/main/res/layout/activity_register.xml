@@ -65,6 +65,9 @@
             android:layout_height="wrap_content"
             android:cursorVisible="false"
             android:drawablePadding="10dp"
+            android:maxLength="10"
+            android:inputType="number"
+            android:fontFamily="@font/open_sans"
             android:drawableLeft="@drawable/number"
             android:layout_below="@id/number_txt"
             android:id="@+id/number_edt"/>

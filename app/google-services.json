@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "543628160389",
+    "firebase_url": "https://flow-b523d-default-rtdb.firebaseio.com",
+    "project_id": "flow-b523d",
+    "storage_bucket": "flow-b523d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543628160389:android:5c25ef5f77248b19fda8ec",
+        "android_client_info": {
+          "package_name": "com.ayush.flow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "543628160389-ulhj5td6bvtdhjrat9fiq1eof6lbqh19.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7ojlmaG-inUn0lelI2ITF3zNRdtenWbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "543628160389-ulhj5td6bvtdhjrat9fiq1eof6lbqh19.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543628160389:android:8f930c05ab9fd065fda8ec",
+        "android_client_info": {
+          "package_name": "com.ayush.notificat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "543628160389-ulhj5td6bvtdhjrat9fiq1eof6lbqh19.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7ojlmaG-inUn0lelI2ITF3zNRdtenWbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "543628160389-ulhj5td6bvtdhjrat9fiq1eof6lbqh19.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

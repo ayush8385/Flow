@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/profile_parent"
     android:background="@drawable/toolbar_back"
-    tools:context=".flow.activity.Addprofile">
+    tools:context=".activity.Addprofile">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -42,7 +43,41 @@
                     android:fontFamily="sans-serif"
                     android:layout_alignParentRight="true"
                     android:layout_height="wrap_content"
-                    android:text="Edit Image"/>
+                    android:text="Add Image"/>
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    app:cardCornerRadius="25dp"
+                    app:cardBackgroundColor="#0000"
+                    android:id="@+id/more_card"
+                    android:visibility="gone"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bottom_nav_back"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_margin="10dp"
+                            android:id="@+id/cam"
+                            android:src="@drawable/camera"/>
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_margin="10dp"
+                            android:id="@+id/gall"
+                            android:src="@drawable/gallery"/>
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_margin="10dp"
+                            android:id="@+id/del"
+                            android:src="@drawable/delete"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
             </RelativeLayout>
             <EditText
@@ -76,18 +111,31 @@
                 android:textColor="@color/black"
                 android:layout_below="@+id/name"
                 android:id="@+id/about"/>
+
             <androidx.appcompat.widget.AppCompatButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Next"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:fontFamily="sans-serif"
-                android:layout_below="@+id/about"
-                android:background="@drawable/button_reg"
+                android:textSize="18sp"
+                android:fontFamily="@font/open_sans"
                 android:layout_marginTop="30dp"
+                android:paddingVertical="10dp"
+                android:paddingHorizontal="30dp"
                 android:id="@+id/nxt_btn"
+                android:layout_below="@+id/about"
+                android:textColor="@color/white"
+                android:background="@drawable/button_reg"
                 android:layout_centerHorizontal="true"/>
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/about"
+                android:layout_marginTop="30dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="30dp"
+                android:visibility="gone"
+                android:background="@drawable/button_reg"
+                android:id="@+id/progressbar"/>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"

@@ -13,14 +13,14 @@
         android:roundIcon="@drawable/flow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow">
-        <activity android:name=".flow.activity.Outgoing"></activity>
-        <activity android:name=".flow.activity.Calling" />
-        <activity android:name=".flow.activity.Contact" />
-        <activity android:name=".flow.activity.Message" />
-        <activity android:name=".flow.activity.Addprofile" />
-        <activity android:name=".flow.activity.Dashboard" />
-        <activity android:name=".flow.activity.Register" />
-        <activity android:name=".flow.activity.Splash">
+        <activity android:name=".activity.Outgoing"></activity>
+        <activity android:name=".activity.Calling" />
+        <activity android:name=".activity.Contact" />
+        <activity android:name=".activity.Message" />
+        <activity android:name=".activity.Addprofile" />
+        <activity android:name=".activity.Dashboard" />
+        <activity android:name=".activity.Register" />
+        <activity android:name=".activity.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
