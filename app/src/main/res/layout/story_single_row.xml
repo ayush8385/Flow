@@ -18,7 +18,6 @@
         android:layout_below="@+id/story_img"
         android:layout_centerHorizontal="true"
         android:textSize="13sp"
-        android:textColor="@color/white"
         android:fontFamily="@font/open_sans"/>
 
 </RelativeLayout>

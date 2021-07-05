@@ -1,10 +1,12 @@
 package com.ayush.flow.flow.activity
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +32,7 @@ class Dashboard : AppCompatActivity() {
     var storyList= arrayListOf<Chats>()
     var controller:LayoutAnimationController?=null
     var previousMenuItem: MenuItem?=null
+    lateinit var contact:ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -41,6 +44,7 @@ class Dashboard : AppCompatActivity() {
         story_text=findViewById(R.id.stories)
         add_text=findViewById(R.id.story_txt)
         chat_text=findViewById(R.id.chats)
+        contact=findViewById(R.id.contact)
 
 
         var obj=Chats("","","Hello how are you doing","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
@@ -92,6 +96,10 @@ class Dashboard : AppCompatActivity() {
 
         storyRecyclerView.adapter=StoryAdapter(this,storyList)
         storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+
+        contact.setOnClickListener {
+            startActivity(Intent(this,Contact::class.java))
+        }
 
 
 

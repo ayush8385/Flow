@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/toolbar_back"
+    tools:context=".flow.activity.Contact">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#0000"
+        android:elevation="10dp"
+        android:id="@+id/toolbar_contact">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="7dp"
+            android:background="@drawable/toolbar_back"
+            android:paddingVertical="8dp">
+            <ImageView
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
+                android:id="@+id/back"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/michroma"
+                android:text="Contacts"
+                android:id="@+id/title"
+                android:layout_toRightOf="@+id/back"
+                android:layout_marginLeft="20dp"
+                android:textColor="@color/white"
+                android:textSize="22sp"/>
+            <SearchView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/searchview"
+                android:searchIcon="@drawable/ic_baseline_search_24"
+                android:layout_alignParentRight="true"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/contact_recycler"
+        android:layout_below="@+id/toolbar_contact"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:elevation="5dp"
+        app:cardElevation="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="30dp"
+        app:cardBackgroundColor="#0000"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="center"
+            android:background="@drawable/bottom_back"
+            android:src="@drawable/ic_baseline_edit_24"/>
+    </androidx.cardview.widget.CardView>
+
+
+
+</RelativeLayout>

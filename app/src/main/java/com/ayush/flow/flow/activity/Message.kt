@@ -1,5 +1,6 @@
 package com.ayush.flow.flow.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.Animation
@@ -24,6 +25,7 @@ class Message : AppCompatActivity() {
     lateinit var name:TextView
     lateinit var more_card:CardView
     lateinit var parent:RelativeLayout
+    lateinit var audiocall:ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
@@ -36,7 +38,12 @@ class Message : AppCompatActivity() {
         more_card=findViewById(R.id.more_card)
         parent=findViewById(R.id.msg_parent)
 
+        audiocall=findViewById(R.id.call)
 
+
+        audiocall.setOnClickListener {
+            startActivity(Intent(this,Outgoing::class.java))
+        }
 
 
 

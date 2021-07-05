@@ -13,7 +13,10 @@
         android:roundIcon="@drawable/flow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow">
-        <activity android:name=".flow.activity.Message"></activity>
+        <activity android:name=".flow.activity.Outgoing"></activity>
+        <activity android:name=".flow.activity.Calling" />
+        <activity android:name=".flow.activity.Contact" />
+        <activity android:name=".flow.activity.Message" />
         <activity android:name=".flow.activity.Addprofile" />
         <activity android:name=".flow.activity.Dashboard" />
         <activity android:name=".flow.activity.Register" />
