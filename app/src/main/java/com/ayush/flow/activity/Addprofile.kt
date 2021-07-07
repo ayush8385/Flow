@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -27,11 +28,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
+import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
+import java.net.URL
 
 
 class Addprofile : AppCompatActivity() {
@@ -80,6 +80,20 @@ class Addprofile : AppCompatActivity() {
             edit_card.visibility=View.GONE
         }
 
+        val stat=intent.getStringExtra("status")
+        var img=""
+        name.setText(sharedPreferences.getString("username",""))
+        about.setText(sharedPreferences.getString("about","I'm with the Flow"))
+        img= sharedPreferences.getString("profile","").toString()
+        if(img!=""){
+            Picasso.get().load(img).into(userimage)
+            photo=GetImageFromUrl().execute(img).get()
+        }
+
+        if(!checkpermission()){
+            requestStoragePermission()
+        }
+
         camera.setOnClickListener {
             if(checkpermission()){
                 photofile = getphotofile("profile_photo.jpg")
@@ -119,6 +133,7 @@ class Addprofile : AppCompatActivity() {
 
         next.setOnClickListener {
             val username=name.text.toString()
+            val abt=about.text.toString()
             if(username==""){
                 Toast.makeText(applicationContext, "Please Fill Username", Toast.LENGTH_SHORT).show()
             }
@@ -134,13 +149,12 @@ class Addprofile : AppCompatActivity() {
                     next.clearAnimation()
 
                     //upload image to firebase in background
-                    uploadImage(username, photo!!).execute()
+                    uploadImage(username, photo!!,abt).execute()
 
                     sharedPreferences.edit().putString("name", username).apply()
                     sharedPreferences.edit().putString("profile",imagepath).apply()
+                    sharedPreferences.edit().putString("about",abt).apply()
                 }
-
-
                 startActivity(Intent(applicationContext, Dashboard::class.java))
                 finishAffinity()
             }
@@ -284,10 +298,11 @@ class Addprofile : AppCompatActivity() {
     }
 }
 
-class uploadImage(val username:String,val bmp:Bitmap):AsyncTask<Void,Void,Boolean>(){
+class uploadImage(val username:String,val bmp:Bitmap,val abt:String):AsyncTask<Void,Void,Boolean>(){
     override fun doInBackground(vararg params: Void?): Boolean {
         val userId= FirebaseAuth.getInstance().currentUser!!.uid
         FirebaseDatabase.getInstance().reference.child("Users").child(userId).child("username").setValue(username)
+        FirebaseDatabase.getInstance().reference.child("Users").child(userId).child("about").setValue(abt)
 
         val baos= ByteArrayOutputStream()
         bmp.compress(Bitmap.CompressFormat.JPEG,100,baos)
@@ -310,7 +325,21 @@ class uploadImage(val username:String,val bmp:Bitmap):AsyncTask<Void,Void,Boolea
         })
         return true
     }
-
 }
-
+class GetImageFromUrl() :
+    AsyncTask<String?, Void?, Bitmap>() {
+    var bmp:Bitmap?=null
+    override fun doInBackground(vararg url: String?): Bitmap {
+        val stringUrl = url[0]
+        bmp= null
+        val inputStream: InputStream
+        try {
+            inputStream = URL(stringUrl).openStream()
+            bmp = BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return bmp!!
+    }
+}
 

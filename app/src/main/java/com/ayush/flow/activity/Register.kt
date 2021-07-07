@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
@@ -16,7 +17,10 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.ayush.flow.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class Register : AppCompatActivity() {
     lateinit var welc: TextView
@@ -208,8 +212,9 @@ class Register : AppCompatActivity() {
                         refuser.updateChildren(userHashmap)
                             .addOnCompleteListener { text->
                                 if(text.isSuccessful){
-                                    startActivity(Intent(this@Register, Addprofile::class.java))
-                                    finish()
+                                    val intent=Intent(this@Register, Addprofile::class.java)
+                                    startActivity(intent)
+                                    finishAffinity()
                                     savePreferences(userHashmap)
                                 }
                                 else{
@@ -234,6 +239,8 @@ class Register : AppCompatActivity() {
         sharedPreferences.edit().putString("number", data["number"].toString()).apply()
         sharedPreferences.edit().putString("password", data["password"].toString()).apply()
         sharedPreferences.edit().putString("about",data["about"].toString()).apply()
+        sharedPreferences.edit().putString("username",data["username"].toString()).apply()
+        sharedPreferences.edit().putString("profile",data["profile_photo"].toString()).apply()
     }
 
     private fun loginUser() {
@@ -257,9 +264,36 @@ class Register : AppCompatActivity() {
             FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener { text->
                     if(text.isSuccessful){
-                        finishAffinity()
-                        startActivity(Intent(this@Register, Dashboard::class.java))
-                        sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
+
+                        val userId=FirebaseAuth.getInstance().currentUser!!.uid
+                        val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(userId)
+                        refuser.addListenerForSingleValueEvent(object :ValueEventListener{
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val userHashmap=HashMap<String, Any>()
+                                userHashmap["uid"]=userId
+                                userHashmap["email"]=snapshot.child("email").value.toString()
+                                userHashmap["number"]=snapshot.child("number").value.toString()
+                                userHashmap["username"]=snapshot.child("username").value.toString()
+                                userHashmap["password"]=snapshot.child("password").value.toString()
+                                userHashmap["about"]=snapshot.child("about").value.toString()
+                                userHashmap["profile_photo"]=snapshot.child("profile_photo").value.toString()
+
+                                Log.d("profile_photo",userHashmap["profile_photo"].toString())
+                                Log.d("about",userHashmap["about"].toString())
+
+                                val intent=Intent(this@Register, Addprofile::class.java)
+                                startActivity(intent)
+                                finishAffinity()
+                                savePreferences(userHashmap)
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
+
+                        })
+
+
                     }
                     else{
                         Toast.makeText(applicationContext, "Error in login", Toast.LENGTH_SHORT).show()
