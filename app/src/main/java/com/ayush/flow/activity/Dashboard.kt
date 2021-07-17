@@ -1,28 +1,36 @@
 package com.ayush.flow.activity
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.provider.ContactsContract
 import android.view.MenuItem
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.adapter.ChatAdapter
 import com.ayush.flow.adapter.StoryAdapter
+import com.ayush.flow.database.*
 import com.ayush.flow.model.Chats
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
+import java.io.*
 
 
 class Dashboard : AppCompatActivity() {
@@ -36,13 +44,14 @@ class Dashboard : AppCompatActivity() {
     lateinit var story_text:TextView
     lateinit var chat_text:TextView
     lateinit var add_text:TextView
-    var chatList= arrayListOf<Chats>()
+    var chatList= listOf<ChatEntity>()
     var storyList= arrayListOf<Chats>()
     lateinit var profile:CircleImageView
     var controller:LayoutAnimationController?=null
     lateinit var sharedPreferences: SharedPreferences
     var previousMenuItem: MenuItem?=null
     lateinit var contact:ImageView
+    lateinit var firebaseUser: FirebaseUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -58,6 +67,15 @@ class Dashboard : AppCompatActivity() {
         profile=findViewById(R.id.user_img)
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
+        firebaseUser= FirebaseAuth.getInstance().currentUser!!
+
+        if(checkpermission()){
+            loadContacts().execute()
+        }
+        else{
+            requestContactPermission()
+        }
+
         try {
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))
             val b = BitmapFactory.decodeStream(FileInputStream(f))
@@ -67,52 +85,17 @@ class Dashboard : AppCompatActivity() {
         }
 
 
-        var obj=Chats("","","Hello how are you doing","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
-        chatList.add(obj)
-        obj=Chats("","","Hi","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Brother")
-        chatList.add(obj)
-        obj=Chats("","","Good","","","today","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Mummy")
-        chatList.add(obj)
-        obj=Chats("","","Lets throw ar party today in backyard of my hosue","","","yesterday","","Papa")
-        chatList.add(obj)
-        obj=Chats("","","Hello how are you doing","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
-        chatList.add(obj)
-        obj=Chats("","","Hi","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Brother")
-        chatList.add(obj)
-        obj=Chats("","","Good","","","today","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Mummy")
-        chatList.add(obj)
-        obj=Chats("","","Lets throw ar party today in backyard of my hosue","","","yesterday","","Papa")
-        chatList.add(obj)
-        obj=Chats("","","Hello how are you doing","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
-        chatList.add(obj)
-        obj=Chats("","","Hi","","","04:24 pm","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Brother")
-        chatList.add(obj)
-        obj=Chats("","","Good","","","today","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Mummy")
-        chatList.add(obj)
-        obj=Chats("","","Lets throw ar party today in backyard of my hosue","","","yesterday","","Papa")
-        chatList.add(obj)
-
-
-        chatsRecyclerView.adapter=ChatAdapter(this,chatList)
+        chatAdapter= ChatAdapter(this@Dashboard)
         chatsRecyclerView.layoutManager=LinearLayoutManager(this)
+        chatsRecyclerView.adapter=chatAdapter
 
+        ChatViewModel(application).allChats.observe(this, Observer { list->
+            list?.let {
+                chatAdapter.updateList(list)
+                chatList=list
+            }
 
-        var obj1=Chats("","","","","","","","Papa")
-        storyList.add(obj1)
-        obj1=Chats("","","","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
-        storyList.add(obj1)
-        obj1=Chats("","","Hi","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Brother")
-        storyList.add(obj1)
-        obj1=Chats("","","Good","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Mummy")
-        storyList.add(obj1)
-        obj1=Chats("","","","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Ayush Mishra")
-        storyList.add(obj1)
-        obj1=Chats("","","Hi","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Brother")
-        storyList.add(obj1)
-        obj1=Chats("","","Good","","","","https://cdn-res.keymedia.com/cms/images/us/026/0222_637049384911763251.JPG","Mummy")
-        storyList.add(obj1)
-        obj1=Chats("","","","","","","","Papa")
-        storyList.add(obj1)
+        })
 
         storyRecyclerView.adapter=StoryAdapter(this,storyList)
         storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
@@ -121,80 +104,104 @@ class Dashboard : AppCompatActivity() {
             startActivity(Intent(this, Contact::class.java))
         }
 
+//        navigationView.setOnNavigationItemSelectedListener{
+//            if(previousMenuItem==null){
+//                previousMenuItem=navigationView.menu.findItem(R.id.chat)
+//            }
+//            when(it.itemId){
+//                R.id.chat ->{
+//                    if(previousMenuItem!=it){
+//                        title.text="Messages"
+//                        story_text.text="Stories"
+//                        add_text.text="Me"
+//                        chat_text.text="Chats"
+//
+//                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
+//                        runAnimation(chatsRecyclerView,1)
+//                        val adapter=ChatAdapter(this)
+//                        adapter.notifyDataSetChanged()
+//                        chatsRecyclerView.adapter=adapter
+//                        chatsRecyclerView.layoutAnimation=controller
+//                        chatsRecyclerView.scheduleLayoutAnimation()
+//
+//
+//
+//                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+//                        runAnimation(storyRecyclerView,1)
+//                        val adapter2=StoryAdapter(this,storyList)
+//                        adapter2.notifyDataSetChanged()
+//                        storyRecyclerView.adapter=adapter2
+//                        storyRecyclerView.layoutAnimation = controller
+//                        storyRecyclerView.scheduleLayoutAnimation()
+//                        it.isCheckable=true
+//                        it.isChecked=true
+//                        previousMenuItem=it
+//                    }
+//                }
+//                R.id.call ->{
+//                    if(previousMenuItem!=it){
+//                        title.text="Calls"
+//                        story_text.text="Favorites"
+//                        add_text.text="New"
+//                        chat_text.text="Calls"
+//
+//                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
+//                        runAnimation(chatsRecyclerView,0)
+//
+//                        var adapter=ChatAdapter(this,storyList)
+//                        adapter.notifyDataSetChanged()
+//                        chatsRecyclerView.adapter=adapter
+//                        chatsRecyclerView.layoutAnimation=controller
+//                        chatsRecyclerView.scheduleLayoutAnimation()
+//
+//                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+//                        runAnimation(storyRecyclerView,0)
+//                        val adapter2=StoryAdapter(this,chatList)
+//                        adapter2.notifyDataSetChanged()
+//                        storyRecyclerView.adapter=adapter2
+//                        storyRecyclerView.layoutAnimation=controller
+//                        storyRecyclerView.scheduleLayoutAnimation()
+//
+//                        var current = navigationView.selectedItemId
+//                        it.isCheckable=true
+//                        it.isChecked=true
+//                        previousMenuItem=it
+//                    }
+//                }
+//            }
+//            return@setOnNavigationItemSelectedListener true
+//        }
 
+        retrieveMessage().execute()
 
-        navigationView.setOnNavigationItemSelectedListener{
-            if(previousMenuItem==null){
-                previousMenuItem=navigationView.menu.findItem(R.id.chat)
-            }
-            when(it.itemId){
-                R.id.chat ->{
-                    if(previousMenuItem!=it){
-                        title.text="Messages"
-                        story_text.text="Stories"
-                        add_text.text="Me"
-                        chat_text.text="Chats"
-
-                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
-                        runAnimation(chatsRecyclerView,1)
-                        val adapter=ChatAdapter(this,chatList)
-                        adapter.notifyDataSetChanged()
-                        chatsRecyclerView.adapter=adapter
-                        chatsRecyclerView.layoutAnimation=controller
-                        chatsRecyclerView.scheduleLayoutAnimation()
-
-
-
-                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-                        runAnimation(storyRecyclerView,1)
-                        val adapter2=StoryAdapter(this,storyList)
-                        adapter2.notifyDataSetChanged()
-                        storyRecyclerView.adapter=adapter2
-                        storyRecyclerView.layoutAnimation = controller
-                        storyRecyclerView.scheduleLayoutAnimation()
-                        it.isCheckable=true
-                        it.isChecked=true
-                        previousMenuItem=it
-                    }
-                }
-                R.id.call ->{
-                    if(previousMenuItem!=it){
-                        title.text="Calls"
-                        story_text.text="Favorites"
-                        add_text.text="New"
-                        chat_text.text="Calls"
-
-                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
-                        runAnimation(chatsRecyclerView,0)
-
-                        var adapter=ChatAdapter(this,storyList)
-                        adapter.notifyDataSetChanged()
-                        chatsRecyclerView.adapter=adapter
-                        chatsRecyclerView.layoutAnimation=controller
-                        chatsRecyclerView.scheduleLayoutAnimation()
-
-                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-                        runAnimation(storyRecyclerView,0)
-                        val adapter2=StoryAdapter(this,chatList)
-                        adapter2.notifyDataSetChanged()
-                        storyRecyclerView.adapter=adapter2
-                        storyRecyclerView.layoutAnimation=controller
-                        storyRecyclerView.scheduleLayoutAnimation()
-
-                        var current = navigationView.selectedItemId
-                        it.isCheckable=true
-                        it.isChecked=true
-                        previousMenuItem=it
-                    }
-                }
-            }
-            return@setOnNavigationItemSelectedListener true
-        }
-
-
+        checkStatus(firebaseUser)
 
 
     }
+
+    fun checkStatus(firebaseUser: FirebaseUser) {
+       val connectionReference=FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid)
+        val lastConnected=FirebaseDatabase.getInstance().reference.child("lastConnected")
+        val infoConnected=FirebaseDatabase.getInstance().getReference(".info/connected")
+
+        infoConnected.addValueEventListener(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val connected:Boolean=snapshot.value as Boolean
+
+                if(connected){
+                    val con=connectionReference.child("status")
+                    con.setValue("online")
+                    con.onDisconnect().setValue("")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+
 
     private fun runAnimation(chatsRecyclerView: RecyclerView?, i: Int) {
         val context:Context=chatsRecyclerView!!.context
@@ -205,7 +212,198 @@ class Dashboard : AppCompatActivity() {
         if(i==1){
             controller=AnimationUtils.loadLayoutAnimation(context,R.anim.layout_slide_left)
         }
+    }
 
+    inner class retrieveMessage(): AsyncTask<Void, Void, Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+
+            ref.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(snapshot in snapshot.children){
+                        val messageKey=snapshot.child("mid").value.toString()
+                        val user=snapshot.child("userid").value.toString()
+                        val sender=snapshot.child("sender").value.toString()
+                        val msg=snapshot.child("message").value.toString()
+                        val type=snapshot.child("type").value.toString()
+
+                        if(sender!=firebaseUser.uid){
+                            if(ChatViewModel(application).isUserExist(sender)){
+                                ChatViewModel(application).deleteChat(sender)
+                                //get image and name from room db
+                            }
+                            else{
+                                //get number as a name from firebase
+                                //get image and sav it to local storage and ibternal path from firebase
+                            }
+
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,type))
+                            snapshot.child(messageKey).ref.parent!!.removeValue()
+
+                            ChatViewModel(application).inserChat(ChatEntity("helo","",msg, ServerValue.TIMESTAMP.toString(),sender))
+                            //FirebaseDatabase.getInstance().reference.child("Messages").child(id).child(messageKey).child("received").setValue(true)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+            })
+            return true
+        }
 
     }
+
+    fun checkpermission():Boolean {
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                android.Manifest.permission.READ_CONTACTS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    fun requestContactPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.READ_CONTACTS),
+            1234
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+
+        when (requestCode) {
+            1234 -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Do_SOme_Operation()
+                    loadContacts().execute()
+
+                }
+                else{
+                    showMessageOKCancel("You need to allow access permissions",
+                        DialogInterface.OnClickListener { dialog, which ->
+                            requestContactPermission()
+                        })
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+        }
+
+    }
+
+    private fun showMessageOKCancel(message: String, okListener: DialogInterface.OnClickListener) {
+        AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton("OK", okListener)
+            .setNegativeButton("Cancel", null)
+            .create()
+            .show()
+    }
+
+    inner class loadContacts(): AsyncTask<Void, Void, Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+
+            val contentResolver = contentResolver
+            val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
+
+            while (contacts?.moveToNext() == true) {
+                val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                val phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                var i=0
+                var number:String=""
+                while(i!=phoneNumber.length){
+                    if(phoneNumber[i]>='0'&&phoneNumber[i]<='9'){
+                        number=number+phoneNumber[i]
+                    }
+                    i++
+                }
+
+                val ref=FirebaseDatabase.getInstance().reference.child("Users")
+                ref.addValueEventListener(object :ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for(snapshot in snapshot.children){
+                            val num=snapshot.child("number").value.toString()
+                            val userid=snapshot.child("uid").value.toString()
+                            val image_url=snapshot.child("profile_photo").value.toString()
+                            if(userid!=firebaseUser.uid){
+                                if(number==num){
+                                    var imagepath=""
+                                    if(image_url!=""){
+                                        val photo=GetImageFromUrl().execute(image_url).get()
+                                        imagepath=saveToInternalStorage(photo).execute().get()
+                                    }
+                                    ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,userid))
+                                }
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+
+                })
+
+            }
+            contacts!!.close()
+            return true
+        }
+    }
+
+    inner class saveToInternalStorage(val bitmapImage: Bitmap):AsyncTask<Void,Void,String>(){
+        var path:String?=null
+        override fun doInBackground(vararg params: Void?): String {
+            val cw = ContextWrapper(applicationContext)
+            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
+            if(directory.exists()){
+                path=System.currentTimeMillis().toString()+".jpg"
+                var fos: FileOutputStream =
+                    FileOutputStream(File(directory, path))
+                try {
+                    bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    try {
+                        fos.close()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            else{
+                directory.mkdirs()
+                if (directory.isDirectory) {
+                    path=System.currentTimeMillis().toString()+".jpg"
+                    val fos =
+                        FileOutputStream(File(directory, path))
+                    try {
+                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        try {
+                            fos.close()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+
+            return path!!
+        }
+
+    }
+
 }

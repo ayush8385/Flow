@@ -326,8 +326,7 @@ class uploadImage(val username:String,val bmp:Bitmap,val abt:String):AsyncTask<V
         return true
     }
 }
-class GetImageFromUrl() :
-    AsyncTask<String?, Void?, Bitmap>() {
+class GetImageFromUrl() : AsyncTask<String?, Void?, Bitmap>() {
     var bmp:Bitmap?=null
     override fun doInBackground(vararg url: String?): Bitmap {
         val stringUrl = url[0]

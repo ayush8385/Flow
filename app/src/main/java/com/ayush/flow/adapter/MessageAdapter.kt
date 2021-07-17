@@ -8,9 +8,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.database.MessageEntity
+import com.google.firebase.auth.FirebaseAuth
 import java.util.*
 
-class MessageAdapter(val context: Context, val items: ArrayList<com.ayush.flow.model.Message>):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+    val firebaseUser=FirebaseAuth.getInstance().currentUser
+    val allMsgs=ArrayList<MessageEntity>()
     class MessageViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val message:TextView=view.findViewById(R.id.txt_msg)
     }
@@ -29,16 +33,28 @@ class MessageAdapter(val context: Context, val items: ArrayList<com.ayush.flow.m
     }
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
-        var chat=items[position]
+        var chat=allMsgs[position]
         holder.message.text=chat.message
 
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return allMsgs.size
     }
 
     override fun getItemViewType(position: Int): Int {
-        return this.items.get(position).id
+        val id=this.allMsgs.get(position).sender
+        if(id==firebaseUser!!.uid){
+            return 1
+        }
+        else{
+            return 0
+        }
+    }
+
+    fun updateList(msgList:List<MessageEntity>){
+        allMsgs.clear()
+        allMsgs.addAll(msgList)
+        notifyDataSetChanged()
     }
 }

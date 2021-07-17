@@ -2,22 +2,31 @@ package com.ayush.flow.adapter
 
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.AsyncTask
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.model.Chats
-import com.squareup.picasso.Picasso
+import com.ayush.flow.activity.Message
+import com.ayush.flow.database.ContactEntity
 import de.hdodenhof.circleimageview.CircleImageView
-import java.util.*
+import java.io.File
+import java.io.FileInputStream
 
-class ContactAdapter(val context: Context, val items: ArrayList<Chats>):RecyclerView.Adapter<ContactAdapter.HomeViewHolder>() {
+class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.HomeViewHolder>() {
+    val allCons=ArrayList<ContactEntity>()
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)
-        val about:TextView=view.findViewById(R.id.profile_abt)
+        val number:TextView=view.findViewById(R.id.profile_abt)
+        val start_chat:RelativeLayout=view.findViewById(R.id.paren)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
@@ -27,17 +36,42 @@ class ContactAdapter(val context: Context, val items: ArrayList<Chats>):Recycler
     }
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
-        var chat=items[position]
-        if(chat.image!=""){
-            Picasso.get().load(chat.image).into(holder.image)
+        var cons=allCons[position]
+        holder.name.text=cons.name
+        holder.number.text=cons.number
+
+        if(cons.image!=""){
+            loadImage(cons.image,holder).execute()
         }
-        holder.name.text=chat.name
-        holder.about.text=chat.message
 
-
+        holder.start_chat.setOnClickListener {
+            val intent=Intent(context,Message::class.java)
+            intent.putExtra("name",cons.name)
+            intent.putExtra("userid",cons.id)
+            intent.putExtra("image",cons.image)
+            context.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return allCons.size
+    }
+
+    fun updateList(contactList:List<ContactEntity>){
+        allCons.clear()
+        allCons.addAll(contactList)
+        notifyDataSetChanged()
+    }
+    inner class loadImage(val image:String,val holder:HomeViewHolder):AsyncTask<Void,Void, Boolean>(){
+        var b:Bitmap?=null
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            holder.image.setImageBitmap(b)
+        }
+        override fun doInBackground(vararg params: Void?): Boolean {
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+                b= BitmapFactory.decodeStream(FileInputStream(f))
+            return true
+        }
     }
 }

@@ -26,3 +26,7 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+ext{
+    coroutines = '1.5.0'
+    lifecycleVersion = '2.3.1'
+}

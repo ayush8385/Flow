@@ -3,6 +3,10 @@ package com.ayush.flow.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.AsyncTask
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +15,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.Message
-import com.ayush.flow.model.Chats
-import com.squareup.picasso.Picasso
+import com.ayush.flow.database.ChatEntity
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
+import java.io.FileInputStream
 import java.util.*
 
-class ChatAdapter(val context: Context, val items: ArrayList<Chats>):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
+class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
+    val allChats=ArrayList<ChatEntity>()
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)
@@ -33,25 +39,47 @@ class ChatAdapter(val context: Context, val items: ArrayList<Chats>):RecyclerVie
     }
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
-        var chat=items[position]
-        if(chat.image!=""){
-            Picasso.get().load(chat.image).into(holder.image)
-        }
+        var chat=allChats[position]
+
         holder.name.text=chat.name
-        holder.unread.visibility=View.VISIBLE
-        holder.unread.text="25"
-        holder.message.text=chat.message
+        holder.message.text=chat.lst_msg
         holder.time.text=chat.time
+
+        if(chat.image!=""){
+          loadImage(chat.image, holder).execute()
+        }
 
         holder.chat_box.setOnClickListener {
             val intent=Intent(context,Message::class.java)
             intent.putExtra("name",chat.name)
+            intent.putExtra("userid",chat.id)
+            intent.putExtra("image",chat.image)
             context.startActivity(intent)
         }
 
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return allChats.size
+    }
+
+    fun updateList(list: List<ChatEntity>) {
+        allChats.clear()
+        allChats.addAll(list)
+        notifyDataSetChanged()
+    }
+
+    inner class loadImage(val image:String,val holder: HomeViewHolder):
+        AsyncTask<Void, Void, Boolean>(){
+        var b: Bitmap?=null
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            holder.image.setImageBitmap(b)
+        }
+        override fun doInBackground(vararg params: Void?): Boolean {
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+            b= BitmapFactory.decodeStream(FileInputStream(f))
+            return true
+        }
     }
 }

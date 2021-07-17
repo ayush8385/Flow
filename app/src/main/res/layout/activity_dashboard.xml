@@ -54,6 +54,7 @@
             android:elevation="10dp"
             android:src="@drawable/contact_book"
             android:id="@+id/contact"
+            android:background="?selectableItemBackground"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>

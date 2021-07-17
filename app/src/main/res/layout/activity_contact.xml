@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/toolbar_back"
-    tools:context=".flow.activity.Contact">
+    tools:context=".activity.Contact">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -36,11 +36,12 @@
                 android:layout_marginLeft="20dp"
                 android:textColor="@color/white"
                 android:textSize="22sp"/>
-            <SearchView
+            <androidx.appcompat.widget.SearchView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/searchview"
-                android:searchIcon="@drawable/ic_baseline_search_24"
+                app:searchIcon="@drawable/ic_baseline_search_24"
+                android:layout_centerVertical="false"
                 android:layout_alignParentRight="true"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -49,6 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/contact_recycler"
+        tools:listitem="@layout/contacts_single_row"
         android:layout_below="@+id/toolbar_contact"/>
 
     <androidx.cardview.widget.CardView
@@ -64,6 +66,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:scaleType="center"
+            android:id="@+id/add_con"
             android:background="@drawable/bottom_back"
             android:src="@drawable/ic_baseline_edit_24"/>
     </androidx.cardview.widget.CardView>

@@ -9,15 +9,16 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/flow"
         android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
         android:roundIcon="@drawable/flow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow">
@@ -26,7 +27,9 @@
         <activity android:name=".activity.Contact" />
         <activity android:name=".activity.Message" />
         <activity android:name=".activity.Addprofile"/>
-        <activity android:name=".activity.Dashboard" />
+        <activity android:name=".activity.Dashboard">
+
+        </activity>
         <activity android:name=".activity.Register" />
         <activity android:name=".activity.Splash">
             <intent-filter>
