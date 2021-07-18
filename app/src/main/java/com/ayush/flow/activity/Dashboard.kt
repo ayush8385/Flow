@@ -69,11 +69,16 @@ class Dashboard : AppCompatActivity() {
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
+        retrieveMessage().execute()
         if(checkpermission()){
             loadContacts().execute()
         }
         else{
             requestContactPermission()
+        }
+
+        profile.setOnClickListener{
+            startActivity(Intent(this,UserProfile::class.java))
         }
 
         try {
@@ -86,7 +91,10 @@ class Dashboard : AppCompatActivity() {
 
 
         chatAdapter= ChatAdapter(this@Dashboard)
-        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
+        layoutManager=LinearLayoutManager(this)
+        (layoutManager as LinearLayoutManager).reverseLayout=true
+        chatsRecyclerView.layoutManager=layoutManager
+
         chatsRecyclerView.adapter=chatAdapter
 
         ChatViewModel(application).allChats.observe(this, Observer { list->
@@ -172,7 +180,7 @@ class Dashboard : AppCompatActivity() {
 //            return@setOnNavigationItemSelectedListener true
 //        }
 
-        retrieveMessage().execute()
+
 
         checkStatus(firebaseUser)
 
@@ -228,19 +236,45 @@ class Dashboard : AppCompatActivity() {
                         val type=snapshot.child("type").value.toString()
 
                         if(sender!=firebaseUser.uid){
+                            var name:String=""
+                            var imagepath:String=""
                             if(ChatViewModel(application).isUserExist(sender)){
                                 ChatViewModel(application).deleteChat(sender)
+                            }
+                            if(ContactViewModel(application).isUserExist(sender)){
                                 //get image and name from room db
+                                val contactEntity=ContactViewModel(application).getContact(sender)
+                                name=contactEntity.name
+                                imagepath=contactEntity.image
+                                ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, ServerValue.TIMESTAMP.toString(),sender))
                             }
                             else{
                                 //get number as a name from firebase
                                 //get image and sav it to local storage and ibternal path from firebase
+
+                                val ref=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
+                                ref.addValueEventListener(object :ValueEventListener{
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        name=snapshot.child("number").value.toString()
+                                        val image_url=snapshot.child("profile_photo").value.toString()
+                                        if(image_url!=""){
+                                            val photo=GetImageFromUrl().execute(image_url).get()
+                                            imagepath=saveToInternalStorage(photo).execute().get()
+                                        }
+                                        ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, ServerValue.TIMESTAMP.toString(),sender))
+
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        TODO("Not yet implemented")
+                                    }
+
+                                })
                             }
 
                             MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,type))
                             snapshot.child(messageKey).ref.parent!!.removeValue()
 
-                            ChatViewModel(application).inserChat(ChatEntity("helo","",msg, ServerValue.TIMESTAMP.toString(),sender))
                             //FirebaseDatabase.getInstance().reference.child("Messages").child(id).child(messageKey).child("received").setValue(true)
                         }
                     }
@@ -334,12 +368,12 @@ class Dashboard : AppCompatActivity() {
                         for(snapshot in snapshot.children){
                             val num=snapshot.child("number").value.toString()
                             val userid=snapshot.child("uid").value.toString()
-                            val image_url=snapshot.child("profile_photo").value.toString()
+                            val url=""//snapshot.child("profile_photo").value.toString()
                             if(userid!=firebaseUser.uid){
                                 if(number==num){
                                     var imagepath=""
-                                    if(image_url!=""){
-                                        val photo=GetImageFromUrl().execute(image_url).get()
+                                    if(url!=""){
+                                        val photo=GetImageFromUrl().execute(url).get()
                                         imagepath=saveToInternalStorage(photo).execute().get()
                                     }
                                     ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,userid))

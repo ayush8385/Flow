@@ -8,8 +8,16 @@ class ContactRepository(private val contactDao: ContactDao) {
     suspend fun insert(contactEntity: ContactEntity){
         contactDao.insertContact(contactEntity)
     }
+    fun isUserExist(userid: String): Boolean {
+        return contactDao.isUserExist(userid)
+    }
+
+    fun getContactbyId(userid: String):ContactEntity{
+        return contactDao.getContactbyId(userid)
+    }
 
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }
+    
 }

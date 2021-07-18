@@ -90,12 +90,12 @@ class Addprofile : AppCompatActivity() {
             photo=GetImageFromUrl().execute(img).get()
         }
 
-        if(!checkpermission()){
+        if(!checkpermission(this)){
             requestStoragePermission()
         }
 
         camera.setOnClickListener {
-            if(checkpermission()){
+            if(checkpermission(this)){
                 photofile = getphotofile("profile_photo.jpg")
                 imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
                 val intent=Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -111,7 +111,7 @@ class Addprofile : AppCompatActivity() {
 
 
         gallery.setOnClickListener {
-            if(checkpermission()){
+            if(checkpermission(this)){
                 var intent= Intent(Intent.ACTION_GET_CONTENT)
                 intent.type="image/*"
                 startActivityForResult(intent,112)
@@ -161,18 +161,18 @@ class Addprofile : AppCompatActivity() {
         }
     }
 
-    private fun getphotofile(fileName: String):File{
+    fun getphotofile(fileName: String):File{
         val storage= getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(fileName, ".jpg", storage)
     }
 
 
-    fun checkpermission():Boolean {
+    fun checkpermission(context: Context):Boolean {
         if (ContextCompat.checkSelfPermission(
-                applicationContext,
+                context,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-                applicationContext, Manifest.permission.CAMERA
+                context, Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             return true

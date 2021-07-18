@@ -40,6 +40,6 @@ class Splash : AppCompatActivity() {
                 startActivity(Intent(this,Register::class.java))
                 finish()
             }
-        },1500)
+        },300)
     }
 }

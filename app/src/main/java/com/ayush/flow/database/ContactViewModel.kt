@@ -17,7 +17,15 @@ class ContactViewModel(application: Application):AndroidViewModel(application) {
         allContacts=repository.allContacts
     }
 
+    fun isUserExist(userid:String):Boolean{
+        return repository.isUserExist(userid)
+    }
+
     fun inserContact(contactEntity: ContactEntity)=viewModelScope.launch (Dispatchers.IO){
         repository.insert(contactEntity)
+    }
+
+    fun getContact(userid: String):ContactEntity{
+        return repository.getContactbyId(userid)
     }
 }
