@@ -3,7 +3,10 @@ package com.ayush.flow.activity
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.*
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -140,7 +143,7 @@ class Addprofile : AppCompatActivity() {
             else{
 
                 if(photo!=null){
-                    imagepath = saveToInternalStorage(photo!!)
+                    imagepath = saveToInternalStorage(photo!!).execute().get()
 
                     val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
                     next.startAnimation(animation)
@@ -253,32 +256,13 @@ class Addprofile : AppCompatActivity() {
 //            fileBytes =baos.toByteArray()
         }
     }
-
-    fun saveToInternalStorage(bitmapImage: Bitmap): String{
-        val cw = ContextWrapper(applicationContext)
+    inner class saveToInternalStorage(val bitmapImage:Bitmap):AsyncTask<Void,Void,String>(){
         var path:String?=null
-        val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
-        if(directory.exists()){
-            path=System.currentTimeMillis().toString()+".jpg"
-            var fos: FileOutputStream =
-                FileOutputStream(File(directory, path))
-            try {
-                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                try {
-                    fos.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
-        }
-        else{
-            directory.mkdirs()
-            if (directory.isDirectory) {
+        override fun doInBackground(vararg params: Void?): String {
+            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
+            if(directory.exists()){
                 path=System.currentTimeMillis().toString()+".jpg"
-                val fos =
+                var fos: FileOutputStream =
                     FileOutputStream(File(directory, path))
                 try {
                     bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
@@ -292,9 +276,29 @@ class Addprofile : AppCompatActivity() {
                     }
                 }
             }
+            else{
+                directory.mkdirs()
+                if (directory.isDirectory) {
+                    path=System.currentTimeMillis().toString()+".jpg"
+                    val fos =
+                        FileOutputStream(File(directory, path))
+                    try {
+                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        try {
+                            fos.close()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+
+            return path!!
         }
 
-        return path!!
     }
 }
 

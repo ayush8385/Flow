@@ -66,7 +66,7 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
     fun updateList(list: List<ChatEntity>) {
         allChats.clear()
         allChats.addAll(list)
-        notifyDataSetChanged()
+        notifyItemInserted(list.size)
     }
 
     inner class loadImage(val image:String,val holder: HomeViewHolder):

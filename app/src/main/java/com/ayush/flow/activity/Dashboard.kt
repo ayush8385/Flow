@@ -31,6 +31,8 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class Dashboard : AppCompatActivity() {
@@ -79,14 +81,6 @@ class Dashboard : AppCompatActivity() {
 
         profile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
-        }
-
-        try {
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))
-            val b = BitmapFactory.decodeStream(FileInputStream(f))
-           profile.setImageBitmap(b)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
         }
 
 
@@ -233,7 +227,12 @@ class Dashboard : AppCompatActivity() {
                         val user=snapshot.child("userid").value.toString()
                         val sender=snapshot.child("sender").value.toString()
                         val msg=snapshot.child("message").value.toString()
+                        val time=snapshot.child("time").value.toString()
                         val type=snapshot.child("type").value.toString()
+
+                        //time set
+                        val sdf = SimpleDateFormat("hh:mm a")
+                        val tm: Date = Date(time.toLong())
 
                         if(sender!=firebaseUser.uid){
                             var name:String=""
@@ -246,7 +245,7 @@ class Dashboard : AppCompatActivity() {
                                 val contactEntity=ContactViewModel(application).getContact(sender)
                                 name=contactEntity.name
                                 imagepath=contactEntity.image
-                                ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, ServerValue.TIMESTAMP.toString(),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, sdf.format(tm),sender))
                             }
                             else{
                                 //get number as a name from firebase
@@ -261,7 +260,8 @@ class Dashboard : AppCompatActivity() {
                                             val photo=GetImageFromUrl().execute(image_url).get()
                                             imagepath=saveToInternalStorage(photo).execute().get()
                                         }
-                                        ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, ServerValue.TIMESTAMP.toString(),sender))
+
+                                        ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg,sdf.format(tm),sender))
 
                                     }
 
@@ -272,7 +272,7 @@ class Dashboard : AppCompatActivity() {
                                 })
                             }
 
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,type))
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type))
                             snapshot.child(messageKey).ref.parent!!.removeValue()
 
                             //FirebaseDatabase.getInstance().reference.child("Messages").child(id).child(messageKey).child("received").setValue(true)
@@ -368,7 +368,7 @@ class Dashboard : AppCompatActivity() {
                         for(snapshot in snapshot.children){
                             val num=snapshot.child("number").value.toString()
                             val userid=snapshot.child("uid").value.toString()
-                            val url=""//snapshot.child("profile_photo").value.toString()
+                            val url=snapshot.child("profile_photo").value.toString()
                             if(userid!=firebaseUser.uid){
                                 if(number==num){
                                     var imagepath=""
@@ -438,6 +438,17 @@ class Dashboard : AppCompatActivity() {
             return path!!
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        try {
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))
+            val b = BitmapFactory.decodeStream(FileInputStream(f))
+            profile.setImageBitmap(b)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
     }
 
 }

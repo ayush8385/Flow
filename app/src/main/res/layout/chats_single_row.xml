@@ -11,9 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="7dp"
-        android:backgroundTint="#00000000"
-        app:cardElevation="4dp"
-        android:elevation="10dp">
+        android:backgroundTint="#00000000">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -76,8 +74,9 @@
                     android:text=""
                     android:layout_marginTop="10dp"
                     android:layout_centerHorizontal="true"
-                    android:visibility="gone"
                     android:layout_below="@+id/timer"
+                    android:visibility="gone"
+                    android:layout_alignParentRight="true"
                     android:paddingHorizontal="6dp"
                     android:textColor="@color/white"
                     android:textSize="13sp"/>

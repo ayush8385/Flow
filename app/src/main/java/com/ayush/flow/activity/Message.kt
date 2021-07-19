@@ -28,11 +28,17 @@ import com.ayush.flow.database.MessageViewModel
 import com.ayush.flow.model.Message
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.HashMap
 
 
 class Message : AppCompatActivity() {
@@ -91,6 +97,7 @@ class Message : AppCompatActivity() {
 
         setIconImage(image).execute()
 
+
         adapter= MessageAdapter(this)
         recyclerView.layoutManager=layoutManager
         recyclerView.adapter=adapter
@@ -98,7 +105,7 @@ class Message : AppCompatActivity() {
 
         viewModel.allMessages(firebaseUser.uid+"-"+userid).observe(this, Observer {list->
             list?.let {
-                recyclerView.smoothScrollToPosition(list.size)
+                //recyclerView.smoothScrollToPosition(list.size)
                 adapter.updateList(list)
             }
         })
@@ -181,20 +188,23 @@ class Message : AppCompatActivity() {
             val ref=FirebaseDatabase.getInstance().reference
             val messageKey=ref.push().key
 
+            val sdf = SimpleDateFormat("hh:mm a")
+            val tm: Date = Date(System.currentTimeMillis())
             if(!viewModel.isMsgExist(messageKey!!)){
-                viewModel.insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,"message"))
+                viewModel.insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message"))
             }
 
             if(!ChatViewModel(application).isUserExist(userid)){
                 ChatViewModel(application).deleteChat(userid)
             }
-            ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,intent.getStringExtra("image")!!,msg,ServerValue.TIMESTAMP.toString(),userid))
+            ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
 
             val messageHashmap=HashMap<String,Any>()
             messageHashmap.put("mid", messageKey!!)
             messageHashmap.put("userid",userid)
             messageHashmap.put("sender",firebaseUser.uid)
             messageHashmap.put("message",msg)
+            messageHashmap.put("time",System.currentTimeMillis())
             messageHashmap.put("type","message")
             messageHashmap.put("received",false)
             messageHashmap.put("seen",false)

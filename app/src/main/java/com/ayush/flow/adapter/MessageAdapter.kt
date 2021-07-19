@@ -17,6 +17,7 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
     val allMsgs=ArrayList<MessageEntity>()
     class MessageViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val message:TextView=view.findViewById(R.id.txt_msg)
+        val time:TextView=view.findViewById(R.id.msg_time)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -35,6 +36,7 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         var chat=allMsgs[position]
         holder.message.text=chat.message
+        holder.time.text=chat.time
 
     }
 

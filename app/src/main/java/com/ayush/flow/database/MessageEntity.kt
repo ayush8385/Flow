@@ -10,5 +10,6 @@ data class MessageEntity(
     @ColumnInfo(name = "user_id") val userid : String,
     @ColumnInfo(name = "sender_id") val sender: String,
     @ColumnInfo(name = "message") val message : String,
+    @ColumnInfo(name = "time") val time : String,
     @ColumnInfo(name = "msg_type") val type: String
 )
