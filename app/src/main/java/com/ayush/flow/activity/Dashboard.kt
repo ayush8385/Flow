@@ -4,15 +4,18 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.provider.ContactsContract
 import android.view.MenuItem
+import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,6 +24,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.adapter.CallAdapter
 import com.ayush.flow.adapter.ChatAdapter
 import com.ayush.flow.adapter.StoryAdapter
 import com.ayush.flow.database.*
@@ -33,6 +37,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class Dashboard : AppCompatActivity() {
@@ -41,13 +46,16 @@ class Dashboard : AppCompatActivity() {
     lateinit var layoutManager: RecyclerView.LayoutManager
     lateinit var storyAdapter: StoryAdapter
     lateinit var chatAdapter: ChatAdapter
+    lateinit var callAdapter: CallAdapter
     lateinit var navigationView: BottomNavigationView
     lateinit var title:TextView
     lateinit var story_text:TextView
     lateinit var chat_text:TextView
     lateinit var add_text:TextView
-    var chatList= listOf<ChatEntity>()
+    var chatList= arrayListOf<ChatEntity>()
+    var callList= arrayListOf<CallEntity>()
     var storyList= arrayListOf<Chats>()
+    lateinit var search: androidx.appcompat.widget.SearchView
     lateinit var profile:CircleImageView
     var controller:LayoutAnimationController?=null
     lateinit var sharedPreferences: SharedPreferences
@@ -66,11 +74,15 @@ class Dashboard : AppCompatActivity() {
         add_text=findViewById(R.id.story_txt)
         chat_text=findViewById(R.id.chats)
         contact=findViewById(R.id.contact)
+        search=findViewById(R.id.chat_searchview)
         profile=findViewById(R.id.user_img)
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
+        checkStatus().execute()
+
+        openChatHome()
         retrieveMessage().execute()
         if(checkpermission()){
             loadContacts().execute()
@@ -84,20 +96,21 @@ class Dashboard : AppCompatActivity() {
         }
 
 
-        chatAdapter= ChatAdapter(this@Dashboard)
-        layoutManager=LinearLayoutManager(this)
-        (layoutManager as LinearLayoutManager).reverseLayout=true
-        chatsRecyclerView.layoutManager=layoutManager
-
-        chatsRecyclerView.adapter=chatAdapter
-
-        ChatViewModel(application).allChats.observe(this, Observer { list->
-            list?.let {
-                chatAdapter.updateList(list)
-                chatList=list
-            }
-
-        })
+//        chatAdapter= ChatAdapter(this@Dashboard)
+//        layoutManager=LinearLayoutManager(this)
+//        (layoutManager as LinearLayoutManager).reverseLayout=true
+//        chatsRecyclerView.layoutManager=layoutManager
+//
+//        chatsRecyclerView.adapter=chatAdapter
+//
+//        ChatViewModel(application).allChats.observe(this, Observer { list->
+//            list?.let {
+//                chatList.clear()
+//                chatList.addAll(list)
+//                chatAdapter.updateList(list)
+//            }
+//
+//        })
 
         storyRecyclerView.adapter=StoryAdapter(this,storyList)
         storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
@@ -106,102 +119,176 @@ class Dashboard : AppCompatActivity() {
             startActivity(Intent(this, Contact::class.java))
         }
 
-//        navigationView.setOnNavigationItemSelectedListener{
-//            if(previousMenuItem==null){
-//                previousMenuItem=navigationView.menu.findItem(R.id.chat)
-//            }
-//            when(it.itemId){
-//                R.id.chat ->{
-//                    if(previousMenuItem!=it){
-//                        title.text="Messages"
-//                        story_text.text="Stories"
-//                        add_text.text="Me"
-//                        chat_text.text="Chats"
-//
-//                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
-//                        runAnimation(chatsRecyclerView,1)
-//                        val adapter=ChatAdapter(this)
-//                        adapter.notifyDataSetChanged()
-//                        chatsRecyclerView.adapter=adapter
-//                        chatsRecyclerView.layoutAnimation=controller
-//                        chatsRecyclerView.scheduleLayoutAnimation()
-//
-//
-//
-//                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-//                        runAnimation(storyRecyclerView,1)
-//                        val adapter2=StoryAdapter(this,storyList)
-//                        adapter2.notifyDataSetChanged()
-//                        storyRecyclerView.adapter=adapter2
-//                        storyRecyclerView.layoutAnimation = controller
-//                        storyRecyclerView.scheduleLayoutAnimation()
-//                        it.isCheckable=true
-//                        it.isChecked=true
-//                        previousMenuItem=it
-//                    }
-//                }
-//                R.id.call ->{
-//                    if(previousMenuItem!=it){
-//                        title.text="Calls"
-//                        story_text.text="Favorites"
-//                        add_text.text="New"
-//                        chat_text.text="Calls"
-//
-//                        chatsRecyclerView.layoutManager=LinearLayoutManager(this)
-//                        runAnimation(chatsRecyclerView,0)
-//
-//                        var adapter=ChatAdapter(this,storyList)
-//                        adapter.notifyDataSetChanged()
-//                        chatsRecyclerView.adapter=adapter
-//                        chatsRecyclerView.layoutAnimation=controller
-//                        chatsRecyclerView.scheduleLayoutAnimation()
-//
-//                        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-//                        runAnimation(storyRecyclerView,0)
-//                        val adapter2=StoryAdapter(this,chatList)
-//                        adapter2.notifyDataSetChanged()
-//                        storyRecyclerView.adapter=adapter2
-//                        storyRecyclerView.layoutAnimation=controller
-//                        storyRecyclerView.scheduleLayoutAnimation()
-//
-//                        var current = navigationView.selectedItemId
-//                        it.isCheckable=true
-//                        it.isChecked=true
-//                        previousMenuItem=it
-//                    }
-//                }
-//            }
-//            return@setOnNavigationItemSelectedListener true
-//        }
+        searchElement()
+
+        navigationView.setOnNavigationItemSelectedListener{
+            if(previousMenuItem==null){
+                previousMenuItem=navigationView.menu.findItem(R.id.chat)
+            }
+            when(it.itemId){
+                R.id.chat ->{
+                    if(previousMenuItem!=it){
+                        title.text="Messages"
+                        story_text.text="Stories"
+                        add_text.text="Me"
+                        chat_text.text="Chats"
 
 
+                       openChatHome()
 
-        checkStatus(firebaseUser)
+                        it.isCheckable=true
+                        it.isChecked=true
+                        previousMenuItem=it
+                    }
+                }
+                R.id.call ->{
+                    if(previousMenuItem!=it){
+                        title.text="Calls"
+                        story_text.text="Favorites"
+                        add_text.text="New"
+                        chat_text.text="Calls"
 
 
-    }
+                        openCallHome()
 
-    fun checkStatus(firebaseUser: FirebaseUser) {
-       val connectionReference=FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid)
-        val lastConnected=FirebaseDatabase.getInstance().reference.child("lastConnected")
-        val infoConnected=FirebaseDatabase.getInstance().getReference(".info/connected")
-
-        infoConnected.addValueEventListener(object :ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val connected:Boolean=snapshot.value as Boolean
-
-                if(connected){
-                    val con=connectionReference.child("status")
-                    con.setValue("online")
-                    con.onDisconnect().setValue("")
+                        it.isCheckable=true
+                        it.isChecked=true
+                        previousMenuItem=it
+                    }
                 }
             }
+            return@setOnNavigationItemSelectedListener true
+        }
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+    private fun openCallHome() {
+        callAdapter= CallAdapter(this@Dashboard)
+        layoutManager=LinearLayoutManager(this)
+        (layoutManager as LinearLayoutManager).reverseLayout=true
+        chatsRecyclerView.layoutManager=layoutManager
+        runAnimation(chatsRecyclerView,0)
+        chatsRecyclerView.adapter=callAdapter
+        chatsRecyclerView.layoutAnimation=controller
+        chatsRecyclerView.scheduleLayoutAnimation()
+
+        CallViewModel(application).allCalls.observe(this, Observer { list->
+            list?.let {
+                callList.clear()
+                callList.addAll(list)
+                callAdapter.updateList(list)
+            }
+        })
+
+        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+        runAnimation(storyRecyclerView,0)
+        val adapter2=StoryAdapter(this,storyList)
+        adapter2.notifyDataSetChanged()
+        storyRecyclerView.adapter=adapter2
+        storyRecyclerView.layoutAnimation=controller
+        storyRecyclerView.scheduleLayoutAnimation()
+    }
+
+    private fun openChatHome() {
+        chatAdapter= ChatAdapter(this@Dashboard)
+        layoutManager=LinearLayoutManager(this)
+        (layoutManager as LinearLayoutManager).reverseLayout=true
+        chatsRecyclerView.layoutManager=layoutManager
+        runAnimation(chatsRecyclerView,1)
+        chatsRecyclerView.adapter=chatAdapter
+        chatsRecyclerView.layoutAnimation=controller
+        chatsRecyclerView.scheduleLayoutAnimation()
+
+        ChatViewModel(application).allChats.observe(this, Observer { list->
+            list?.let {
+                chatList.clear()
+                chatList.addAll(list)
+                chatAdapter.updateList(list)
+            }
+        })
+
+        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+        runAnimation(storyRecyclerView,1)
+        val adapter2=StoryAdapter(this,storyList)
+        adapter2.notifyDataSetChanged()
+        storyRecyclerView.adapter=adapter2
+        storyRecyclerView.layoutAnimation=controller
+        storyRecyclerView.scheduleLayoutAnimation()
+    }
+
+    fun searchElement() {
+
+        search.queryHint="Search Your friends..."
+        search.setIconifiedByDefault(false)
+        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
+        searchIcon.visibility= View.GONE
+        searchIcon.setImageDrawable(null)
+        val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
+        closeIcon.setColorFilter(Color.WHITE)
+        val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+        theTextArea.setTextColor(Color.WHITE)
+        theTextArea.setHintTextColor(Color.LTGRAY)
+        theTextArea.isCursorVisible=false
+
+        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                search.clearFocus()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterr(newText!!)
+                return true
             }
 
         })
+    }
+
+    fun filterr(text:String){
+        val filteredlist:ArrayList<ChatEntity> = ArrayList()
+
+        for(item in chatList){
+            if(item.name.toLowerCase().contains(text.toLowerCase())){
+                //recyclerView.scrollToPosition(mChatlist.indexOf(item))
+                filteredlist.add(item)
+            }
+//            else if(item.number.toLowerCase().contains(text.toLowerCase())){
+//                filteredlist.add(item)
+//            }
+        }
+        if (filteredlist.isEmpty()){
+            Toast.makeText(applicationContext,"No Data found", Toast.LENGTH_SHORT).show()
+            chatAdapter.updateList(filteredlist)
+        }
+        else{
+            chatAdapter.updateList(filteredlist)
+        }
+    }
+
+    inner class checkStatus():AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            var firebaseUser=FirebaseAuth.getInstance().currentUser!!
+            val connectionReference=FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid)
+            val lastConnected=FirebaseDatabase.getInstance().reference.child("lastConnected")
+            val infoConnected=FirebaseDatabase.getInstance().getReference(".info/connected")
+
+            infoConnected.addValueEventListener(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val connected:Boolean=snapshot.value as Boolean
+
+                    if(connected){
+                        val con=connectionReference.child("status")
+                        con.setValue("online")
+                        con.onDisconnect().setValue("")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+            return true
+        }
     }
 
 

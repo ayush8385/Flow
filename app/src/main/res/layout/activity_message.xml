@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/msg_parent"
+    android:orientation="vertical"
     android:background="@drawable/toolbar_back"
     tools:context=".flow.activity.Message">
 
@@ -119,9 +120,9 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbar"
+        android:layout_height="match_parent"
         android:layout_above="@+id/send"
+        android:layout_below="@+id/toolbar"
         tools:listitem="@layout/contacts_single_row"
         android:id="@+id/message_recycler"/>
 

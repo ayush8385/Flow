@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.database.MessageEntity
 import com.google.firebase.auth.FirebaseAuth
-import java.util.*
 
 class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
@@ -54,7 +53,7 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
         }
     }
 
-    fun updateList(msgList:List<MessageEntity>){
+    fun updateList(msgList:ArrayList<MessageEntity>){
         allMsgs.clear()
         allMsgs.addAll(msgList)
         notifyDataSetChanged()

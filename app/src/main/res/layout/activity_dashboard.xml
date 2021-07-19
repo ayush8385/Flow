@@ -27,6 +27,7 @@
             android:layout_height="38dp"
             android:src="@drawable/user"
             android:id="@+id/user_img"
+            android:background="?selectableItemBackground"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>
 
@@ -37,15 +38,17 @@
         android:layout_below="@id/title_detail"
         android:orientation="horizontal"
         android:id="@+id/search_detail"
-        android:layout_marginHorizontal="20dp">
+        android:layout_marginHorizontal="16dp">
         <androidx.appcompat.widget.SearchView
             style="@style/SearchViewStyle"
             android:layout_width="300dp"
             android:layout_height="40dp"
             app:queryHint="Search for friend..."
+            android:focusable="false"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/contact"
             android:layout_marginRight="10dp"
+            android:id="@+id/chat_searchview"
             android:layout_centerVertical="true"
             android:background="@drawable/addprofileback"/>
         <ImageView

@@ -64,8 +64,6 @@ class Message : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
 
-        layoutManager=LinearLayoutManager(this)
-        (layoutManager as LinearLayoutManager).stackFromEnd=true
         recyclerView=findViewById(R.id.message_recycler)
         name=findViewById(R.id.user_name)
         more=findViewById(R.id.more)
@@ -97,18 +95,20 @@ class Message : AppCompatActivity() {
 
         setIconImage(image).execute()
 
-
-        adapter= MessageAdapter(this)
+        layoutManager= LinearLayoutManager(this)
+        (layoutManager as LinearLayoutManager).stackFromEnd=true
         recyclerView.layoutManager=layoutManager
+        adapter= MessageAdapter(this)
         recyclerView.adapter=adapter
 
 
         viewModel.allMessages(firebaseUser.uid+"-"+userid).observe(this, Observer {list->
             list?.let {
-                //recyclerView.smoothScrollToPosition(list.size)
-                adapter.updateList(list)
+                adapter.updateList(list as ArrayList<MessageEntity>)
+                recyclerView.smoothScrollToPosition(list.size)
             }
         })
+
 
         more.setOnClickListener {
             if(more_card.visibility== View.GONE){
@@ -156,7 +156,7 @@ class Message : AppCompatActivity() {
 
         })
 
-        Dashboard().checkStatus(firebaseUser)
+        Dashboard().checkStatus()
        // deleteMessage()
 
     }
@@ -192,6 +192,7 @@ class Message : AppCompatActivity() {
             val tm: Date = Date(System.currentTimeMillis())
             if(!viewModel.isMsgExist(messageKey!!)){
                 viewModel.insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message"))
+
             }
 
             if(!ChatViewModel(application).isUserExist(userid)){
