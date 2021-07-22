@@ -7,7 +7,6 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
@@ -108,7 +107,7 @@ class Register : AppCompatActivity() {
                 registerUser()
             }
             else if(register.text=="reset"){
-               // resetPass()
+               resetPass()
             }
             else{
               loginUser()
@@ -278,8 +277,6 @@ class Register : AppCompatActivity() {
                                 userHashmap["about"]=snapshot.child("about").value.toString()
                                 userHashmap["profile_photo"]=snapshot.child("profile_photo").value.toString()
 
-                                Log.d("profile_photo",userHashmap["profile_photo"].toString())
-                                Log.d("about",userHashmap["about"].toString())
 
                                 val intent=Intent(this@Register, Addprofile::class.java)
                                 startActivity(intent)
@@ -302,6 +299,35 @@ class Register : AppCompatActivity() {
                         forgot.visibility=View.VISIBLE
                     }
                 }
+        }
+    }
+
+    private fun resetPass() {
+        val email:String=email.text.toString()
+        if(email==""){
+            Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
+        }
+        else{
+            val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
+            register.startAnimation(animation)
+            register.visibility= View.GONE
+            progressBar.visibility= View.VISIBLE
+            register.clearAnimation()
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email).addOnCompleteListener { text->
+                if(text.isSuccessful){
+                    Toast.makeText(applicationContext, "Reset link sent", Toast.LENGTH_SHORT).show()
+                    numb.visibility=View.GONE
+                    cnf_pass.visibility=View.GONE
+                    register.text="LOG IN"
+                    sign_in.visibility=View.GONE
+                    pass.visibility=View.VISIBLE
+                    sign_up.visibility=View.VISIBLE
+                    forgot.visibility=View.VISIBLE
+                    welc.text="Welcome Back"
+                    progressBar.visibility=View.GONE
+                    register.visibility=View.VISIBLE
+                }
+            }
         }
     }
 

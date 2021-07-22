@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.ayush.flow.R
+import com.ayush.flow.Services.BackgroundService
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -27,6 +28,7 @@ class Splash : AppCompatActivity() {
         Handler().postDelayed({
             if(isLoggedIn){
                 val username=sharedPreferences.getString("name","")
+                startService(Intent(this, BackgroundService::class.java))
                 if(username==""){
                     startActivity(Intent(this@Splash,Addprofile::class.java))
                     finish()

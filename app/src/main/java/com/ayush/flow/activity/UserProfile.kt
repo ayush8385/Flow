@@ -204,7 +204,7 @@ class UserProfile : AppCompatActivity() {
         }
         if(photo!=null){
             image.setImageBitmap(photo)
-            imagepath = Addprofile().saveToInternalStorage(photo).execute().get()
+            Addprofile().saveToInternalStorage(photo).execute().get()
             saveandUpload(photo).execute()
             uploadImage(name.text.toString(), photo,about.text.toString()).execute()
 //            val baos= ByteArrayOutputStream()

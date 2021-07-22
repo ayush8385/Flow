@@ -12,9 +12,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -83,7 +85,7 @@ class Addprofile : AppCompatActivity() {
             edit_card.visibility=View.GONE
         }
 
-        val stat=intent.getStringExtra("status")
+
         var img=""
         name.setText(sharedPreferences.getString("username",""))
         about.setText(sharedPreferences.getString("about","I'm with the Flow"))
@@ -144,19 +146,12 @@ class Addprofile : AppCompatActivity() {
 
                 if(photo!=null){
                     imagepath = saveToInternalStorage(photo!!).execute().get()
-
                     val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
                     next.startAnimation(animation)
                     next.visibility= View.GONE
                     progressBar.visibility= View.VISIBLE
                     next.clearAnimation()
-
-                    //upload image to firebase in background
-                    uploadImage(username, photo!!,abt).execute()
-
-                    sharedPreferences.edit().putString("name", username).apply()
-                    sharedPreferences.edit().putString("profile",imagepath).apply()
-                    sharedPreferences.edit().putString("about",abt).apply()
+                    saveandUploadimage(username,abt).execute()
                 }
                 startActivity(Intent(applicationContext, Dashboard::class.java))
                 finishAffinity()
@@ -167,6 +162,20 @@ class Addprofile : AppCompatActivity() {
     fun getphotofile(fileName: String):File{
         val storage= getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(fileName, ".jpg", storage)
+    }
+
+    inner class saveandUploadimage(val username: String,val abt: String):AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            //upload image to firebase in background
+            uploadImage(username, photo!!,abt).execute()
+
+            sharedPreferences.edit().putString("name", username).apply()
+            sharedPreferences.edit().putString("profile",imagepath).apply()
+            sharedPreferences.edit().putString("about",abt).apply()
+
+            return true
+        }
+
     }
 
 
@@ -259,28 +268,57 @@ class Addprofile : AppCompatActivity() {
     inner class saveToInternalStorage(val bitmapImage:Bitmap):AsyncTask<Void,Void,String>(){
         var path:String?=null
         override fun doInBackground(vararg params: Void?): String {
-            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
-            if(directory.exists()){
-                path=System.currentTimeMillis().toString()+".jpg"
-                var fos: FileOutputStream =
-                    FileOutputStream(File(directory, path))
-                try {
-                    bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    try {
-                        fos.close()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){
+                if (Environment.isExternalStorageManager()) {
+                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
+                    if(directory.exists()){
+                        path=System.currentTimeMillis().toString()+".jpg"
+                        var fos: FileOutputStream =
+                            FileOutputStream(File(directory, path))
+                        try {
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            try {
+                                fos.close()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
                     }
+                    else{
+                        directory.mkdirs()
+                        if (directory.isDirectory) {
+                            path=System.currentTimeMillis().toString()+".jpg"
+                            val fos =
+                                FileOutputStream(File(directory, path))
+                            try {
+                                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                try {
+                                    fos.close()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    //request for the permission
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
                 }
             }
             else{
-                directory.mkdirs()
-                if (directory.isDirectory) {
+                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
+                if(directory.exists()){
                     path=System.currentTimeMillis().toString()+".jpg"
-                    val fos =
+                    var fos: FileOutputStream =
                         FileOutputStream(File(directory, path))
                     try {
                         bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
@@ -291,6 +329,25 @@ class Addprofile : AppCompatActivity() {
                             fos.close()
                         } catch (e: IOException) {
                             e.printStackTrace()
+                        }
+                    }
+                }
+                else{
+                    directory.mkdirs()
+                    if (directory.isDirectory) {
+                        path=System.currentTimeMillis().toString()+".jpg"
+                        val fos =
+                            FileOutputStream(File(directory, path))
+                        try {
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            try {
+                                fos.close()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
                         }
                     }
                 }

@@ -15,6 +15,10 @@ class MessageRepository(private val messageDao: MessageDao) {
     fun isMsgExist(userid: String): Boolean {
         return messageDao.isMsgExist(userid)
     }
+
+    fun update(mid: String, rec: Boolean, seen: Boolean) {
+        messageDao.update(mid,rec,seen)
+    }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

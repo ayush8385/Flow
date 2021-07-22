@@ -1,11 +1,14 @@
 package com.ayush.flow.activity
 
+import android.annotation.SuppressLint
+import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.graphics.*
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.ContactsContract
@@ -16,10 +19,13 @@ import android.view.animation.LayoutAnimationController
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.core.app.*
+import androidx.core.app.Person
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +44,7 @@ import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class Dashboard : AppCompatActivity() {
@@ -55,6 +62,8 @@ class Dashboard : AppCompatActivity() {
     var chatList= arrayListOf<ChatEntity>()
     var callList= arrayListOf<CallEntity>()
     var storyList= arrayListOf<Chats>()
+    val hashMap: HashMap<Int, NotificationCompat.MessagingStyle?> = HashMap()
+    var messageStyle: NotificationCompat.MessagingStyle? =NotificationCompat.MessagingStyle("Me")
     lateinit var search: androidx.appcompat.widget.SearchView
     lateinit var profile:CircleImageView
     var controller:LayoutAnimationController?=null
@@ -83,7 +92,6 @@ class Dashboard : AppCompatActivity() {
         checkStatus().execute()
 
         openChatHome()
-        retrieveMessage().execute()
         if(checkpermission()){
             loadContacts().execute()
         }
@@ -119,6 +127,7 @@ class Dashboard : AppCompatActivity() {
             startActivity(Intent(this, Contact::class.java))
         }
 
+        createNotificationChannel()
         searchElement()
 
         navigationView.setOnNavigationItemSelectedListener{
@@ -303,11 +312,22 @@ class Dashboard : AppCompatActivity() {
         }
     }
 
-    inner class retrieveMessage(): AsyncTask<Void, Void, Boolean>(){
+    inner class updateChatList():AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
+
+
+
+            return true
+        }
+    }
+
+    inner class retrieveMessage(val application:Application): AsyncTask<Void, Void, Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            val firebaseUser=FirebaseAuth.getInstance().currentUser!!
             val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
 
             ref.addValueEventListener(object : ValueEventListener {
+                @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for(snapshot in snapshot.children){
                         val messageKey=snapshot.child("mid").value.toString()
@@ -316,6 +336,7 @@ class Dashboard : AppCompatActivity() {
                         val msg=snapshot.child("message").value.toString()
                         val time=snapshot.child("time").value.toString()
                         val type=snapshot.child("type").value.toString()
+                        val received=snapshot.child("received").value as Boolean
 
                         //time set
                         val sdf = SimpleDateFormat("hh:mm a")
@@ -324,9 +345,6 @@ class Dashboard : AppCompatActivity() {
                         if(sender!=firebaseUser.uid){
                             var name:String=""
                             var imagepath:String=""
-                            if(ChatViewModel(application).isUserExist(sender)){
-                                ChatViewModel(application).deleteChat(sender)
-                            }
                             if(ContactViewModel(application).isUserExist(sender)){
                                 //get image and name from room db
                                 val contactEntity=ContactViewModel(application).getContact(sender)
@@ -359,11 +377,26 @@ class Dashboard : AppCompatActivity() {
                                 })
                             }
 
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type))
-                            snapshot.child(messageKey).ref.parent!!.removeValue()
 
-                            //FirebaseDatabase.getInstance().reference.child("Messages").child(id).child(messageKey).child("received").setValue(true)
-                        }
+
+                          //  snapshot.child(messageKey).ref.parent!!.removeValue()
+                            if(!received){
+                                sendNotification(sender,name,msg,imagepath,application)
+                                MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false))
+                            }
+                            val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+                            refer.addListenerForSingleValueEvent(object :ValueEventListener{
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    if(snapshot.child(messageKey).exists()){
+                                        FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey).child("received").setValue(true)
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    TODO("Not yet implemented")
+                                }
+
+                            })                        }
                     }
                 }
 
@@ -374,6 +407,147 @@ class Dashboard : AppCompatActivity() {
             return true
         }
 
+    }
+
+    companion object{
+        const val CHANNEL_ID="com.ayush.flow"
+        private const val CHANNEL_NAME="Flow"
+    }
+
+
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel=NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
+
+            channel.enableLights(false)
+            channel.enableVibration(true)
+            channel.setShowBadge(true)
+            channel.lockscreenVisibility= Notification.VISIBILITY_PUBLIC
+
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    @SuppressLint("ResourceAsColor")
+    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+    fun sendNotification(userid:String, name:String, msg:String,image:String,application: Application){
+
+       if(application!=null){
+           val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+           val intent = Intent(application, Message::class.java).apply {
+               flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+           }
+           intent.putExtra("name",name)
+           intent.putExtra("userid",userid)
+           intent.putExtra("image","")
+           val j: Int = Regex("[\\D]").replace(userid, "").toInt()
+           val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
+
+           //Add Reply Button
+           // Key for the string that's delivered in the action's intent.
+           var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
+               setLabel("Your reply...")
+               build()
+           }
+
+           val replyIntent = Intent(application, ReplyReciever::class.java)
+           replyIntent.putExtra("userid",userid)
+           replyIntent.putExtra("title", name)
+
+           // Build a PendingIntent for the reply action to trigger.
+           var replyPendingIntent: PendingIntent =
+               PendingIntent.getBroadcast(application,j,replyIntent,0)
+
+
+           // Create the reply action and add the remote input.
+           var replyAction: NotificationCompat.Action =
+               NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
+                   .addRemoteInput(remoteInput)
+                   .build()
+
+           val builder = Person.Builder()
+           var bmp:Bitmap?=null
+           try {
+               val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+               bmp = BitmapFactory.decodeStream(FileInputStream(f))
+
+           } catch (e: FileNotFoundException) {
+               e.printStackTrace()
+           }
+           val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
+
+           if (hashMap.containsKey(j)) {
+               val messagingStyle = hashMap[j]
+               messageStyle = messagingStyle
+           } else {
+               messageStyle = NotificationCompat.MessagingStyle(name)
+               hashMap[j] = messageStyle
+           }
+
+           val str: String = "com.ayush.flow.WORK_EMAIL"
+           val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
+               .setContentIntent(pendingIntent)
+               .setStyle( messageStyle)
+               .setSmallIcon(R.drawable.flow).
+               setCategory(NotificationCompat.CATEGORY_MESSAGE)
+               .setOnlyAlertOnce(true)
+               .setGroup(str)
+               .setSound(defaultSound)
+               .setAutoCancel(true)
+               .setColor(R.color.white)
+               .setPriority(1)
+               .addAction(replyAction)
+
+
+
+           val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
+               .setSmallIcon(R.drawable.flow)
+               .setColor(R.color.purple_500)
+               .setStyle( NotificationCompat.InboxStyle())
+               .setGroup(str)
+               .setGroupSummary(true).build()
+
+
+           messageStyle!!.addMessage(msg, "767".toLong(), userr)
+
+           val notificationManager=NotificationManagerCompat.from(application)
+           notificationManager.notify(j,notificationBuilder.build())
+           notificationManager.notify(0, summaryNotification)
+       }
+    }
+
+    fun getCircularBitmap(bitmap: Bitmap): Bitmap {
+        val bitmap2: Bitmap
+        val r: Float
+        if (bitmap.getWidth() > bitmap.getHeight()) {
+            bitmap2 = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getHeight(), Bitmap.Config.ARGB_8888)
+        } else {
+            bitmap2 = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getWidth(), Bitmap.Config.ARGB_8888)
+        }
+        val output: Bitmap = bitmap2
+        val canvas = Canvas(output)
+        val paint = Paint()
+        val rect = Rect(0, 0, bitmap.getWidth(), bitmap.getHeight())
+        if(bitmap.getWidth() > bitmap.getHeight()){
+            r= (bitmap.getHeight() / 2).toFloat()
+        }
+        else {
+            r= (bitmap.getWidth()/2).toFloat()
+        }
+        paint.setAntiAlias(true)
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.setColor(-12434878)
+        canvas.drawCircle(r, r, r, paint)
+        paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN))
+        canvas.drawBitmap(bitmap, rect, rect, paint)
+        return output
     }
 
     fun checkpermission():Boolean {
@@ -484,7 +658,6 @@ class Dashboard : AppCompatActivity() {
     inner class saveToInternalStorage(val bitmapImage: Bitmap):AsyncTask<Void,Void,String>(){
         var path:String?=null
         override fun doInBackground(vararg params: Void?): String {
-            val cw = ContextWrapper(applicationContext)
             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
             if(directory.exists()){
                 path=System.currentTimeMillis().toString()+".jpg"

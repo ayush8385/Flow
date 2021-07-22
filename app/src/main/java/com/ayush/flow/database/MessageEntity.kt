@@ -11,5 +11,7 @@ data class MessageEntity(
     @ColumnInfo(name = "sender_id") val sender: String,
     @ColumnInfo(name = "message") val message : String,
     @ColumnInfo(name = "time") val time : String,
-    @ColumnInfo(name = "msg_type") val type: String
+    @ColumnInfo(name = "msg_type") val type: String,
+    @ColumnInfo(name = "recev") val recev:Boolean,
+    @ColumnInfo(name = "seen") val seen:Boolean
 )

@@ -20,6 +20,9 @@ interface MessageDao {
     @Query("SELECT EXISTS(SELECT * FROM messages WHERE mid = :id)")
     fun isMsgExist(id : String) : Boolean
 
+    @Query("UPDATE messages SET recev = :rec, seen = :seen WHERE mid = :mid")
+    fun update(mid: String, rec: Boolean, seen: Boolean)
+
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
 }

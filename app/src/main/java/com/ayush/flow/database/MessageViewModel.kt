@@ -27,4 +27,8 @@ class MessageViewModel(application: Application): AndroidViewModel(application) 
     fun insertMessage(messageEntity: MessageEntity)=viewModelScope.launch (Dispatchers.IO){
         repository.insert(messageEntity)
     }
+
+    fun updatetMessage(mid: String, rec: Boolean, seen: Boolean) =viewModelScope.launch (Dispatchers.IO){
+        repository.update(mid,rec,seen)
+    }
 }

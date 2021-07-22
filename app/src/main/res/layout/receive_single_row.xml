@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="300dp"
+            android:maxWidth="260dp"
             android:textSize="13sp"
             android:fontFamily="@font/open_sans"
             android:id="@+id/txt_msg"
@@ -35,5 +35,17 @@
             android:paddingHorizontal="20dp"
             android:paddingVertical="10dp"/>
     </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="-4dp"
+        android:layout_below="@+id/msg_box"
+        android:fontFamily="@font/open_sans"
+        android:id="@+id/txt_seen"
+        android:visibility="gone"
+        android:text=""/>
 
 </RelativeLayout>

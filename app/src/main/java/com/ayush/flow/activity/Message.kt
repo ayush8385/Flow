@@ -79,6 +79,7 @@ class Message : AppCompatActivity() {
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
+
         viewModel=ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(application)).get(MessageViewModel::class.java)
 
         back.setOnClickListener {
@@ -92,6 +93,8 @@ class Message : AppCompatActivity() {
         name.text=intent.getStringExtra("name")
         userid= intent.getStringExtra("userid")!!
         user_image=intent.getStringExtra("image")!!
+
+        checkSeen().execute()
 
         setIconImage(image).execute()
 
@@ -121,11 +124,6 @@ class Message : AppCompatActivity() {
             }
             else{
                 more_card.visibility=View.GONE
-                val animFadein: Animation = AnimationUtils.loadAnimation(
-                    applicationContext,
-                    R.anim.slide_bottom
-                )
-                more_card.startAnimation(animFadein)
             }
         }
 
@@ -133,7 +131,7 @@ class Message : AppCompatActivity() {
             val msg=send_txt.text.toString()
             if(msg!=""){
                 send_txt.setText("")
-                sendMessageToUser(msg).execute()
+                sendMessageToUser(msg,userid).execute()
             }
         }
 
@@ -183,35 +181,40 @@ class Message : AppCompatActivity() {
 //        })
 //    }
 
-    inner class sendMessageToUser(val msg:String):AsyncTask<Void,Void,Boolean>(){
+
+    inner class sendMessageToUser(val msg:String,val userid:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
-            val ref=FirebaseDatabase.getInstance().reference
-            val messageKey=ref.push().key
 
-            val sdf = SimpleDateFormat("hh:mm a")
-            val tm: Date = Date(System.currentTimeMillis())
-            if(!viewModel.isMsgExist(messageKey!!)){
-                viewModel.insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message"))
+            if(msg!=""){
+                val ref=FirebaseDatabase.getInstance().reference
+                val messageKey=ref.push().key
 
+                firebaseUser=FirebaseAuth.getInstance().currentUser!!
+
+                val sdf = SimpleDateFormat("hh:mm a")
+                val tm: Date = Date(System.currentTimeMillis())
+               if(application!=null){
+                   if(!MessageViewModel(application).isMsgExist(messageKey!!)){
+                       MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false))
+                   }
+
+                   if(!ChatViewModel(application).isUserExist(userid)){
+                       ChatViewModel(application).deleteChat(userid)
+                   }
+                   ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
+               }
+                val messageHashmap=HashMap<String,Any>()
+                messageHashmap.put("mid", messageKey!!)
+                messageHashmap.put("userid",userid)
+                messageHashmap.put("sender",firebaseUser.uid)
+                messageHashmap.put("message",msg)
+                messageHashmap.put("time",System.currentTimeMillis())
+                messageHashmap.put("type","message")
+                messageHashmap.put("received",false)
+                messageHashmap.put("seen",false)
+
+                ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
             }
-
-            if(!ChatViewModel(application).isUserExist(userid)){
-                ChatViewModel(application).deleteChat(userid)
-            }
-            ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
-
-            val messageHashmap=HashMap<String,Any>()
-            messageHashmap.put("mid", messageKey!!)
-            messageHashmap.put("userid",userid)
-            messageHashmap.put("sender",firebaseUser.uid)
-            messageHashmap.put("message",msg)
-            messageHashmap.put("time",System.currentTimeMillis())
-            messageHashmap.put("type","message")
-            messageHashmap.put("received",false)
-            messageHashmap.put("seen",false)
-
-            ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
-
             return true
         }
     }
@@ -230,6 +233,39 @@ class Message : AppCompatActivity() {
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
+            return true
+        }
+
+    }
+
+    inner class checkSeen():AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?):Boolean {
+
+            val ref=FirebaseDatabase.getInstance().reference.child("Messages").child(userid)
+            ref.addValueEventListener(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for(snap in snapshot.children){
+                        val sender=snap.child("sender").value.toString()
+
+                        if(sender==firebaseUser.uid){
+                            val rec:Boolean=snap.child("received").value as Boolean
+                            val seen:Boolean=snap.child("seen").value as Boolean
+                            val mid=snap.child("mid").value.toString()
+                            MessageViewModel(application).updatetMessage(mid,rec,seen)
+                            adapter.notifyDataSetChanged()
+                            if(seen){
+                                snap.child(mid).ref.parent!!.removeValue()
+                            }
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
             return true
         }
 
