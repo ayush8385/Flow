@@ -76,6 +76,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:id="@+id/calls"
+                android:layout_marginRight="28dp"
                 android:orientation="horizontal">
                 <ImageView
                     android:layout_width="22dp"
@@ -89,18 +90,20 @@
                     android:layout_height="19dp"
                     android:src="@drawable/call"
                     android:id="@+id/call"
-                    android:layout_marginLeft="20dp"
+                    android:layout_marginHorizontal="26dp"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"/>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/option"
-                    android:id="@+id/more_option"
-                    android:layout_marginLeft="14dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"/>
+
             </LinearLayout>
+
+            <androidx.appcompat.widget.SearchView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:id="@+id/searchview"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                app:searchIcon="@drawable/ic_baseline_search_24"/>
 
         </RelativeLayout>
 
@@ -207,6 +210,47 @@
                 android:src="@drawable/send"
                 android:id="@+id/send_btn"
                 android:layout_alignParentRight="true"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/searched"
+        app:cardCornerRadius="10dp"
+        android:visibility="gone"
+        android:layout_marginHorizontal="5dp"
+        app:cardBackgroundColor="@color/white"
+        android:layout_alignParentBottom="true">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="6dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@color/white">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 of 10"
+                android:layout_marginLeft="20dp"
+                android:textSize="19sp"
+                android:textColor="@color/black"
+                android:id="@+id/search_text" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/up_log"
+                android:layout_marginLeft="30dp"
+                android:layout_toRightOf="@+id/search_text"
+                android:src="@drawable/ic_baseline_keyboard_arrow_up_24"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/down_log"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@+id/up_log"
+                android:src="@drawable/ic_baseline_keyboard_arrow_down_24"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 

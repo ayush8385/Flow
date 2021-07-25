@@ -41,7 +41,12 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         var chat=allChats[position]
 
-        holder.name.text=chat.name
+        if(chat.name==""){
+            holder.name.text=chat.number
+        }
+        else{
+            holder.name.text=chat.name
+        }
         holder.message.text=chat.lst_msg
         holder.time.text=chat.time
 
@@ -52,6 +57,7 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
         holder.chat_box.setOnClickListener {
             val intent=Intent(context,Message::class.java)
             intent.putExtra("name",chat.name)
+            intent.putExtra("number",chat.number)
             intent.putExtra("userid",chat.id)
             intent.putExtra("image",chat.image)
             context.startActivity(intent)

@@ -37,19 +37,22 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         var cons=allCons[position]
-        holder.name.text=cons.name
-        holder.number.text=cons.number
+        if (cons.name!=""){
+            holder.name.text=cons.name
+            holder.number.text=cons.number
 
-        if(cons.image!=""){
-            loadImage(cons.image,holder).execute()
-        }
+            if(cons.image!=""){
+                loadImage(cons.image,holder).execute()
+            }
 
-        holder.start_chat.setOnClickListener {
-            val intent=Intent(context,Message::class.java)
-            intent.putExtra("name",cons.name)
-            intent.putExtra("userid",cons.id)
-            intent.putExtra("image",cons.image)
-            context.startActivity(intent)
+            holder.start_chat.setOnClickListener {
+                val intent= Intent(context, Message::class.java)
+                intent.putExtra("name",cons.name)
+                intent.putExtra("number",cons.number)
+                intent.putExtra("userid",cons.id)
+                intent.putExtra("image",cons.image)
+                context.startActivity(intent)
+            }
         }
     }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/search"
+        android:title="Search"
+        android:icon="@drawable/ic_baseline_manage_search_24"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+    <item
+        android:id="@+id/mute"
+        android:title="Mute"
+        android:icon="@drawable/ic_baseline_mic_24"/>
+    <item
+        android:id="@+id/block"
+        android:title="Block"
+        android:icon="@drawable/ic_baseline_block_24"/>
+    <item
+        android:id="@+id/delete"
+        android:title="Clear Chat"
+        android:icon="@drawable/ic_baseline_delete_sweep_24"/>
+</menu>

@@ -1,19 +1,21 @@
 package com.ayush.flow.activity
 
+import android.annotation.SuppressLint
+import android.app.SearchManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -50,6 +52,7 @@ class Message : AppCompatActivity() {
     lateinit var more_card:CardView
     lateinit var parent:RelativeLayout
     lateinit var audiocall:ImageView
+    lateinit var videocall:ImageView
     lateinit var back:ImageView
     lateinit var send_txt:EditText
     lateinit var send:ImageView
@@ -57,9 +60,18 @@ class Message : AppCompatActivity() {
     lateinit var viewModel: MessageViewModel
     var userid:String=""
     var user_image:String=""
+    var number:String=""
     lateinit var status:TextView
     lateinit var firebaseUser: FirebaseUser
     lateinit var adapter: MessageAdapter
+    lateinit var search: androidx.appcompat.widget.SearchView
+    val allMsg = arrayListOf<MessageEntity>()
+    lateinit var up:ImageView
+    lateinit var down:ImageView
+    lateinit var search_txt:TextView
+    lateinit var searched:CardView
+   // lateinit var option:ImageView
+    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
@@ -72,10 +84,18 @@ class Message : AppCompatActivity() {
         back=findViewById(R.id.back)
         send_txt=findViewById(R.id.send_text)
         send=findViewById(R.id.send_btn)
+       search=findViewById(R.id.searchview)
         image=findViewById(R.id.user_pic)
         status=findViewById(R.id.status)
+    //    option=findViewById(R.id.more_option)
 
         audiocall=findViewById(R.id.call)
+       videocall=findViewById(R.id.video_call)
+
+       searched=findViewById(R.id.searched)
+       search_txt=findViewById(R.id.search_text)
+       up=findViewById(R.id.up_log)
+       down=findViewById(R.id.down_log)
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
@@ -90,13 +110,47 @@ class Message : AppCompatActivity() {
             startActivity(Intent(this,Outgoing::class.java))
         }
 
-        name.text=intent.getStringExtra("name")
+        number=intent.getStringExtra("number")!!
+        if(intent.getStringExtra("name")==""){
+            name.text=number
+        }
+        else{
+            name.text=intent.getStringExtra("name")!!
+        }
         userid= intent.getStringExtra("userid")!!
         user_image=intent.getStringExtra("image")!!
 
-        checkSeen().execute()
 
-        setIconImage(image).execute()
+//        option.setOnClickListener {
+//            val menuBuilder = MenuBuilder(this)
+//            SupportMenuInflater(this).inflate(R.menu.popup_menu, menuBuilder)
+//            menuBuilder.setCallback(object : MenuBuilder.Callback {
+//                override fun onMenuItemSelected(menu: MenuBuilder, item: MenuItem): Boolean {
+//                    when (item.getItemId()) {
+//                        R.id.search->{
+//
+//                        }
+//                        R.id.block -> {
+//
+//                        }                        // do something 2
+//
+//                    }
+//                    return true
+//                }
+//
+//                override fun onMenuModeChange(menu: MenuBuilder) {}
+//            })
+//            val menuHelper = MenuPopupHelper(this, menuBuilder, option)
+//            menuHelper.setForceShowIcon(true) // show icons!!!!!!!!
+//            menuHelper.show()
+//        }
+
+
+
+
+        if(user_image!=""){
+            setIconImage(image).execute()
+        }
 
         layoutManager= LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).stackFromEnd=true
@@ -107,6 +161,8 @@ class Message : AppCompatActivity() {
 
         viewModel.allMessages(firebaseUser.uid+"-"+userid).observe(this, Observer {list->
             list?.let {
+                allMsg.clear()
+                allMsg.addAll(list)
                 adapter.updateList(list as ArrayList<MessageEntity>)
                 recyclerView.smoothScrollToPosition(list.size)
             }
@@ -155,10 +211,119 @@ class Message : AppCompatActivity() {
         })
 
         Dashboard().checkStatus()
+        checkSeen().execute()
+        searchElement()
        // deleteMessage()
 
     }
 
+    fun searchElement() {
+
+        search.queryHint="Search messages..."
+        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon)
+        searchIcon.setColorFilter(Color.WHITE)
+        val theTextArea = search.findViewById(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+        theTextArea.setTextColor(Color.WHITE)
+        theTextArea.isCursorVisible=false
+
+        search.setOnSearchClickListener {
+            back.visibility= View.GONE
+            name.visibility=View.GONE
+            status.visibility=View.GONE
+            audiocall.visibility=View.GONE
+            videocall.visibility=View.GONE
+            image.visibility=View.GONE
+            val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
+            search.layoutParams=params
+        }
+
+        search.setOnCloseListener(object :SearchView.OnCloseListener{
+            override fun onClose(): Boolean {
+                back.visibility= View.VISIBLE
+                name.visibility=View.VISIBLE
+                status.visibility=View.VISIBLE
+                audiocall.visibility=View.VISIBLE
+                videocall.visibility=View.VISIBLE
+                image.visibility=View.VISIBLE
+                searched.visibility=View.GONE
+                val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
+                params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                search.layoutParams=params
+                return false
+            }
+
+        })
+
+        val manager=getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+//                search.clearFocus()
+                filterr(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filtering(newText!!)
+                return true
+            }
+
+        })
+    }
+
+    private fun filterr(query: String?) {
+        val filteredlist:ArrayList<MessageEntity> = ArrayList()
+        for(chat in allMsg){
+            if(chat.message.toLowerCase().contains(query!!.toLowerCase())){
+                filteredlist.add(chat)
+            }
+        }
+
+        var n=filteredlist.size-1
+        if(filteredlist.isEmpty()){
+            Toast.makeText(applicationContext,"No Data Found",Toast.LENGTH_SHORT).show()
+            search_txt.text="0"+" of "+"0"
+        }
+        else{
+            searched.visibility=View.VISIBLE
+
+            search_txt.text=(n+1).toString()+"of"+filteredlist.size.toString()
+            recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+
+           // adapter.updateList(filteredlist)
+
+            up.setOnClickListener {
+                if(n>0){
+                    n--;
+                    search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
+                    recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+                }
+            }
+            down.setOnClickListener {
+                if(n<filteredlist.size-1){
+                    n++;
+                    search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
+                    recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+                }
+            }
+
+        }
+    }
+
+    fun filtering(text:String){
+        for(item in allMsg){
+            if(item.message.toLowerCase().contains(text.toLowerCase())){
+                //recyclerView.scrollToPosition(mChatlist.indexOf(item))
+                recyclerView.smoothScrollToPosition(allMsg.indexOf(item))
+            }
+        }
+//        if (filteredlist.isEmpty()){
+//            Toast.makeText(applicationContext,"No Data found", Toast.LENGTH_SHORT).show()
+//            adapter.updateList(filteredlist)
+//        }
+//        else{
+//            adapter.updateList(filteredlist)
+//        }
+    }
 
 //    private fun deleteMessage() {
 //        val id=userid+"-"+firebaseUser.uid
@@ -197,11 +362,7 @@ class Message : AppCompatActivity() {
                    if(!MessageViewModel(application).isMsgExist(messageKey!!)){
                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false))
                    }
-
-                   if(!ChatViewModel(application).isUserExist(userid)){
-                       ChatViewModel(application).deleteChat(userid)
-                   }
-                   ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
+                   ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,number,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
                }
                 val messageHashmap=HashMap<String,Any>()
                 messageHashmap.put("mid", messageKey!!)

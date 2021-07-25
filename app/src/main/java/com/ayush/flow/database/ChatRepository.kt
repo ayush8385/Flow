@@ -16,6 +16,14 @@ class ChatRepository(private val chatDao: ChatDao) {
     fun isUserExist(userid: String): Boolean {
         return chatDao.isUserExist(userid)
     }
+
+    fun getChatbyId(userid: String): ChatEntity {
+        return chatDao.getChatbyId(userid)
+    }
+
+    fun update(mid: String, img: String, name: String) {
+        chatDao.update(mid,img,name)
+    }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

@@ -20,6 +20,12 @@ interface ChatDao {
     @Query("SELECT EXISTS(SELECT * FROM chats WHERE id = :id)")
     fun isUserExist(id : String) : Boolean
 
+    @Query("SELECT * FROM chats WHERE id = :userid")
+    fun getChatbyId(userid: String): ChatEntity
+
+    @Query("UPDATE chats SET image = :img, name = :name WHERE id = :userid")
+    fun update(userid: String, img: String, name: String)
+
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
 }

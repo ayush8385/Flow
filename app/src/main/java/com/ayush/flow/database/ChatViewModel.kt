@@ -25,7 +25,15 @@ class ChatViewModel(application: Application):AndroidViewModel(application) {
         repository.insert(chatEntity)
     }
 
+    fun getChat(userid: String):ChatEntity{
+        return repository.getChatbyId(userid)
+    }
+
     fun deleteChat(userid: String)=viewModelScope.launch (Dispatchers.IO){
         repository.delete(userid)
+    }
+
+    fun updatetChat(mid: String, img: String,name: String) =viewModelScope.launch (Dispatchers.IO){
+        repository.update(mid,img,name)
     }
 }

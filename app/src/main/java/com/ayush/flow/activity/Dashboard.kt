@@ -7,11 +7,9 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.AsyncTask
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.provider.ContactsContract
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -89,15 +87,16 @@ class Dashboard : AppCompatActivity() {
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
-        checkStatus().execute()
 
-        openChatHome()
-        if(checkpermission()){
+       openChatHome()
+       if(checkpermission()){
             loadContacts().execute()
         }
         else{
             requestContactPermission()
         }
+
+
 
         profile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
@@ -120,15 +119,12 @@ class Dashboard : AppCompatActivity() {
 //
 //        })
 
-        storyRecyclerView.adapter=StoryAdapter(this,storyList)
-        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+//        storyRecyclerView.adapter=StoryAdapter(this,storyList)
+//        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 
         contact.setOnClickListener {
             startActivity(Intent(this, Contact::class.java))
         }
-
-        createNotificationChannel()
-        searchElement()
 
         navigationView.setOnNavigationItemSelectedListener{
             if(previousMenuItem==null){
@@ -168,6 +164,9 @@ class Dashboard : AppCompatActivity() {
             }
             return@setOnNavigationItemSelectedListener true
         }
+
+        searchElement().execute()
+        createNotificationChannel().execute()
     }
 
     private fun openCallHome() {
@@ -215,48 +214,51 @@ class Dashboard : AppCompatActivity() {
             }
         })
 
-        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-        runAnimation(storyRecyclerView,1)
-        val adapter2=StoryAdapter(this,storyList)
-        adapter2.notifyDataSetChanged()
-        storyRecyclerView.adapter=adapter2
-        storyRecyclerView.layoutAnimation=controller
-        storyRecyclerView.scheduleLayoutAnimation()
+//        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+//        runAnimation(storyRecyclerView,1)
+//        val adapter2=StoryAdapter(this,storyList)
+//        adapter2.notifyDataSetChanged()
+//        storyRecyclerView.adapter=adapter2
+//        storyRecyclerView.layoutAnimation=controller
+//        storyRecyclerView.scheduleLayoutAnimation()
     }
 
-    fun searchElement() {
+    inner class searchElement():AsyncTask<Void,Void,Boolean>() {
+        override fun doInBackground(vararg params: Void?): Boolean {
+            search.queryHint="Search Your friends..."
+            search.setIconifiedByDefault(false)
+            val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
+            searchIcon.visibility= View.GONE
+            searchIcon.setImageDrawable(null)
+            val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
+            closeIcon.setColorFilter(Color.WHITE)
+            val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+            theTextArea.setTextColor(Color.WHITE)
+            theTextArea.setHintTextColor(Color.LTGRAY)
+            theTextArea.isCursorVisible=false
 
-        search.queryHint="Search Your friends..."
-        search.setIconifiedByDefault(false)
-        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
-        searchIcon.visibility= View.GONE
-        searchIcon.setImageDrawable(null)
-        val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
-        closeIcon.setColorFilter(Color.WHITE)
-        val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
-        theTextArea.setTextColor(Color.WHITE)
-        theTextArea.setHintTextColor(Color.LTGRAY)
-        theTextArea.isCursorVisible=false
+            search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    search.clearFocus()
+                    return true
+                }
 
-        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                search.clearFocus()
-                return true
-            }
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    filterr(newText!!)
+                    return true
+                }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                filterr(newText!!)
-                return true
-            }
+            })
+            return true
+        }
 
-        })
     }
 
     fun filterr(text:String){
         val filteredlist:ArrayList<ChatEntity> = ArrayList()
 
         for(item in chatList){
-            if(item.name.toLowerCase().contains(text.toLowerCase())){
+            if(item.name.toLowerCase().contains(text.toLowerCase())||item.number.contains(text)){
                 //recyclerView.scrollToPosition(mChatlist.indexOf(item))
                 filteredlist.add(item)
             }
@@ -312,14 +314,19 @@ class Dashboard : AppCompatActivity() {
         }
     }
 
-    inner class updateChatList():AsyncTask<Void,Void,Boolean>(){
-        override fun doInBackground(vararg params: Void?): Boolean {
-
-
-
-            return true
-        }
-    }
+//    inner class updateChatList():AsyncTask<Void,Void,Boolean>(){
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//
+//            for(chat in chatList){
+//                if(ContactViewModel(application).isUserExist(chat.id)){
+//                    val conEnt=ContactViewModel(application).getContact(chat.id)
+//                    ChatViewModel(application).inserChat(ChatEntity(conEnt.name,conEnt.number,conEnt.image,"","678687",conEnt.id))
+//                }
+//            }
+//
+//            return true
+//        }
+//    }
 
     inner class retrieveMessage(val application:Application): AsyncTask<Void, Void, Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
@@ -342,48 +349,54 @@ class Dashboard : AppCompatActivity() {
                         val sdf = SimpleDateFormat("hh:mm a")
                         val tm: Date = Date(time.toLong())
 
-                        if(sender!=firebaseUser.uid){
-                            var name:String=""
-                            var imagepath:String=""
-                            if(ContactViewModel(application).isUserExist(sender)){
-                                //get image and name from room db
-                                val contactEntity=ContactViewModel(application).getContact(sender)
-                                name=contactEntity.name
-                                imagepath=contactEntity.image
-                                ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg, sdf.format(tm),sender))
-                            }
-                            else{
-                                //get number as a name from firebase
-                                //get image and sav it to local storage and ibternal path from firebase
-
-                                val ref=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
-                                ref.addValueEventListener(object :ValueEventListener{
-                                    override fun onDataChange(snapshot: DataSnapshot) {
-                                        name=snapshot.child("number").value.toString()
-                                        val image_url=snapshot.child("profile_photo").value.toString()
-                                        if(image_url!=""){
-                                            val photo=GetImageFromUrl().execute(image_url).get()
-                                            imagepath=saveToInternalStorage(photo).execute().get()
-                                        }
-
-                                        ChatViewModel(application).inserChat(ChatEntity(name,imagepath,msg,sdf.format(tm),sender))
-
+                        var name:String=""
+                        var number:String=""
+                        var imagepath:String=""
+                        if(ChatViewModel(application).isUserExist(sender)){
+                            //get image and name from room db
+                            val chatEntity=ChatViewModel(application).getChat(sender)
+                            name=chatEntity.name
+                            number=chatEntity.number
+                            imagepath=chatEntity.image
+                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                        }
+                        else if(ContactViewModel(application).isUserExist(sender)){
+                            val contactEntity=ContactViewModel(application).getContact(sender)
+                            name=contactEntity.name
+                            number=contactEntity.number
+                            imagepath=contactEntity.image
+                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                        }
+                        else{
+                            //get number as a name from firebase
+                            //get image and sav it to local storage and ibternal path from firebase
+                            val ref=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
+                            ref.addValueEventListener(object :ValueEventListener{
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    number=snapshot.child("number").value.toString()
+                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),sender))
+                                    val image_url=snapshot.child("profile_photo").value.toString()
+                                    if(image_url!=""){
+                                        val photo=GetImageFromUrl().execute(image_url).get()
+                                        imagepath=saveToInternalStorage(photo,user).execute().get()
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),sender))
                                     }
+                                    //     ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,sender))
 
-                                    override fun onCancelled(error: DatabaseError) {
-                                        TODO("Not yet implemented")
-                                    }
+                                }
+                                override fun onCancelled(error: DatabaseError) {
+                                    TODO("Not yet implemented")
+                                }
 
-                                })
+                            })
+                        }
+
+                        if(!received){
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false))
+                            if(name==""){
+                                name=number
                             }
-
-
-
-                          //  snapshot.child(messageKey).ref.parent!!.removeValue()
-                            if(!received){
-                                sendNotification(sender,name,msg,imagepath,application)
-                                MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false))
-                            }
+                            sendNotification(sender,name,msg,imagepath,application).execute()
                             val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
                             refer.addListenerForSingleValueEvent(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -396,7 +409,8 @@ class Dashboard : AppCompatActivity() {
                                     TODO("Not yet implemented")
                                 }
 
-                            })                        }
+                            })
+                        }
                     }
                 }
 
@@ -416,111 +430,120 @@ class Dashboard : AppCompatActivity() {
 
 
 
-    private fun createNotificationChannel() {
+    inner class createNotificationChannel():AsyncTask<Void,Void,Boolean>() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel=NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
 
-            channel.enableLights(false)
-            channel.enableVibration(true)
-            channel.setShowBadge(true)
-            channel.lockscreenVisibility= Notification.VISIBILITY_PUBLIC
+        override fun doInBackground(vararg params: Void?): Boolean {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel=NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
 
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+                channel.enableLights(false)
+                channel.enableVibration(true)
+                channel.setShowBadge(true)
+                channel.lockscreenVisibility= Notification.VISIBILITY_PUBLIC
+
+                // Register the channel with the system
+                val notificationManager: NotificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.createNotificationChannel(channel)
+            }
+            return true
         }
     }
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    fun sendNotification(userid:String, name:String, msg:String,image:String,application: Application){
+    inner class sendNotification(val userid:String,val name:String,val msg:String,val image:String,val application: Application):AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            if(application!=null){
+                val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
-       if(application!=null){
-           val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val intent = Intent(application, Message::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                Log.d("name......",name)
+                Log.d("user.....",userid)
+                Log.d("image......",image)
+                intent.putExtra("name",name)
+                intent.putExtra("userid",userid)
+                intent.putExtra("image","")
+                val j: Int = Regex("[\\D]").replace(userid, "").toInt()
+                val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
 
-           val intent = Intent(application, Message::class.java).apply {
-               flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-           }
-           intent.putExtra("name",name)
-           intent.putExtra("userid",userid)
-           intent.putExtra("image","")
-           val j: Int = Regex("[\\D]").replace(userid, "").toInt()
-           val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
+                //Add Reply Button
+                // Key for the string that's delivered in the action's intent.
+                var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
+                    setLabel("Your reply...")
+                    build()
+                }
 
-           //Add Reply Button
-           // Key for the string that's delivered in the action's intent.
-           var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
-               setLabel("Your reply...")
-               build()
-           }
+                val replyIntent = Intent(application, ReplyReciever::class.java)
+                replyIntent.putExtra("userid",userid)
+                replyIntent.putExtra("title", name)
 
-           val replyIntent = Intent(application, ReplyReciever::class.java)
-           replyIntent.putExtra("userid",userid)
-           replyIntent.putExtra("title", name)
-
-           // Build a PendingIntent for the reply action to trigger.
-           var replyPendingIntent: PendingIntent =
-               PendingIntent.getBroadcast(application,j,replyIntent,0)
-
-
-           // Create the reply action and add the remote input.
-           var replyAction: NotificationCompat.Action =
-               NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
-                   .addRemoteInput(remoteInput)
-                   .build()
-
-           val builder = Person.Builder()
-           var bmp:Bitmap?=null
-           try {
-               val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-               bmp = BitmapFactory.decodeStream(FileInputStream(f))
-
-           } catch (e: FileNotFoundException) {
-               e.printStackTrace()
-           }
-           val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
-
-           if (hashMap.containsKey(j)) {
-               val messagingStyle = hashMap[j]
-               messageStyle = messagingStyle
-           } else {
-               messageStyle = NotificationCompat.MessagingStyle(name)
-               hashMap[j] = messageStyle
-           }
-
-           val str: String = "com.ayush.flow.WORK_EMAIL"
-           val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
-               .setContentIntent(pendingIntent)
-               .setStyle( messageStyle)
-               .setSmallIcon(R.drawable.flow).
-               setCategory(NotificationCompat.CATEGORY_MESSAGE)
-               .setOnlyAlertOnce(true)
-               .setGroup(str)
-               .setSound(defaultSound)
-               .setAutoCancel(true)
-               .setColor(R.color.white)
-               .setPriority(1)
-               .addAction(replyAction)
+                // Build a PendingIntent for the reply action to trigger.
+                var replyPendingIntent: PendingIntent =
+                    PendingIntent.getBroadcast(application,j,replyIntent,0)
 
 
+                // Create the reply action and add the remote input.
+                var replyAction: NotificationCompat.Action =
+                    NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
+                        .addRemoteInput(remoteInput)
+                        .build()
 
-           val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
-               .setSmallIcon(R.drawable.flow)
-               .setColor(R.color.purple_500)
-               .setStyle( NotificationCompat.InboxStyle())
-               .setGroup(str)
-               .setGroupSummary(true).build()
+                val builder = Person.Builder()
+                var bmp:Bitmap?=null
+                try {
+                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+                    bmp = BitmapFactory.decodeStream(FileInputStream(f))
+
+                } catch (e: FileNotFoundException) {
+                    e.printStackTrace()
+                }
+                val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
+
+                if (hashMap.containsKey(j)) {
+                    val messagingStyle = hashMap[j]
+                    messageStyle = messagingStyle
+                } else {
+                    messageStyle = NotificationCompat.MessagingStyle(name)
+                    hashMap[j] = messageStyle
+                }
+
+                val str: String = "com.ayush.flow.WORK_EMAIL"
+                val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
+                    .setContentIntent(pendingIntent)
+                    .setStyle( messageStyle)
+                    .setSmallIcon(R.drawable.flow).
+                    setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                    .setOnlyAlertOnce(true)
+                    .setGroup(str)
+                    .setSound(defaultSound)
+                    .setAutoCancel(true)
+                    .setColor(R.color.white)
+                    .setPriority(1)
+                    .addAction(replyAction)
 
 
-           messageStyle!!.addMessage(msg, "767".toLong(), userr)
 
-           val notificationManager=NotificationManagerCompat.from(application)
-           notificationManager.notify(j,notificationBuilder.build())
-           notificationManager.notify(0, summaryNotification)
-       }
+                val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
+                    .setSmallIcon(R.drawable.flow)
+                    .setColor(R.color.purple_500)
+                    .setStyle( NotificationCompat.InboxStyle())
+                    .setGroup(str)
+                    .setGroupSummary(true).build()
+
+
+                messageStyle!!.addMessage(msg, "767".toLong(), userr)
+
+                val notificationManager=NotificationManagerCompat.from(application)
+                notificationManager.notify(j,notificationBuilder.build())
+                notificationManager.notify(0, summaryNotification)
+            }
+            return true
+        }
     }
 
     fun getCircularBitmap(bitmap: Bitmap): Bitmap {
@@ -635,7 +658,7 @@ class Dashboard : AppCompatActivity() {
                                     var imagepath=""
                                     if(url!=""){
                                         val photo=GetImageFromUrl().execute(url).get()
-                                        imagepath=saveToInternalStorage(photo).execute().get()
+                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
                                     }
                                     ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,userid))
                                 }
@@ -655,12 +678,12 @@ class Dashboard : AppCompatActivity() {
         }
     }
 
-    inner class saveToInternalStorage(val bitmapImage: Bitmap):AsyncTask<Void,Void,String>(){
+    inner class saveToInternalStorage(val bitmapImage: Bitmap,val user:String):AsyncTask<Void,Void,String>(){
         var path:String?=null
         override fun doInBackground(vararg params: Void?): String {
             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
             if(directory.exists()){
-                path=System.currentTimeMillis().toString()+".jpg"
+                path=user+".jpg"
                 var fos: FileOutputStream =
                     FileOutputStream(File(directory, path))
                 try {
@@ -694,7 +717,6 @@ class Dashboard : AppCompatActivity() {
                     }
                 }
             }
-
             return path!!
         }
 

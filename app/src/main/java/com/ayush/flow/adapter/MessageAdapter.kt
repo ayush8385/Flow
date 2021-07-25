@@ -79,6 +79,13 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
             }
         }
 
+//        holder.msg_box.setOnLongClickListener(object :View.OnLongClickListener{
+//            override fun onLongClick(v: View?): Boolean {
+//
+//            }
+//
+//        })
+
     }
 
     override fun getItemCount(): Int {
