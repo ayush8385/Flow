@@ -31,4 +31,8 @@ class MessageViewModel(application: Application): AndroidViewModel(application) 
     fun updatetMessage(mid: String, rec: Boolean, seen: Boolean) =viewModelScope.launch (Dispatchers.IO){
         repository.update(mid,rec,seen)
     }
+
+    fun deleteMsg(item: MessageEntity) {
+        repository.deleteMsg(item)
+    }
 }

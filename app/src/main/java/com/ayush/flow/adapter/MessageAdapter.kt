@@ -7,6 +7,7 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -18,14 +19,19 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
     val allMsgs=ArrayList<MessageEntity>()
+
+
+
     class MessageViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val message:TextView=view.findViewById(R.id.txt_msg)
         val time:TextView=view.findViewById(R.id.msg_time)
         val msg_box:RelativeLayout=view.findViewById(R.id.msg_box)
         val seen_txt:TextView=view.findViewById(R.id.txt_seen)
+        val parent:RelativeLayout=view.findViewById(R.id.msg_par)
+        val select:ImageView=view.findViewById(R.id.select)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -34,7 +40,7 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
             return MessageViewHolder(view)
         }
         else{
-             val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_single_row,parent,false)
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_single_row,parent,false)
             return MessageViewHolder(view)
         }
     }
@@ -45,6 +51,11 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
         holder.message.text=chat.message
         holder.time.text=chat.time
         holder.seen_txt.text="sent"
+        holder.select.visibility=View.GONE
+
+        if(chat in selectedMsg){
+            holder.select.visibility=View.VISIBLE
+        }
 
         if(chat.sender!=firebaseUser!!.uid && !chat.seen){
 
@@ -79,17 +90,43 @@ class MessageAdapter(val context: Context):RecyclerView.Adapter<MessageAdapter.M
             }
         }
 
-//        holder.msg_box.setOnLongClickListener(object :View.OnLongClickListener{
-//            override fun onLongClick(v: View?): Boolean {
-//
-//            }
-//
-//        })
+        holder.parent.setOnClickListener {
+            if(selectedMsg.size!=0){
+                if(chat in selectedMsg){
+                    selectedMsg.remove(chat)
+                    holder.select.visibility=View.GONE
+                }
+                else{
+                    selectedMsg.add(chat)
+                    holder.select.visibility=View.VISIBLE
+                }
+                clickListener.updateCount()
+            }
+        }
+
+
+        holder.parent.setOnLongClickListener(object :View.OnLongClickListener{
+            override fun onLongClick(v: View?): Boolean {
+
+                if(chat !in selectedMsg){
+                    selectedMsg.add(chat)
+                    clickListener.updateCount()
+                    holder.select.visibility=View.VISIBLE
+                }
+
+                return true
+            }
+
+        })
 
     }
 
     override fun getItemCount(): Int {
         return allMsgs.size
+    }
+
+    interface OnAdapterItemClickListener {
+        fun updateCount()
     }
 
     override fun getItemViewType(position: Int): Int {

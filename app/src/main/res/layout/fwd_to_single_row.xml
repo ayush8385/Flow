@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_marginRight="16dp"
+    android:layout_height="wrap_content">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/story_img"
+        android:src="@drawable/user"/>
+    <ImageView
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:background="@drawable/story_unread_back"
+        android:src="@drawable/ic_baseline_close_24"
+        android:id="@+id/del_fwd"/>
+
+</RelativeLayout>

@@ -1,10 +1,7 @@
 package com.ayush.flow.database
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface MessageDao {
@@ -22,6 +19,9 @@ interface MessageDao {
 
     @Query("UPDATE messages SET recev = :rec, seen = :seen WHERE mid = :mid")
     fun update(mid: String, rec: Boolean, seen: Boolean)
+
+    @Delete
+    fun delete(item: MessageEntity)
 
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity

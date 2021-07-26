@@ -19,6 +19,10 @@ class MessageRepository(private val messageDao: MessageDao) {
     fun update(mid: String, rec: Boolean, seen: Boolean) {
         messageDao.update(mid,rec,seen)
     }
+
+    fun deleteMsg(item: MessageEntity) {
+        messageDao.delete(item)
+    }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }
