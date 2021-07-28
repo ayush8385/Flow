@@ -89,15 +89,6 @@ class Dashboard : AppCompatActivity() {
 
 
        openChatHome()
-       if(checkpermission()){
-            loadContacts().execute()
-        }
-        else{
-            requestContactPermission()
-        }
-
-
-
         profile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
         }
@@ -165,8 +156,15 @@ class Dashboard : AppCompatActivity() {
             return@setOnNavigationItemSelectedListener true
         }
 
-        searchElement().execute()
+       searchElement()
         createNotificationChannel().execute()
+
+       if(checkpermission()){
+           loadContacts().execute()
+        }
+        else{
+            requestContactPermission()
+        }
     }
 
     private fun openCallHome() {
@@ -223,35 +221,39 @@ class Dashboard : AppCompatActivity() {
 //        storyRecyclerView.scheduleLayoutAnimation()
     }
 
-    inner class searchElement():AsyncTask<Void,Void,Boolean>() {
-        override fun doInBackground(vararg params: Void?): Boolean {
-            search.queryHint="Search Your friends..."
-            search.setIconifiedByDefault(false)
-            val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
-            searchIcon.visibility= View.GONE
-            searchIcon.setImageDrawable(null)
-            val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
-            closeIcon.setColorFilter(Color.WHITE)
-            val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
-            theTextArea.setTextColor(Color.WHITE)
-            theTextArea.setHintTextColor(Color.LTGRAY)
-            theTextArea.isCursorVisible=false
+//    inner class searchElement():AsyncTask<Void,Void,Boolean>() {
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//
+//            return true
+//        }
+//
+//    }
 
-            search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    search.clearFocus()
-                    return true
-                }
+    fun searchElement(){
+        search.queryHint="Search Your friends..."
+        search.setIconifiedByDefault(false)
+        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
+        searchIcon.visibility= View.GONE
+        searchIcon.setImageDrawable(null)
+        val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
+        closeIcon.setColorFilter(Color.WHITE)
+        val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+        theTextArea.setTextColor(Color.WHITE)
+        theTextArea.setHintTextColor(Color.LTGRAY)
+        theTextArea.isCursorVisible=false
 
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    filterr(newText!!)
-                    return true
-                }
+        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                search.clearFocus()
+                return true
+            }
 
-            })
-            return true
-        }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterr(newText!!)
+                return true
+            }
 
+        })
     }
 
     fun filterr(text:String){
@@ -396,7 +398,7 @@ class Dashboard : AppCompatActivity() {
                             if(name==""){
                                 name=number
                             }
-                            sendNotification(sender,name,msg,imagepath,application).execute()
+                           // sendNotification(sender,name,msg,imagepath,application).execute()
                             val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
                             refer.addListenerForSingleValueEvent(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -628,39 +630,39 @@ class Dashboard : AppCompatActivity() {
             .show()
     }
 
-    inner class loadContacts(): AsyncTask<Void, Void, Boolean>(){
+    inner class loadContacts() : AsyncTask<Void, Void, Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
-            val contentResolver = contentResolver
+            val contentResolver = getContentResolver()
             val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
             while (contacts?.moveToNext() == true) {
                 val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
                 val phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
                 var i=0
-                var number:String=""
+                var phone_num:String=""
                 while(i!=phoneNumber.length){
                     if(phoneNumber[i]>='0'&&phoneNumber[i]<='9'){
-                        number=number+phoneNumber[i]
+                        phone_num=phone_num+phoneNumber[i]
                     }
                     i++
                 }
 
                 val ref=FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addValueEventListener(object :ValueEventListener{
+                ref.addListenerForSingleValueEvent(object :ValueEventListener{
                     override fun onDataChange(snapshot: DataSnapshot) {
                         for(snapshot in snapshot.children){
                             val num=snapshot.child("number").value.toString()
                             val userid=snapshot.child("uid").value.toString()
                             val url=snapshot.child("profile_photo").value.toString()
                             if(userid!=firebaseUser.uid){
-                                if(number==num){
+                                if(phone_num==num){
                                     var imagepath=""
                                     if(url!=""){
                                         val photo=GetImageFromUrl().execute(url).get()
                                         imagepath=saveToInternalStorage(photo,userid).execute().get()
                                     }
-                                    ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,userid))
+                                    ContactViewModel(application).inserContact(ContactEntity(name,phone_num,imagepath,userid))
                                 }
                             }
                         }
@@ -701,11 +703,11 @@ class Dashboard : AppCompatActivity() {
             else{
                 directory.mkdirs()
                 if (directory.isDirectory) {
-                    path=System.currentTimeMillis().toString()+".jpg"
+                    path=user+".jpg"
                     val fos =
                         FileOutputStream(File(directory, path))
                     try {
-                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {

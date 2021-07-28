@@ -44,6 +44,9 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
             if(cons.image!=""){
                 loadImage(cons.image,holder).execute()
             }
+            else{
+                holder.image.setImageResource(R.drawable.user)
+            }
 
             holder.start_chat.setOnClickListener {
                 val intent= Intent(context, Message::class.java)

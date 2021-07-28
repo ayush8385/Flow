@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.ForwardViewModel
-import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ChatEntity
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
@@ -26,6 +25,7 @@ import java.util.*
 class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListener):RecyclerView.Adapter<ForwardAdapter.HomeViewHolder>() {
     val allChats=ArrayList<ChatEntity>()
     lateinit var mainViewModel: ForwardViewModel
+    var unselectChatEntity: ChatEntity?=null
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)
@@ -57,10 +57,7 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
             holder.image.setImageResource(R.drawable.user)
         }
 
-        if(chat in Message().selectedChat){
-            holder.select.visibility=View.VISIBLE
-        }
-        else{
+        if(chat==unselectChatEntity){
             holder.select.visibility=View.GONE
         }
 
@@ -112,5 +109,10 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
 
     override fun getItemViewType(position: Int): Int {
         return position
+    }
+
+    fun unselectChat(chatEntity: ChatEntity) {
+        unselectChatEntity=chatEntity
+        notifyDataSetChanged()
     }
 }

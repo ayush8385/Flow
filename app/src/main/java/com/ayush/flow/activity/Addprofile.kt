@@ -267,16 +267,17 @@ class Addprofile : AppCompatActivity() {
     }
     inner class saveToInternalStorage(val bitmapImage:Bitmap):AsyncTask<Void,Void,String>(){
         var path:String?=null
+        val firebaseUser=FirebaseAuth.getInstance().currentUser!!
         override fun doInBackground(vararg params: Void?): String {
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){
                 if (Environment.isExternalStorageManager()) {
                     val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
                     if(directory.exists()){
-                        path=System.currentTimeMillis().toString()+".jpg"
+                        path=firebaseUser.uid+".jpg"
                         var fos: FileOutputStream =
                             FileOutputStream(File(directory, path))
                         try {
-                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         } finally {
@@ -290,11 +291,11 @@ class Addprofile : AppCompatActivity() {
                     else{
                         directory.mkdirs()
                         if (directory.isDirectory) {
-                            path=System.currentTimeMillis().toString()+".jpg"
+                            path=firebaseUser.uid+".jpg"
                             val fos =
                                 FileOutputStream(File(directory, path))
                             try {
-                                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {
@@ -317,11 +318,11 @@ class Addprofile : AppCompatActivity() {
             else{
                 val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
                 if(directory.exists()){
-                    path=System.currentTimeMillis().toString()+".jpg"
+                    path=firebaseUser.uid+".jpg"
                     var fos: FileOutputStream =
                         FileOutputStream(File(directory, path))
                     try {
-                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
@@ -335,11 +336,11 @@ class Addprofile : AppCompatActivity() {
                 else{
                     directory.mkdirs()
                     if (directory.isDirectory) {
-                        path=System.currentTimeMillis().toString()+".jpg"
+                        path=firebaseUser.uid+".jpg"
                         val fos =
                             FileOutputStream(File(directory, path))
                         try {
-                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         } finally {
@@ -366,7 +367,7 @@ class uploadImage(val username:String,val bmp:Bitmap,val abt:String):AsyncTask<V
         FirebaseDatabase.getInstance().reference.child("Users").child(userId).child("about").setValue(abt)
 
         val baos= ByteArrayOutputStream()
-        bmp.compress(Bitmap.CompressFormat.JPEG,100,baos)
+        bmp.compress(Bitmap.CompressFormat.JPEG,50,baos)
         val fileinBytes: ByteArray =baos.toByteArray()
 
         val ref= FirebaseDatabase.getInstance().reference

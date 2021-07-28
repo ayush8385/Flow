@@ -53,10 +53,6 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
         if(chat.image!=""){
           loadImage(chat.image, holder).execute()
         }
-        else{
-            holder.image.setImageResource(R.drawable.user)
-        }
-
         holder.chat_box.setOnClickListener {
             val intent=Intent(context,Message::class.java)
             intent.putExtra("name",chat.name)

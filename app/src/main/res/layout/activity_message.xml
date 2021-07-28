@@ -138,13 +138,12 @@
         app:cardBackgroundColor="#0000"
         android:layout_above="@+id/send"
         android:layout_marginLeft="4dp"
-        android:visibility="gone"
         android:id="@+id/more_card"
+        android:visibility="gone"
         android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bottom_nav_back"
             android:orientation="vertical">
             <ImageView
                 android:layout_width="50dp"
@@ -319,7 +318,7 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_marginBottom="20dp"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -361,16 +360,28 @@
                 android:id="@+id/searchview_fwd"
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_centerVertical="true"
                 android:layout_below="@+id/forwarded_to"
                 android:layout_alignParentRight="true"/>
             <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:clipToPadding="false"
                 android:id="@+id/forwardrecycler"
                 android:layout_below="@+id/searchview_fwd"
                 tools:listitem="@layout/fwd_single_row"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:rotation="40"
+                android:id="@+id/fwd_btn"
+                android:layout_margin="20dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:elevation="10dp"
+                android:background="@drawable/fwd_back"
+                android:src="@drawable/fwd_send" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
     <View

@@ -61,12 +61,12 @@ class Contact : AppCompatActivity() {
         pullToRefresh = findViewById(R.id.pulTooRefresh)
 
         pullToRefresh.setOnClickListener {
-            Handler().postDelayed(Runnable {
-                if (pullToRefresh.isRefreshing) {
-                    pullToRefresh.isRefreshing=false
-                }
-            }, 300)
-            Dashboard().loadContacts().execute()
+//            Handler().postDelayed(Runnable {
+//                if (pullToRefresh.isRefreshing) {
+//                    pullToRefresh.isRefreshing=false
+//                }
+//            }, 300)
+//            loadContacts().execute()
 
         }
 

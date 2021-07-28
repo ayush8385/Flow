@@ -1,8 +1,10 @@
 package com.ayush.flow.activity
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -74,7 +76,7 @@ class Message : AppCompatActivity() {
     lateinit var search: androidx.appcompat.widget.SearchView
     val allMsg = arrayListOf<MessageEntity>()
     val selectedMsg = arrayListOf<MessageEntity>()
-    val selectedChat = arrayListOf<ChatEntity>()
+    public val selectedChat = arrayListOf<ChatEntity>()
     lateinit var up:ImageView
     lateinit var down:ImageView
     lateinit var search_txt:TextView
@@ -91,6 +93,7 @@ class Message : AppCompatActivity() {
     lateinit var close_fwd:ImageView
     lateinit var dim:View
     lateinit var searchfwd:SearchView
+    lateinit var fwd_btn:ImageView
    // lateinit var option:ImageView
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,6 +111,7 @@ class Message : AppCompatActivity() {
        search=findViewById(R.id.searchview)
         image=findViewById(R.id.user_pic)
         status=findViewById(R.id.status)
+       fwd_btn=findViewById(R.id.fwd_btn)
        send_box=findViewById(R.id.send)
        close=findViewById(R.id.close)
 
@@ -168,7 +172,19 @@ class Message : AppCompatActivity() {
        }
 
        delete.setOnClickListener {
-           deleteMsg().execute()
+           AlertDialog.Builder(this)
+               .setTitle("Are you sure want to Delete")
+               .setCancelable(false)
+               .setPositiveButton("Yes") {
+                       dialog: DialogInterface, _: Int ->
+                   dialog.dismiss()
+                   deleteMsg().execute()
+               }
+               .setNegativeButton("No") {
+                       dialog: DialogInterface, _: Int ->
+                   dialog.dismiss()
+               }
+               .show()
            selected.visibility=View.GONE
            send_box.visibility=View.VISIBLE
 
@@ -197,7 +213,7 @@ class Message : AppCompatActivity() {
                override fun delChat(chatEntity: ChatEntity) {
                    selectedChat.remove(chatEntity)
                    fwdtoAdapter.updateList(selectedChat)
-                   fwdAdapter.notifyDataSetChanged()
+                   fwdAdapter.unselectChat(chatEntity)
                }
 
            })
@@ -303,6 +319,14 @@ class Message : AppCompatActivity() {
         })
 
 
+       fwd_btn.setOnClickListener{
+           forwardMsg().execute()
+           dim.visibility=View.GONE
+           forward_card.visibility=View.GONE
+           send_box.visibility=View.VISIBLE
+           searchfwd.isIconified=true
+       }
+
         more.setOnClickListener {
             if(more_card.visibility== View.GONE){
                 more_card.visibility=View.VISIBLE
@@ -321,7 +345,7 @@ class Message : AppCompatActivity() {
             val msg=send_txt.text.toString()
             if(msg!=""){
                 send_txt.setText("")
-                sendMessageToUser(msg,userid).execute()
+                sendMessageToUser(msg,userid,intent.getStringExtra("name")!!,number,user_image).execute()
             }
         }
 
@@ -546,7 +570,7 @@ class Message : AppCompatActivity() {
 //    }
 
 
-    inner class sendMessageToUser(val msg:String,val userid:String):AsyncTask<Void,Void,Boolean>(){
+    inner class sendMessageToUser(val msg:String,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
             if(msg!=""){
@@ -561,7 +585,7 @@ class Message : AppCompatActivity() {
                    if(!MessageViewModel(application).isMsgExist(messageKey!!)){
                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false))
                    }
-                   ChatViewModel(application).inserChat(ChatEntity(intent.getStringExtra("name")!!,number,intent.getStringExtra("image")!!,msg,sdf.format(tm),userid))
+                   ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),userid))
                }
                 val messageHashmap=HashMap<String,Any>()
                 messageHashmap.put("mid", messageKey!!)
@@ -611,9 +635,7 @@ class Message : AppCompatActivity() {
                             val rec:Boolean=snap.child("received").value as Boolean
                             val seen:Boolean=snap.child("seen").value as Boolean
                             val mid=snap.child("mid").value.toString()
-                            if(MessageViewModel(application).isMsgExist(mid)){
-                                MessageViewModel(application).updatetMessage(mid,rec,seen)
-                            }
+                            MessageViewModel(application).updatetMessage(mid,rec,seen)
                             adapter.notifyDataSetChanged()
                             if(seen){
                                 snap.child(mid).ref.parent!!.removeValue()
@@ -643,6 +665,20 @@ class Message : AppCompatActivity() {
                 }
                 selectedMsg.clear()
             }
+            return true
+        }
+    }
+
+    inner class forwardMsg():AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+
+            for(chat in selectedChat){
+                for (msg in selectedMsg){
+                    sendMessageToUser(msg.message,chat.id,chat.name,chat.number,chat.image).execute()
+                }
+            }
+            selectedMsg.clear()
+            selectedChat.clear()
             return true
         }
     }

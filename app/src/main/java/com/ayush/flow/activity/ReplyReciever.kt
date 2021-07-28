@@ -27,7 +27,7 @@ class ReplyReciever : BroadcastReceiver() {
 //            val parseInt: Int = Regex("[\\D]").replace(userid, "").toInt()
             val message = Message()
 //            message.setNotify(true)
-            message.sendMessageToUser(charSequence.toString(), userid).execute()
+            message.sendMessageToUser(charSequence.toString(), userid,stringExtra,"","").execute()
 
 
             val str: String = "com.ayush.flow.WORK_EMAIL"
