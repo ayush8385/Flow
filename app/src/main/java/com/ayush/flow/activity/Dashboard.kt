@@ -201,6 +201,9 @@ class Dashboard : AppCompatActivity() {
         chatsRecyclerView.layoutManager=layoutManager
         runAnimation(chatsRecyclerView,1)
         chatsRecyclerView.adapter=chatAdapter
+
+
+
         chatsRecyclerView.layoutAnimation=controller
         chatsRecyclerView.scheduleLayoutAnimation()
 
@@ -648,31 +651,31 @@ class Dashboard : AppCompatActivity() {
                     i++
                 }
 
-                val ref=FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addListenerForSingleValueEvent(object :ValueEventListener{
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for(snapshot in snapshot.children){
-                            val num=snapshot.child("number").value.toString()
-                            val userid=snapshot.child("uid").value.toString()
-                            val url=snapshot.child("profile_photo").value.toString()
-                            if(userid!=firebaseUser.uid){
-                                if(phone_num==num){
-                                    var imagepath=""
-                                    if(url!=""){
-                                        val photo=GetImageFromUrl().execute(url).get()
-                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
-                                    }
-                                    ContactViewModel(application).inserContact(ContactEntity(name,phone_num,imagepath,userid))
-                                }
-                            }
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
-
-                })
+//                val ref=FirebaseDatabase.getInstance().reference.child("Users")
+//                ref.addListenerForSingleValueEvent(object :ValueEventListener{
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        for(snapshot in snapshot.children){
+//                            val num=snapshot.child("number").value.toString()
+//                            val userid=snapshot.child("uid").value.toString()
+//                            val url=snapshot.child("profile_photo").value.toString()
+//                            if(userid!=firebaseUser.uid){
+//                                if(phone_num==num){
+//                                    var imagepath=""
+//                                    if(url!=""){
+//                                        val photo=GetImageFromUrl().execute(url).get()
+//                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
+//                                    }
+//                                    ContactViewModel(application).inserContact(ContactEntity(name,phone_num,imagepath,userid))
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//                        TODO("Not yet implemented")
+//                    }
+//
+//                })
 
             }
             contacts!!.close()
@@ -680,8 +683,15 @@ class Dashboard : AppCompatActivity() {
         }
     }
 
-    inner class saveToInternalStorage(val bitmapImage: Bitmap,val user:String):AsyncTask<Void,Void,String>(){
+    inner class saveToInternalStorage:AsyncTask<Void,Void,String>{
         var path:String?=null
+        var user:String?=null
+        var bitmapImage:Bitmap?=null
+        constructor(bitmapImage: Bitmap, user: String) : super() {
+            this.user=user
+            this.bitmapImage=bitmapImage
+        }
+
         override fun doInBackground(vararg params: Void?): String {
             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
             if(directory.exists()){
@@ -689,7 +699,7 @@ class Dashboard : AppCompatActivity() {
                 var fos: FileOutputStream =
                     FileOutputStream(File(directory, path))
                 try {
-                    bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                    bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
@@ -707,7 +717,7 @@ class Dashboard : AppCompatActivity() {
                     val fos =
                         FileOutputStream(File(directory, path))
                     try {
-                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                        bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
@@ -734,5 +744,4 @@ class Dashboard : AppCompatActivity() {
             e.printStackTrace()
         }
     }
-
 }
