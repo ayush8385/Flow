@@ -13,6 +13,7 @@ class BackgroundService: Service() {
 
 //        Toast.makeText(applicationContext,"This is a Service running in Background", Toast.LENGTH_SHORT).show();
         Dashboard().retrieveMessage(application).execute()
+        Dashboard().loadContacts(application).execute()
         Message()
         Dashboard()
 

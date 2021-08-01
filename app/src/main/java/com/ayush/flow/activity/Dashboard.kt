@@ -160,7 +160,7 @@ class Dashboard : AppCompatActivity() {
         createNotificationChannel().execute()
 
        if(checkpermission()){
-           loadContacts().execute()
+          // loadContacts().execute()
         }
         else{
             requestContactPermission()
@@ -608,7 +608,7 @@ class Dashboard : AppCompatActivity() {
             1234 -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Do_SOme_Operation()
-                    loadContacts().execute()
+                    loadContacts(application).execute()
 
                 }
                 else{
@@ -633,10 +633,11 @@ class Dashboard : AppCompatActivity() {
             .show()
     }
 
-    inner class loadContacts() : AsyncTask<Void, Void, Boolean>(){
+    inner class loadContacts(val applicat: Application) : AsyncTask<Void, Void, Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
-            val contentResolver = getContentResolver()
+            var firebaseUser= FirebaseAuth.getInstance().currentUser!!
+            val contentResolver = applicat.contentResolver
             val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
             while (contacts?.moveToNext() == true) {
@@ -651,31 +652,31 @@ class Dashboard : AppCompatActivity() {
                     i++
                 }
 
-//                val ref=FirebaseDatabase.getInstance().reference.child("Users")
-//                ref.addListenerForSingleValueEvent(object :ValueEventListener{
-//                    override fun onDataChange(snapshot: DataSnapshot) {
-//                        for(snapshot in snapshot.children){
-//                            val num=snapshot.child("number").value.toString()
-//                            val userid=snapshot.child("uid").value.toString()
-//                            val url=snapshot.child("profile_photo").value.toString()
-//                            if(userid!=firebaseUser.uid){
-//                                if(phone_num==num){
-//                                    var imagepath=""
-//                                    if(url!=""){
-//                                        val photo=GetImageFromUrl().execute(url).get()
-//                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
-//                                    }
-//                                    ContactViewModel(application).inserContact(ContactEntity(name,phone_num,imagepath,userid))
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    override fun onCancelled(error: DatabaseError) {
-//                        TODO("Not yet implemented")
-//                    }
-//
-//                })
+                val ref=FirebaseDatabase.getInstance().reference.child("Users")
+                ref.addListenerForSingleValueEvent(object :ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for(snapshot in snapshot.children){
+                            val num=snapshot.child("number").value.toString()
+                            val userid=snapshot.child("uid").value.toString()
+                            val url=snapshot.child("profile_photo").value.toString()
+                            if(userid!=firebaseUser.uid){
+                                if(phone_num==num){
+                                    var imagepath=""
+                                    if(url!=""){
+                                        val photo=GetImageFromUrl().execute(url).get()
+                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
+                                    }
+                                    ContactViewModel(applicat).inserContact(ContactEntity(name,phone_num,imagepath,userid))
+                                }
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+
+                })
 
             }
             contacts!!.close()
