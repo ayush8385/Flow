@@ -16,7 +16,6 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.Observer
@@ -47,7 +46,7 @@ import java.util.*
 import kotlin.collections.HashMap
 
 
-class Message : AppCompatActivity() {
+class Message : BaseActivity() {
     lateinit var recyclerView: RecyclerView
     lateinit var fwdrecyclerView:RecyclerView
     lateinit var fwdtorecyclerView:RecyclerView
@@ -94,6 +93,8 @@ class Message : AppCompatActivity() {
     lateinit var dim:View
     lateinit var searchfwd:SearchView
     lateinit var fwd_btn:ImageView
+
+
    // lateinit var option:ImageView
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,9 +152,7 @@ class Message : AppCompatActivity() {
             onBackPressed()
         }
 
-        audiocall.setOnClickListener {
-            startActivity(Intent(this,Outgoing::class.java))
-        }
+
 
         number=intent.getStringExtra("number")!!
         if(intent.getStringExtra("name")==""){
@@ -256,6 +255,18 @@ class Message : AppCompatActivity() {
            searchfwd.isIconified=true
 
            adapter.notifyDataSetChanged()
+       }
+
+       audiocall.setOnClickListener {
+           val userName: String = name.text.toString()
+
+           val sinchServiceInterface=getSinchServiceInterface()
+           val callId=sinchServiceInterface!!.callUser(userid).callId
+           val callScreen = Intent(this, Outgoing::class.java)
+           callScreen.putExtra("name",userName)
+           callScreen.putExtra("CALL_ID", callId)
+           startActivity(callScreen)
+
        }
 //        option.setOnClickListener {
 //            val menuBuilder = MenuBuilder(this)

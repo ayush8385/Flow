@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.ayush.flow">
 
+
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false"/>
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -26,9 +32,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Swipe.SwipeSelectionActivity"></activity>
         <activity android:name=".activity.UserProfile" />
-        <activity android:name=".activity.Outgoing" />
+        <activity android:name=".activity.Outgoing"
+            android:screenOrientation= "portrait"/>
         <activity android:name=".activity.Calling" />
         <activity android:name=".activity.Contact" />
         <activity
@@ -37,6 +43,7 @@
         <activity android:name=".activity.Addprofile" />
         <activity android:name=".activity.Dashboard" />
         <activity android:name=".activity.Register" />
+        <activity android:name=".activity.BaseActivity"/>
         <activity android:name=".activity.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,6 +51,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".activity.SinchService"
+            android:enabled="true" />
 
         <service
             android:name=".Services.BackgroundService"

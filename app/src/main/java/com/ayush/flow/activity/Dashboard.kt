@@ -19,7 +19,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.*
 import androidx.core.app.Person
 import androidx.core.content.ContextCompat
@@ -37,6 +36,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.sinch.android.rtc.SinchError
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 import java.text.SimpleDateFormat
@@ -45,7 +45,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
-class Dashboard : AppCompatActivity() {
+class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     lateinit var storyRecyclerView: RecyclerView
     lateinit var chatsRecyclerView: RecyclerView
     lateinit var layoutManager: RecyclerView.LayoutManager
@@ -69,6 +69,11 @@ class Dashboard : AppCompatActivity() {
     var previousMenuItem: MenuItem?=null
     lateinit var contact:ImageView
     lateinit var firebaseUser: FirebaseUser
+
+    override fun onServiceConnected() {
+        sinchServiceInterface!!.setStartListener(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -745,4 +750,18 @@ class Dashboard : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+
+    override fun onStartFailed(error: SinchError?) {
+        Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show()
+    }
+
+    override fun onStarted() {
+        Toast.makeText(this,"STarted", Toast.LENGTH_LONG).show()
+    }
+
+//    fun openPlaceCallActivity() {
+//        val intent= Intent(this, Outgoing::class.java)
+//        startActivity(intent)
+//    }
+
 }
