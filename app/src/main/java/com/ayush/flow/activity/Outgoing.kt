@@ -1,12 +1,16 @@
 package com.ayush.flow.activity
 
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import com.ayush.flow.Notification.*
 import com.ayush.flow.R
+import com.ayush.flow.Services.APIService
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
@@ -26,6 +30,7 @@ class Outgoing : BaseActivity() {
     lateinit var mCallState: TextView
     lateinit var mCallerName: TextView
     lateinit var mute:CircleImageView
+    var apiService: APIService?=null
     lateinit var speeaker:CircleImageView
 
     private inner class UpdateCallDurationTask : TimerTask() {
@@ -42,6 +47,7 @@ class Outgoing : BaseActivity() {
         mCallDuration = findViewById<View>(R.id.timer) as TextView
         mCallerName = findViewById<View>(R.id.user_name) as TextView
         mCallState = findViewById<View>(R.id.status) as TextView
+        apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
         val endCallButton = findViewById<View>(R.id.end_btn) as CircleImageView
         endCallButton.setOnClickListener { endCall() }
         mute=findViewById(R.id.mic)
@@ -68,8 +74,8 @@ class Outgoing : BaseActivity() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
         if (call != null) {
             call.addCallListener(SinchCallListener())
-            mCallerName!!.text=intent.getStringExtra("name")
-            mCallState!!.setText(call.getState().toString())
+            mCallerName.text=intent.getStringExtra("name")
+            mCallState.setText(call.getState().toString())
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.")
             finish()
@@ -148,7 +154,8 @@ class Outgoing : BaseActivity() {
             mCallStart = System.currentTimeMillis()
         }
 
-        override fun onCallProgressing(call: Call?) {
+        @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+        override fun onCallProgressing(call: Call) {
             Log.d(TAG, "Call progressing")
             mAudioPlayer!!.playProgressTone()
         }
@@ -161,4 +168,88 @@ class Outgoing : BaseActivity() {
     companion object {
         val TAG = Outgoing::class.java.simpleName
     }
+
+//    fun sendNotification(
+//        mid: String,
+//        senderid: String,
+//        recieverid: String,
+//        username: String,
+//        msg: String,
+//        type:Int
+//    ) {
+//
+//        sinchServiceInterface!!.startClient(FirebaseAuth.getInstance().currentUser!!.uid)
+//        AudioPlayer(this).playRingtone()
+//
+//        Log.d("Here you","reached....")
+//        val ref= FirebaseDatabase.getInstance().reference.child("Token")
+//        val query=ref.orderByKey().equalTo(recieverid)
+//
+//        var nf_url:String?=null
+//        val refer= FirebaseDatabase.getInstance().reference.child("Users")
+//        refer.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for (snapshot in snapshot.children) {
+//                    val id = snapshot.child("uid").value.toString()
+//                    if (id.equals(recieverid)) {
+//                        nf_url = snapshot.child("profile_photo").value.toString()
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//
+//        })
+//
+//        query.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for (snapshoshot in snapshot.children) {
+//                    val token: Token? = snapshoshot.getValue(Token::class.java)
+//
+//                    val data = Data(
+//                        mid,
+//                        senderid,
+//                        R.drawable.flow,
+//                        nf_url!!,
+//                        msg,
+//                        username,
+//                        recieverid,
+//                        type
+//                    )
+//
+//                    val sender = Sender(data, token!!.getToken().toString())
+//
+//                    apiService!!.sendNotification(sender)
+//                        .enqueue(object : retrofit2.Callback<MyResponse> {
+//                            override fun onResponse(
+//                                call: retrofit2.Call<MyResponse>,
+//                                response: Response<MyResponse>
+//                            ) {
+//                                if (response.code() == 200) {
+//                                    if (response.body()!!.success != 1) {
+//                                        Toast.makeText(
+//                                            applicationContext,
+//                                            "Hey you",
+//                                            Toast.LENGTH_LONG
+//                                        ).show()
+//                                    }
+//                                }
+//                            }
+//
+//                            override fun onFailure(call: retrofit2.Call<MyResponse>, t: Throwable) {
+//                                TODO("Not yet implemented")
+//                            }
+//
+//                        })
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//
+//        })
+//    }
 }

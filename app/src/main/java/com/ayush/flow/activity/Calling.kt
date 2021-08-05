@@ -1,5 +1,7 @@
 package com.ayush.flow.activity
 
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +23,7 @@ class Calling : BaseActivity(){
     private var mCallId: String? = null
     private var mAudioPlayer: AudioPlayer? = null
     lateinit var remoteUser:TextView
+    var mAction=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calling)
@@ -29,17 +32,31 @@ class Calling : BaseActivity(){
         answer.setOnClickListener(mClickListener)
         val decline = findViewById(R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
+
+
         mAudioPlayer = AudioPlayer(this)
         mAudioPlayer!!.playRingtone()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val intent=intent
+        if(intent!=null){
+            if(intent.getSerializableExtra(SinchService.CALL_ID)!=null){
+                mCallId = getIntent().getStringExtra(SinchService.CALL_ID)
+            }
+            val notificationManager:NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(1)
+//            mAction= intent.action!!
+        }
+
     }
 
     override fun onServiceConnected() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
         if (call != null) {
             call.addCallListener(SinchCallListener())
-
-
             val cons=ContactViewModel(application).getContact(call.remoteUserId)
             if(cons == null){
                 val ref=FirebaseDatabase.getInstance().reference.child("Users")
@@ -57,6 +74,15 @@ class Calling : BaseActivity(){
             else{
                 remoteUser.setText(cons.name)
             }
+
+            if ("answer".equals(mAction)) {
+                mAction = "";
+                answerClicked();
+            } else if ("ignore".equals(mAction)) {
+                mAction = "";
+                declineClicked();
+            }
+
         } else {
             Log.e(TAG, "Started with invalid callId, aborting")
             finish()

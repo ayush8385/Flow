@@ -47,5 +47,4 @@ abstract class BaseActivity : AppCompatActivity(), ServiceConnection {
     fun getSinchServiceInterface(): SinchService.SinchServiceInterface? {
         return sinchServiceInterface
     }
-
 }

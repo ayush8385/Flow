@@ -46,6 +46,15 @@ class AudioPlayer(context: Context) {
         }
     }
 
+    fun isPlayedRingtone():Boolean{
+        if(mPlayer==null){
+            return false
+        }
+        else{
+            return true
+        }
+    }
+
     fun playProgressTone() {
         stopProgressTone()
         try {

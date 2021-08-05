@@ -12,18 +12,22 @@ import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ayush.flow.Notification.*
 import com.ayush.flow.R
+import com.ayush.flow.Services.APIService
 import com.ayush.flow.adapter.ForwardAdapter
 import com.ayush.flow.adapter.ForwardToAdapter
 import com.ayush.flow.adapter.MessageAdapter
@@ -38,6 +42,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import de.hdodenhof.circleimageview.CircleImageView
+import retrofit2.Call
+import retrofit2.Response
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -60,6 +66,9 @@ class Message : BaseActivity() {
     lateinit var videocall:ImageView
     lateinit var back:ImageView
     lateinit var send_txt:EditText
+    var handler = Handler()
+    var runnable: Runnable? = null
+    var delay = 100
     lateinit var send:ImageView
     lateinit var image:CircleImageView
     lateinit var viewModel: MessageViewModel
@@ -71,6 +80,7 @@ class Message : BaseActivity() {
     lateinit var firebaseUser: FirebaseUser
     lateinit var adapter: MessageAdapter
     lateinit var fwdAdapter:ForwardAdapter
+    var apiService: APIService?=null
     lateinit var fwdtoAdapter:ForwardToAdapter
     lateinit var search: androidx.appcompat.widget.SearchView
     val allMsg = arrayListOf<MessageEntity>()
@@ -117,6 +127,7 @@ class Message : BaseActivity() {
        close=findViewById(R.id.close)
 
 
+       apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
        //forwarding
 
        forward_card=findViewById(R.id.fwd_card)
@@ -153,10 +164,8 @@ class Message : BaseActivity() {
         }
 
 
-
-        number=intent.getStringExtra("number")!!
         if(intent.getStringExtra("name")==""){
-            name.text=number
+            name.text=intent.getStringExtra("number")!!
         }
         else{
             name.text=intent.getStringExtra("name")!!
@@ -259,12 +268,13 @@ class Message : BaseActivity() {
 
        audiocall.setOnClickListener {
            val userName: String = name.text.toString()
-
+      //
            val sinchServiceInterface=getSinchServiceInterface()
            val callId=sinchServiceInterface!!.callUser(userid).callId
            val callScreen = Intent(this, Outgoing::class.java)
            callScreen.putExtra("name",userName)
            callScreen.putExtra("CALL_ID", callId)
+           sendNotification(userid,firebaseUser.uid,"",1)
            startActivity(callScreen)
 
        }
@@ -356,7 +366,7 @@ class Message : BaseActivity() {
             val msg=send_txt.text.toString()
             if(msg!=""){
                 send_txt.setText("")
-                sendMessageToUser(msg,userid,intent.getStringExtra("name")!!,number,user_image).execute()
+                sendMessageToUser(msg,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
             }
         }
 
@@ -384,6 +394,31 @@ class Message : BaseActivity() {
         searchElement()
        // deleteMessage()
 
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        startActivity(Intent(this,Dashboard::class.java))
+        finishAffinity()
+    }
+
+    override fun onResume() {
+
+        handler.postDelayed(Runnable {
+            handler.postDelayed(runnable!!, delay.toLong())
+            val notId: Int = Regex("[\\D]").replace(userid, "").toInt()
+            NotificationManagerCompat.from(applicationContext).cancel(notId)
+            MessagingService.messsageHashmap.remove(notId)
+            if(MessagingService.messsageHashmap.size==0){
+                NotificationManagerCompat.from(applicationContext).cancel(0)
+            }
+        }.also { runnable = it }, delay.toLong())
+        super.onResume()
+    }
+
+    override fun onPause() {
+        handler.removeCallbacks(runnable!!) //stop handler when activity not visible super.onPause();
+        super.onPause()
     }
 
     private fun searchfwdElement() {
@@ -609,6 +644,11 @@ class Message : BaseActivity() {
                 messageHashmap.put("seen",false)
 
                 ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
+
+
+      //          sendNotification(messageKey,firebaseUser.uid,userid,user_name, msg,0)
+                sendNotification(userid, firebaseUser.uid, msg, 0)
+
             }
             return true
         }
@@ -692,6 +732,138 @@ class Message : BaseActivity() {
             selectedChat.clear()
             return true
         }
+    }
+
+//    fun sendNotification(
+//        mid: String,
+//        senderid: String,
+//        recieverid: String,
+//        username: String,
+//        msg: String,
+//        type:Int
+//    ) {
+//
+//        Log.d("Here you","reached....")
+//        val ref=FirebaseDatabase.getInstance().reference.child("Token")
+//        val query=ref.orderByKey().equalTo(recieverid)
+//
+//        var nf_url:String?=null
+//        val refer=FirebaseDatabase.getInstance().reference.child("Users")
+//        refer.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for (snapshot in snapshot.children) {
+//                    val id = snapshot.child("uid").value.toString()
+//                    if (id.equals(recieverid)) {
+//                        nf_url = snapshot.child("profile_photo").value.toString()
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//
+//        })
+//
+//        query.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for (snapshoshot in snapshot.children) {
+//                    val token: Token? = snapshoshot.getValue(Token::class.java)
+//
+//                    val data = Data(
+//                        mid,
+//                        senderid,
+//                        R.drawable.flow,
+//                        nf_url!!,
+//                        msg,
+//                        username,
+//                        recieverid,
+//                        type
+//                    )
+//
+//                    val sender = Sender(data, token!!.getToken().toString())
+//
+//                    apiService!!.sendNotification(sender)
+//                        .enqueue(object : retrofit2.Callback<MyResponse> {
+//                            override fun onResponse(
+//                                call: Call<MyResponse>,
+//                                response: Response<MyResponse>
+//                            ) {
+//                                if (response.code() == 200) {
+//                                    if (response.body()!!.success != 1) {
+//                                        Toast.makeText(
+//                                            applicationContext,
+//                                            "Hey you",
+//                                            Toast.LENGTH_LONG
+//                                        ).show()
+//                                    }
+//                                }
+//                            }
+//
+//                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
+//                                TODO("Not yet implemented")
+//                            }
+//
+//                        })
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//
+//        })
+//    }
+
+    fun sendNotification(recieverid: String, senderid: String, msg: String, type:Int) {
+
+        val ref=FirebaseDatabase.getInstance().reference.child("Token")
+        val query=ref.orderByKey().equalTo(recieverid)
+
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (snapshoshot in snapshot.children) {
+                    val token: Token? = snapshoshot.getValue(Token::class.java)
+
+                    val data = Data(
+                        recieverid,
+                        senderid,
+                        msg,
+                        type
+                    )
+
+                    val sender = Sender(data, token!!.getToken().toString())
+
+                    apiService!!.sendNotification(sender)
+                        .enqueue(object : retrofit2.Callback<MyResponse> {
+                            override fun onResponse(
+                                call: Call<MyResponse>,
+                                response: Response<MyResponse>
+                            ) {
+                                if (response.code() == 200) {
+                                    if (response.body()!!.success != 1) {
+                                        Toast.makeText(
+                                            applicationContext,
+                                            "Hey you",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+
+                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+
+                        })
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
 }

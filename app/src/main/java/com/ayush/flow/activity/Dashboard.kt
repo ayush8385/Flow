@@ -1,15 +1,11 @@
 package com.ayush.flow.activity
 
-import android.annotation.SuppressLint
 import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.media.RingtoneManager
-import android.net.Uri
 import android.os.*
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -20,12 +16,11 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.*
-import androidx.core.app.Person
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ayush.flow.Notification.Token
 import com.ayush.flow.R
 import com.ayush.flow.adapter.CallAdapter
 import com.ayush.flow.adapter.ChatAdapter
@@ -36,6 +31,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.google.firebase.iid.FirebaseInstanceId
 import com.sinch.android.rtc.SinchError
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
@@ -118,6 +114,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.adapter=StoryAdapter(this,storyList)
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 
+
         contact.setOnClickListener {
             startActivity(Intent(this, Contact::class.java))
         }
@@ -170,6 +167,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         else{
             requestContactPermission()
         }
+
+        UpdateToken()
     }
 
     private fun openCallHome() {
@@ -441,8 +440,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
 
     inner class createNotificationChannel():AsyncTask<Void,Void,Boolean>() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
 
         override fun doInBackground(vararg params: Void?): Boolean {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -462,99 +459,97 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
     }
 
-    @SuppressLint("ResourceAsColor")
-    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    inner class sendNotification(val userid:String,val name:String,val msg:String,val image:String,val application: Application):AsyncTask<Void,Void,Boolean>(){
-        override fun doInBackground(vararg params: Void?): Boolean {
-            if(application!=null){
-                val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-                val intent = Intent(application, Message::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-                Log.d("name......",name)
-                Log.d("user.....",userid)
-                Log.d("image......",image)
-                intent.putExtra("name",name)
-                intent.putExtra("userid",userid)
-                intent.putExtra("image","")
-                val j: Int = Regex("[\\D]").replace(userid, "").toInt()
-                val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
-
-                //Add Reply Button
-                // Key for the string that's delivered in the action's intent.
-                var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
-                    setLabel("Your reply...")
-                    build()
-                }
-
-                val replyIntent = Intent(application, ReplyReciever::class.java)
-                replyIntent.putExtra("userid",userid)
-                replyIntent.putExtra("title", name)
-
-                // Build a PendingIntent for the reply action to trigger.
-                var replyPendingIntent: PendingIntent =
-                    PendingIntent.getBroadcast(application,j,replyIntent,0)
-
-
-                // Create the reply action and add the remote input.
-                var replyAction: NotificationCompat.Action =
-                    NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
-                        .addRemoteInput(remoteInput)
-                        .build()
-
-                val builder = Person.Builder()
-                var bmp:Bitmap?=null
-                try {
-                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-                    bmp = BitmapFactory.decodeStream(FileInputStream(f))
-
-                } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
-                }
-                val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
-
-                if (hashMap.containsKey(j)) {
-                    val messagingStyle = hashMap[j]
-                    messageStyle = messagingStyle
-                } else {
-                    messageStyle = NotificationCompat.MessagingStyle(name)
-                    hashMap[j] = messageStyle
-                }
-
-                val str: String = "com.ayush.flow.WORK_EMAIL"
-                val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
-                    .setContentIntent(pendingIntent)
-                    .setStyle( messageStyle)
-                    .setSmallIcon(R.drawable.flow).
-                    setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                    .setOnlyAlertOnce(true)
-                    .setGroup(str)
-                    .setSound(defaultSound)
-                    .setAutoCancel(true)
-                    .setColor(R.color.white)
-                    .setPriority(1)
-                    .addAction(replyAction)
-
-
-
-                val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
-                    .setSmallIcon(R.drawable.flow)
-                    .setColor(R.color.purple_500)
-                    .setStyle( NotificationCompat.InboxStyle())
-                    .setGroup(str)
-                    .setGroupSummary(true).build()
-
-
-                messageStyle!!.addMessage(msg, "767".toLong(), userr)
-
-                val notificationManager=NotificationManagerCompat.from(application)
-                notificationManager.notify(j,notificationBuilder.build())
-                notificationManager.notify(0, summaryNotification)
-            }
-            return true
-        }
-    }
+//    @SuppressLint("ResourceAsColor")
+//    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+//    inner class sendNotification(val userid:String,val name:String,val msg:String,val image:String,val application: Application):AsyncTask<Void,Void,Boolean>(){
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//            if(application!=null){
+//                val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+//
+//                val intent = Intent(application, Message::class.java).apply {
+//                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                }
+//
+//                intent.putExtra("name",name)
+//                intent.putExtra("userid",userid)
+//                intent.putExtra("image","")
+//                val j: Int = Regex("[\\D]").replace(userid, "").toInt()
+//                val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
+//
+//                //Add Reply Button
+//                // Key for the string that's delivered in the action's intent.
+//                var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
+//                    setLabel("Your reply...")
+//                    build()
+//                }
+//
+//                val replyIntent = Intent(application, ReplyReciever::class.java)
+//                replyIntent.putExtra("userid",userid)
+//                replyIntent.putExtra("title", name)
+//
+//                // Build a PendingIntent for the reply action to trigger.
+//                var replyPendingIntent: PendingIntent =
+//                    PendingIntent.getBroadcast(application,j,replyIntent,0)
+//
+//
+//                // Create the reply action and add the remote input.
+//                var replyAction: NotificationCompat.Action =
+//                    NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
+//                        .addRemoteInput(remoteInput)
+//                        .build()
+//
+//                val builder = Person.Builder()
+//                var bmp:Bitmap?=null
+//                try {
+//                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+//                    bmp = BitmapFactory.decodeStream(FileInputStream(f))
+//
+//                } catch (e: FileNotFoundException) {
+//                    e.printStackTrace()
+//                }
+//                val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
+//
+//                if (hashMap.containsKey(j)) {
+//                    val messagingStyle = hashMap[j]
+//                    messageStyle = messagingStyle
+//                } else {
+//                    messageStyle = NotificationCompat.MessagingStyle(name)
+//                    hashMap[j] = messageStyle
+//                }
+//
+//                val str: String = "com.ayush.flow.WORK_EMAIL"
+//                val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
+//                    .setContentIntent(pendingIntent)
+//                    .setStyle( messageStyle)
+//                    .setSmallIcon(R.drawable.flow).
+//                    setCategory(NotificationCompat.CATEGORY_MESSAGE)
+//                    .setOnlyAlertOnce(true)
+//                    .setGroup(str)
+//                    .setSound(defaultSound)
+//                    .setAutoCancel(true)
+//                    .setColor(R.color.white)
+//                    .setPriority(1)
+//                    .addAction(replyAction)
+//
+//
+//
+//                val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
+//                    .setSmallIcon(R.drawable.flow)
+//                    .setColor(R.color.purple_500)
+//                    .setStyle( NotificationCompat.InboxStyle())
+//                    .setGroup(str)
+//                    .setGroupSummary(true).build()
+//
+//
+//                messageStyle!!.addMessage(msg, "767".toLong(), userr)
+//
+//                val notificationManager=NotificationManagerCompat.from(application)
+//                notificationManager.notify(j,notificationBuilder.build())
+//                notificationManager.notify(0, summaryNotification)
+//            }
+//            return true
+//        }
+//    }
 
     fun getCircularBitmap(bitmap: Bitmap): Bitmap {
         val bitmap2: Bitmap
@@ -759,9 +754,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         Toast.makeText(this,"STarted", Toast.LENGTH_LONG).show()
     }
 
-//    fun openPlaceCallActivity() {
-//        val intent= Intent(this, Outgoing::class.java)
-//        startActivity(intent)
-//    }
+    private fun UpdateToken() {
+        val refreshToken = FirebaseInstanceId.getInstance().token
+        val token = Token(refreshToken!!)
+        FirebaseDatabase.getInstance().getReference("Token").child(
+            FirebaseAuth.getInstance().currentUser!!.uid
+        ).setValue(token)
+    }
 
 }
