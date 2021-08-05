@@ -16,6 +16,7 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.MessagingStyle
@@ -71,6 +72,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                             // here is example for notifying user about missed/canceled call:
                             if (result != null && result.isValid && result.isCall) {
                                 val callResult = result.callResult
+                                Toast.makeText(applicationContext,"Here I am",Toast.LENGTH_SHORT).show()
                                 if (callResult != null && result.displayName != null) {
                                     val editor: SharedPreferences.Editor = sharedPreferences.edit()
                                     editor.putString(callResult.remoteUserId, result.displayName)
@@ -158,7 +160,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             .setAutoCancel(true)
         val mNotificationManager =
             applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        mNotificationManager?.notify(1, builder.build())
+        mNotificationManager?.notify(2, builder.build())
     }
 
     private fun createNotificationChannel(importance: Int) {

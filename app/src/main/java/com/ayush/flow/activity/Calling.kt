@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import com.ayush.flow.R
 import com.ayush.flow.database.ContactViewModel
@@ -33,6 +34,11 @@ class Calling : BaseActivity(){
         val decline = findViewById(R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
 
+        window.addFlags(
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
 
         mAudioPlayer = AudioPlayer(this)
         mAudioPlayer!!.playRingtone()
@@ -48,10 +54,15 @@ class Calling : BaseActivity(){
             }
             val notificationManager:NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(1)
-//            mAction= intent.action!!
+            if(intent.action!=null){
+                mAction= intent.action!!
+            }
         }
 
     }
+
+
+
 
     override fun onServiceConnected() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
