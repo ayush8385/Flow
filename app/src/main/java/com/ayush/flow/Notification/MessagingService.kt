@@ -111,35 +111,19 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }.relayMessageData(data)
         }
 
+        else{
+            notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-//        Log.e("TAG...............", "onMessageReceived called")
-//        applicationContext.bindService(
-//            Intent(this, SinchService::class.java),
-//            this,
-//            BIND_AUTO_CREATE
-//        )
-//        val daata: String = data.getString("data")
-//        val parts = daata.split(",,,@@@Uc@Y@U...,,,").toTypedArray()
-//        if (parts[0] == "talaqbacheacallreceivekahebanasdo") {
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+                     createNotificationChannel(notificationManager!!)
 
-//        val intent = Intent(this, SinchService::class.java)
-//        startService(intent)
-//            Log.e(TAG, "Call Received in notification")
-//        } else {
-//            Log.e(TAG, "Message Received in notification")
-//        }
-
-//        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//
-//        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
-//       //     createNotificationChannel(notificationManager!!)
-//       //     sendOreoNotif(p0.data["sender"]!!, p0.data["message"]!!,p0.data["type"].toString(),this)
-//
-//            sendCall(p0)
-//        }
-//        else{
-//            Toast.makeText(applicationContext,"Not sending Version Not Supported",Toast.LENGTH_SHORT).show()
-//        }
+                    sendCall(remoteMessage)
+            }
+            else{
+//                Toast.makeText(applicationContext,"Not sending Version Not Supported",Toast.LENGTH_SHORT).show()
+            }
+            sendOreoNotif(remoteMessage.data["sender"]!!, remoteMessage.data["message"]!!,remoteMessage.data["type"].toString(),this)
+        }
 
     }
 

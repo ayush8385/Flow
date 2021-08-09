@@ -4,8 +4,10 @@ import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.net.Uri
 import android.os.*
 import android.provider.ContactsContract
+import android.provider.Settings
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -199,7 +201,19 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
     private fun openChatHome() {
-        chatAdapter= ChatAdapter(this@Dashboard)
+        chatAdapter= ChatAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
+            override fun audioCall(name: String, id: String) {
+
+                val sinchServiceInterface=getSinchServiceInterface()
+                val callId=sinchServiceInterface!!.callUser(id).callId
+                val callScreen = Intent(this@Dashboard, Outgoing::class.java)
+                callScreen.putExtra("name",name)
+                callScreen.putExtra("CALL_ID", callId)
+                Message().sendNotification(id,FirebaseAuth.getInstance().currentUser!!.uid,"",1)
+                startActivity(callScreen)
+            }
+
+        })
         layoutManager=LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).reverseLayout=true
         chatsRecyclerView.layoutManager=layoutManager
@@ -349,7 +363,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         val messageKey=snapshot.child("mid").value.toString()
                         val user=snapshot.child("userid").value.toString()
                         val sender=snapshot.child("sender").value.toString()
-                        val msg=snapshot.child("message").value.toString()
+                        var msg=snapshot.child("message").value.toString()
                         val time=snapshot.child("time").value.toString()
                         val type=snapshot.child("type").value.toString()
                         val received=snapshot.child("received").value as Boolean
@@ -361,20 +375,122 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         var name:String=""
                         var number:String=""
                         var imagepath:String=""
+
+                        if(type=="image"){
+                            val photo = GetImageFromUrl().execute(msg).get()
+
+                            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+                                if (Environment.isExternalStorageManager()) {
+                                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                                    if(directory.exists()){
+                                        msg=messageKey+".jpg"
+                                        var fos: FileOutputStream =
+                                            FileOutputStream(File(directory, msg))
+                                        try {
+                                            photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        } finally {
+                                            try {
+                                                fos.close()
+                                            } catch (e: IOException) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        directory.mkdirs()
+                                        if (directory.isDirectory) {
+                                            msg=messageKey+".jpg"
+                                            val fos =
+                                                FileOutputStream(File(directory, msg))
+                                            try {
+                                               photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            } finally {
+                                                try {
+                                                    fos.close()
+                                                } catch (e: IOException) {
+                                                    e.printStackTrace()
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    //request for the permission
+                                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                                    val uri = Uri.fromParts("package", packageName, null)
+                                    intent.data = uri
+                                    startActivity(intent)
+                                }
+                            }
+                            else{
+                                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                                if(directory.exists()){
+                                    msg=messageKey+".jpg"
+                                    var fos: FileOutputStream =
+                                        FileOutputStream(File(directory,msg))
+                                    try {
+                                        photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    } finally {
+                                        try {
+                                            fos.close()
+                                        } catch (e: IOException) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                                else{
+                                    directory.mkdirs()
+                                    if (directory.isDirectory) {
+                                        msg=messageKey+".jpg"
+                                        val fos =
+                                            FileOutputStream(File(directory, msg))
+                                        try {
+                                            photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        } finally {
+                                            try {
+                                                fos.close()
+                                            } catch (e: IOException) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+
                         if(ChatViewModel(application).isUserExist(sender)){
                             //get image and name from room db
                             val chatEntity=ChatViewModel(application).getChat(sender)
                             name=chatEntity.name
                             number=chatEntity.number
                             imagepath=chatEntity.image
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                            if(type=="image"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                            }
+                            else{
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                            }
                         }
                         else if(ContactViewModel(application).isUserExist(sender)){
                             val contactEntity=ContactViewModel(application).getContact(sender)
                             name=contactEntity.name
                             number=contactEntity.number
                             imagepath=contactEntity.image
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                            if(type=="image"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                            }
+                            else{
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                            }
                         }
                         else{
                             //get number as a name from firebase
@@ -383,12 +499,22 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             ref.addValueEventListener(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     number=snapshot.child("number").value.toString()
-                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),sender))
+                                    if(type=="image"){
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                    }
+                                    else{
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                    }
                                     val image_url=snapshot.child("profile_photo").value.toString()
                                     if(image_url!=""){
                                         val photo=GetImageFromUrl().execute(image_url).get()
                                         imagepath=saveToInternalStorage(photo,user).execute().get()
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),sender))
+                                        if(type=="image"){
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                        }
+                                        else{
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                        }
                                     }
                                     //     ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,sender))
 

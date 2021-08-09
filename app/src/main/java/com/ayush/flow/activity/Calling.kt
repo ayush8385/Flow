@@ -3,12 +3,18 @@ package com.ayush.flow.activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.PowerManager
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
-import com.ayush.flow.R
+import android.widget.Toast
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -20,18 +26,33 @@ import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
 import de.hdodenhof.circleimageview.CircleImageView
 
+
+
+
+
+
+
+
+
+
+
+
+
 class Calling : BaseActivity(){
     private var mCallId: String? = null
     private var mAudioPlayer: AudioPlayer? = null
     lateinit var remoteUser:TextView
     var mAction=""
+    var sensorManager: SensorManager? = null
+    var proximitySensor: Sensor? = null
+    protected var proximityWakelock: PowerManager.WakeLock? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_calling)
-        val answer = findViewById(R.id.pick_btn) as CircleImageView
-        remoteUser = findViewById(R.id.user_name)
+        setContentView(com.ayush.flow.R.layout.activity_calling)
+        val answer = findViewById(com.ayush.flow.R.id.pick_btn) as CircleImageView
+        remoteUser = findViewById(com.ayush.flow.R.id.user_name)
         answer.setOnClickListener(mClickListener)
-        val decline = findViewById(R.id.end_btn) as CircleImageView
+        val decline = findViewById(com.ayush.flow.R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
 
         window.addFlags(
@@ -43,6 +64,56 @@ class Calling : BaseActivity(){
         mAudioPlayer = AudioPlayer(this)
         mAudioPlayer!!.playRingtone()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)
+
+
+        //sensor works
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        proximitySensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+
+        if (proximitySensor == null) {
+            Toast.makeText(this, "No proximity sensor found in device.", Toast.LENGTH_SHORT).show();
+
+        } else {
+            // registering our sensor with sensor manager.
+            sensorManager!!.registerListener(proximitySensorEventListener,
+                proximitySensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    var proximitySensorEventListener: SensorEventListener = object : SensorEventListener {
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+            // method to check accuracy changed in sensor.
+        }
+
+        override fun onSensorChanged(event: SensorEvent) {
+            // check if the sensor type is proximity sensor.
+            val params: WindowManager.LayoutParams = getWindow().getAttributes()
+            if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
+
+
+                if (event.values[0].toInt() == 0) {
+                    params.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    params.screenBrightness = 0F
+                    window.attributes = params
+                    Log.e("onSensorChanged", "NEAR")
+                } else {
+
+                    params.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    params.screenBrightness = -1F
+                    window.attributes = params
+                    Log.e("onSensorChanged", "FAR")
+                }
+            }
+            else{
+                Handler().postDelayed({
+
+                    Toast.makeText(applicationContext,"Hello I'm worjing ",Toast.LENGTH_LONG).show()
+                },3000)
+            }
+        }
     }
 
     override fun onResume() {
@@ -146,8 +217,8 @@ class Calling : BaseActivity(){
 
     private val mClickListener = View.OnClickListener { v ->
         when (v.id) {
-            R.id.pick_btn -> answerClicked()
-            R.id.end_btn -> declineClicked()
+            com.ayush.flow.R.id.pick_btn -> answerClicked()
+            com.ayush.flow.R.id.end_btn -> declineClicked()
         }
     }
 

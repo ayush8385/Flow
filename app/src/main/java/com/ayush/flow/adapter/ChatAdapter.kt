@@ -24,7 +24,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
+class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
     val allChats=ArrayList<ChatEntity>()
     final val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
@@ -86,6 +86,8 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
 
         holder.call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
+            clickListener.audioCall(holder.name.text.toString(),chat.id)
+
         }
         holder.vdo_call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
@@ -101,6 +103,10 @@ class ChatAdapter(val context: Context):RecyclerView.Adapter<ChatAdapter.HomeVie
         allChats.clear()
         allChats.addAll(list)
         notifyDataSetChanged()
+    }
+
+    interface OnAdapterItemClickListener {
+        fun audioCall(toString: String, id: String)
     }
 
     inner class loadImage(val image:String,val holder: HomeViewHolder):

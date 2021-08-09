@@ -135,11 +135,11 @@
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         app:cardCornerRadius="25dp"
-        app:cardBackgroundColor="#0000"
+        android:visibility="gone"
+        app:cardBackgroundColor="@android:color/transparent"
         android:layout_above="@+id/send"
         android:layout_marginLeft="4dp"
         android:id="@+id/more_card"
-        android:visibility="gone"
         android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -149,21 +149,25 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"
+                android:id="@+id/send_con"
                 android:src="@drawable/cons"/>
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"
+                android:id="@+id/send_doc"
                 android:src="@drawable/documents"/>
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"
+                android:id="@+id/send_cam"
                 android:src="@drawable/camera"/>
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"
+                android:id="@+id/send_gall"
                 android:src="@drawable/gallery"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -386,56 +390,12 @@
     </androidx.cardview.widget.CardView>
     <View
         android:id="@+id/dim"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         android:background="#8A000000" />
 
 
 </RelativeLayout>
 
 
-
-<!-- -<RelativeLayout android:layout_height="match_parent" android:layout_width="match_parent">-->
-
-
-<!--    -<androidx.appcompat.widget.Toolbar app:title="" android:layout_height="52dp" android:layout_width="match_parent" android:id="@+id/toolbar_message" app:contentInsetStartWithNavigation="0dp" app:contentInsetStart="-20dp" app:contentInsetLeft="0dp" android:background="@color/purple_500">-->
-
-
-<!--    -<RelativeLayout android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/text_count" android:visibility="gone">-->
-
-<!--    <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/counter" android:text="10" android:layout_marginLeft="10dp" android:textColor="@color/white" android:textStyle="bold" android:textSize="28sp"/>-->
-
-<!--</RelativeLayout>-->
-
-
-<!--    -<RelativeLayout android:layout_height="match_parent" android:layout_width="wrap_content" android:id="@+id/tool" android:orientation="horizontal">-->
-
-<!--    <ImageView android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/go_back" android:layout_marginLeft="3dp" android:layout_centerVertical="true" android:src="@drawable/ic_baseline_arrow_back_24" android:layout_marginTop="2dp"/>-->
-
-
-<!--    -<RelativeLayout android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/user_tool" android:layout_marginLeft="10dp" android:layout_toRightOf="@+id/go_back">-->
-
-<!--    <de.hdodenhof.circleimageview.CircleImageView android:layout_height="43dp" android:layout_width="40dp" android:id="@+id/user_profilepic" android:layout_centerVertical="true" android:src="@drawable/blank_profile" android:layout_marginTop="5dp" android:scaleType="centerCrop"/>-->
-
-
-<!--    -<RelativeLayout android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_marginLeft="7dp" android:orientation="vertical" android:layout_centerVertical="true" android:layout_toRightOf="@+id/user_profilepic">-->
-
-<!--    <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/user_name" android:text="Ayush" android:textColor="@color/white" android:textStyle="bold" android:textSize="22sp"/>-->
-
-<!--    <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/status" android:visibility="gone" android:text="" android:layout_marginLeft="4dp" android:textColor="@color/white" android:textSize="14sp" android:layout_marginTop="-2dp" android:layout_below="@+id/user_name"/>-->
-
-<!--</RelativeLayout>-->
-
-<!--</RelativeLayout>-->
-
-<!--</RelativeLayout>-->
-
-<!--</androidx.appcompat.widget.Toolbar>-->
-
-<!--    <androidx.recyclerview.widget.RecyclerView android:layout_height="match_parent" android:layout_width="match_parent" android:id="@+id/recclermessage" android:layout_below="@+id/toolbar_message" android:layout_above="@+id/send"/>-->
-
-
-<!--    - -->
-
-<!--</RelativeLayout>-->

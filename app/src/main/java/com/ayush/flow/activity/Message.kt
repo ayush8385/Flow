@@ -1,6 +1,7 @@
 package com.ayush.flow.activity
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
@@ -9,10 +10,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.os.AsyncTask
-import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
+import android.net.Uri
+import android.os.*
+import android.provider.MediaStore
+import android.provider.Settings
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -20,6 +21,7 @@ import android.widget.*
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -35,18 +37,20 @@ import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.MessageEntity
 import com.ayush.flow.database.MessageViewModel
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.StorageTask
 import de.hdodenhof.circleimageview.CircleImageView
 import retrofit2.Call
 import retrofit2.Response
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -76,6 +80,7 @@ class Message : BaseActivity() {
     var userid:String=""
     var user_image:String=""
     var number:String=""
+    lateinit var photo:Bitmap
     lateinit var status:TextView
     lateinit var firebaseUser: FirebaseUser
     lateinit var adapter: MessageAdapter
@@ -91,6 +96,7 @@ class Message : BaseActivity() {
     lateinit var search_txt:TextView
     lateinit var searched:CardView
     lateinit var delete:ImageView
+    private var imageuri: Uri?=null
     lateinit var forward:ImageView
     lateinit var close:ImageView
     lateinit var select_txt:TextView
@@ -101,8 +107,13 @@ class Message : BaseActivity() {
     lateinit var forward_card:CardView
     lateinit var close_fwd:ImageView
     lateinit var dim:View
+    private lateinit var photofile: File
     lateinit var searchfwd:SearchView
     lateinit var fwd_btn:ImageView
+    lateinit var send_cam:ImageView
+    lateinit var send_con:ImageView
+    lateinit var send_doc:ImageView
+    lateinit var send_gall:ImageView
 
 
    // lateinit var option:ImageView
@@ -125,6 +136,12 @@ class Message : BaseActivity() {
        fwd_btn=findViewById(R.id.fwd_btn)
        send_box=findViewById(R.id.send)
        close=findViewById(R.id.close)
+
+       //send img doc cons box
+       send_con=findViewById(R.id.send_con)
+       send_doc=findViewById(R.id.send_doc)
+       send_cam=findViewById(R.id.send_cam)
+       send_gall=findViewById(R.id.send_gall)
 
 
        apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
@@ -278,6 +295,17 @@ class Message : BaseActivity() {
            startActivity(callScreen)
 
        }
+
+       videocall.setOnClickListener {
+           val userName: String = name.text.toString()
+           val sinchServiceInterface=getSinchServiceInterface()
+           val callId=sinchServiceInterface!!.callUserVideo(userid).callId
+           val callScreen = Intent(this, Outgoing_vdo::class.java)
+           callScreen.putExtra("name",userName)
+           callScreen.putExtra("CALL_ID", callId)
+           sendNotification(userid,firebaseUser.uid,"",1)
+           startActivity(callScreen)
+       }
 //        option.setOnClickListener {
 //            val menuBuilder = MenuBuilder(this)
 //            SupportMenuInflater(this).inflate(R.menu.popup_menu, menuBuilder)
@@ -388,6 +416,21 @@ class Message : BaseActivity() {
             }
 
         })
+
+
+       send_cam.setOnClickListener {
+           if(Addprofile().checkpermission(this)){
+               photofile = getphotofile("photo.jpg")
+               imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
+               val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+               intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
+               startActivityForResult(intent,110)
+               more_card.visibility=View.GONE
+           }
+           else{
+               Addprofile().requestStoragePermission()
+           }
+       }
 
         Dashboard().checkStatus()
         checkSeen().execute()
@@ -820,6 +863,8 @@ class Message : BaseActivity() {
         val ref=FirebaseDatabase.getInstance().reference.child("Token")
         val query=ref.orderByKey().equalTo(recieverid)
 
+        val apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
+
         query.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (snapshoshot in snapshot.children) {
@@ -866,4 +911,183 @@ class Message : BaseActivity() {
         })
     }
 
+    fun getphotofile(fileName: String):File{
+        val storage= getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(fileName, ".jpg", storage)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode==110 && resultCode== Activity.RESULT_OK){
+            if(imageuri!=null){
+                try {
+                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                } catch (e: IOException) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if(requestCode==112 && resultCode== Activity.RESULT_OK){
+            val filepath=data!!.data
+            try {
+                photo=MediaStore.Images.Media.getBitmap(contentResolver,filepath)
+            } catch (e: IOException) {
+                e.printStackTrace();
+            }
+        }
+        if(photo!=null){
+     //       image.setImageBitmap(photo)
+         sendImageMessageToUser(photo,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
+    //        val path=saveToInternalStorage(photo).execute().get()
+   //         uploadImage(name.text.toString(), photo,about.text.toString()).execute()
+//            val baos= ByteArrayOutputStream()
+//            photo.compress(Bitmap.CompressFormat.JPEG,50,baos)
+//            fileBytes =baos.toByteArray()
+        }
+    }
+
+    inner class sendImageMessageToUser(val bitmapImage: Bitmap,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
+        var path:String?=null
+        override fun doInBackground(vararg params: Void?): Boolean {
+            val ref=FirebaseDatabase.getInstance().reference
+            val messageKey=ref.push().key
+
+            firebaseUser=FirebaseAuth.getInstance().currentUser!!
+
+            val sdf = SimpleDateFormat("hh:mm a")
+            val tm: Date = Date(System.currentTimeMillis())
+
+
+            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+                if (Environment.isExternalStorageManager()) {
+                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                    if(directory.exists()){
+                        path=messageKey+".jpg"
+                        var fos: FileOutputStream =
+                            FileOutputStream(File(directory, path))
+                        try {
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            try {
+                                fos.close()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                    else{
+                        directory.mkdirs()
+                        if (directory.isDirectory) {
+                            path=messageKey+".jpg"
+                            val fos =
+                                FileOutputStream(File(directory, path))
+                            try {
+                                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                try {
+                                    fos.close()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    //request for the permission
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
+            }
+            else{
+                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                if(directory.exists()){
+                    path=messageKey+".jpg"
+                    var fos: FileOutputStream =
+                        FileOutputStream(File(directory, path))
+                    try {
+                        bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        try {
+                            fos.close()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                else{
+                    directory.mkdirs()
+                    if (directory.isDirectory) {
+                        path=messageKey+".jpg"
+                        val fos =
+                            FileOutputStream(File(directory, path))
+                        try {
+                            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            try {
+                                fos.close()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if(application!=null){
+                if(!MessageViewModel(application).isMsgExist(messageKey!!)){
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false))
+                }
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),userid))
+            }
+
+
+            val baos= ByteArrayOutputStream()
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG,50,baos)
+            val fileinBytes: ByteArray =baos.toByteArray()
+
+            val refStore= FirebaseDatabase.getInstance().reference
+            val profilekey=refStore.push().key
+
+            val store: StorageReference = FirebaseStorage.getInstance().reference.child("Chat Images/")
+            val path=store.child("$profilekey.jpg")
+            val uploadTask: StorageTask<*>
+            uploadTask=path.putBytes(fileinBytes)
+
+            uploadTask.addOnSuccessListener(OnSuccessListener { taskSnapshot ->
+                val firebaseUri = taskSnapshot.storage.downloadUrl
+                firebaseUri.addOnSuccessListener { uri ->
+                    val url = uri.toString()
+                    val messageHashmap=HashMap<String,Any>()
+                    messageHashmap.put("mid", messageKey!!)
+                    messageHashmap.put("userid",userid)
+                    messageHashmap.put("sender",firebaseUser.uid)
+                    messageHashmap.put("message",url)
+                    messageHashmap.put("time",System.currentTimeMillis())
+                    messageHashmap.put("type","image")
+                    messageHashmap.put("received",false)
+                    messageHashmap.put("seen",false)
+
+                    ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
+                }
+            })
+
+
+            sendNotification(userid, firebaseUser.uid, "Image", 0)
+
+            return true
+        }
+
+    }
 }

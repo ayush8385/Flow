@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -32,6 +33,9 @@ class Outgoing : BaseActivity() {
     lateinit var mute:CircleImageView
     var apiService: APIService?=null
     lateinit var speeaker:CircleImageView
+    var isMute:Boolean=false
+    var isSpeaker:Boolean=false
+
 
     private inner class UpdateCallDurationTask : TimerTask() {
         override fun run() {
@@ -52,18 +56,38 @@ class Outgoing : BaseActivity() {
         endCallButton.setOnClickListener { endCall() }
         mute=findViewById(R.id.mic)
         mute.setOnClickListener {
-            if(mute.background.equals(R.drawable.story_unread_back)){
+            if(!isMute){
                 sinchServiceInterface!!.muteCall()
+                mute.setBackgroundColor(0)
                 mute.setBackgroundColor(R.drawable.bottom_back)
+                isMute=true
             }
             else{
                 sinchServiceInterface!!.unmuteCall()
+                mute.setBackgroundColor(0)
                 mute.setBackgroundColor(R.drawable.story_unread_back)
+                isMute=false
             }
         }
+
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+
         speeaker=findViewById(R.id.speaker)
         speeaker.setOnClickListener {
-            
+            if(!isSpeaker){
+                sinchServiceInterface!!.onSpeaker()
+                speeaker.setBackgroundColor(R.drawable.bottom_back)
+                isSpeaker=true
+            }
+            else{
+                sinchServiceInterface!!.offSpeaker()
+                speeaker.setBackgroundColor(R.drawable.story_unread_back)
+                isSpeaker=false
+            }
         }
         mCallStart = System.currentTimeMillis()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)!!
@@ -169,87 +193,4 @@ class Outgoing : BaseActivity() {
         val TAG = Outgoing::class.java.simpleName
     }
 
-//    fun sendNotification(
-//        mid: String,
-//        senderid: String,
-//        recieverid: String,
-//        username: String,
-//        msg: String,
-//        type:Int
-//    ) {
-//
-//        sinchServiceInterface!!.startClient(FirebaseAuth.getInstance().currentUser!!.uid)
-//        AudioPlayer(this).playRingtone()
-//
-//        Log.d("Here you","reached....")
-//        val ref= FirebaseDatabase.getInstance().reference.child("Token")
-//        val query=ref.orderByKey().equalTo(recieverid)
-//
-//        var nf_url:String?=null
-//        val refer= FirebaseDatabase.getInstance().reference.child("Users")
-//        refer.addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                for (snapshot in snapshot.children) {
-//                    val id = snapshot.child("uid").value.toString()
-//                    if (id.equals(recieverid)) {
-//                        nf_url = snapshot.child("profile_photo").value.toString()
-//                    }
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//
-//        })
-//
-//        query.addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                for (snapshoshot in snapshot.children) {
-//                    val token: Token? = snapshoshot.getValue(Token::class.java)
-//
-//                    val data = Data(
-//                        mid,
-//                        senderid,
-//                        R.drawable.flow,
-//                        nf_url!!,
-//                        msg,
-//                        username,
-//                        recieverid,
-//                        type
-//                    )
-//
-//                    val sender = Sender(data, token!!.getToken().toString())
-//
-//                    apiService!!.sendNotification(sender)
-//                        .enqueue(object : retrofit2.Callback<MyResponse> {
-//                            override fun onResponse(
-//                                call: retrofit2.Call<MyResponse>,
-//                                response: Response<MyResponse>
-//                            ) {
-//                                if (response.code() == 200) {
-//                                    if (response.body()!!.success != 1) {
-//                                        Toast.makeText(
-//                                            applicationContext,
-//                                            "Hey you",
-//                                            Toast.LENGTH_LONG
-//                                        ).show()
-//                                    }
-//                                }
-//                            }
-//
-//                            override fun onFailure(call: retrofit2.Call<MyResponse>, t: Throwable) {
-//                                TODO("Not yet implemented")
-//                            }
-//
-//                        })
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//
-//        })
-//    }
 }

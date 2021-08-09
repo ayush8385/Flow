@@ -3,6 +3,8 @@ package com.ayush.flow.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +20,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.io.File
+import java.io.FileInputStream
 
 class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
@@ -26,17 +30,27 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
 
     class MessageViewHolder(val view: View):RecyclerView.ViewHolder(view){
+
         val message:TextView=view.findViewById(R.id.txt_msg)
         val time:TextView=view.findViewById(R.id.msg_time)
         val msg_box:RelativeLayout=view.findViewById(R.id.msg_box)
         val seen_txt:TextView=view.findViewById(R.id.txt_seen)
         val parent:RelativeLayout=view.findViewById(R.id.msg_par)
         val select:ImageView=view.findViewById(R.id.select)
+        val image_msg:ImageView=view.findViewById(R.id.img_msg)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         if(viewType==1){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.send_single_row,parent,false)
+            return MessageViewHolder(view)
+        }
+        if(viewType==2){
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.send_img_single_row,parent,false)
+            return MessageViewHolder(view)
+        }
+        if(viewType==3){
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_img_single_row,parent,false)
             return MessageViewHolder(view)
         }
         else{
@@ -48,7 +62,15 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
     @SuppressLint("ResourceAsColor")
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         var chat=allMsgs[position]
-        holder.message.text=chat.message
+
+
+        if(chat.type=="image"){
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),chat.message)
+            holder.image_msg.setImageBitmap(BitmapFactory.decodeStream(FileInputStream(f)))
+        }
+        else{
+            holder.message.text=chat.message
+        }
         holder.time.text=chat.time
         holder.seen_txt.text="sent"
         holder.select.visibility=View.GONE
@@ -131,6 +153,13 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
     override fun getItemViewType(position: Int): Int {
         val id=this.allMsgs.get(position).sender
+        val type=this.allMsgs.get(position).type
+        if(id!=firebaseUser!!.uid && type=="image"){
+            return 3
+        }
+        if(id==firebaseUser!!.uid && type=="image"){
+            return 2
+        }
         if(id==firebaseUser!!.uid){
             return 1
         }
