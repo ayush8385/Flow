@@ -1,26 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="5"
-    android:background="#ffffffff">
+    android:weightSum="5">
+
+    <RelativeLayout
+        android:id="@+id/localVideo"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_weight="1"
-        android:background="#fffafafa"
-        >
+        android:paddingTop="60dp"
+        android:id="@+id/top_box"
+        android:paddingBottom="10dp"
+        android:background="@drawable/vdo_top_back">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:id="@+id/user_image"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/mark"/>
 
         <TextView
             android:id="@+id/remoteUser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_margin="14dp"
-            android:text="Test user"
+            android:text="Ayush"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:layout_marginTop="3dp"
+            android:textFontWeight="600"
+            android:layout_marginHorizontal="20dp"
+            android:fontFamily="@font/open_sans"
             android:textSize="28sp"/>
 
         <TextView
@@ -28,47 +46,66 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Incoming call"
-            android:textSize="16sp"
-            android:textAllCaps="true"
-            />
-
+            android:text="Ringing"
+            android:layout_marginTop="6dp"
+            android:textColor="#E6C8C6C6"
+            android:textStyle="bold"
+            android:fontFamily="@font/open_sans"
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/darker_gray"
-        android:padding="0dip"
-        android:layout_weight="3"
-        android:contentDescription="Call background">
 
-    </ImageView>
+
 
     <RelativeLayout
         android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/black"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:gravity="center">
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_nav_back"
+        android:gravity="center"
+        android:paddingHorizontal="50dp"
+        android:paddingBottom="40dp"
+        android:layout_alignParentBottom="true">
 
-        <Button
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="73dp"
+            android:layout_height="73dp"
+            android:background="@drawable/call_back"
+            android:layout_alignParentLeft="true"
+            android:scaleType="centerCrop"
+            android:padding="18dp"
             android:id="@+id/answerButton"
+            android:src="@drawable/video_call"/>
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Answer"
-            android:textSize="20sp"
-            />
-        <Button
+            android:fontFamily="@font/michroma"
+            android:textColor="@color/white"
+            android:layout_marginLeft="8dp"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/answerButton"
+            android:textSize="12sp"/>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="73dp"
+            android:layout_height="73dp"
+            android:background="@drawable/callend_back"
+            android:scaleType="centerCrop"
+            android:padding="18dp"
             android:id="@+id/declineButton"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_baseline_call_end_24"/>
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:textSize="20sp"
-            android:layout_toRightOf="@+id/answerButton"/>
+            android:text="Decline"
+            android:fontFamily="@font/michroma"
+            android:textColor="@color/white"
+            android:layout_marginRight="8dp"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/declineButton"
+            android:textSize="12sp"/>
 
     </RelativeLayout>
 
-</LinearLayout>
+</RelativeLayout>

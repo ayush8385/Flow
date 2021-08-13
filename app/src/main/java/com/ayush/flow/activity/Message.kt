@@ -80,7 +80,7 @@ class Message : BaseActivity() {
     var userid:String=""
     var user_image:String=""
     var number:String=""
-    lateinit var photo:Bitmap
+    var photo:Bitmap?=null
     lateinit var status:TextView
     lateinit var firebaseUser: FirebaseUser
     lateinit var adapter: MessageAdapter
@@ -114,6 +114,7 @@ class Message : BaseActivity() {
     lateinit var send_con:ImageView
     lateinit var send_doc:ImageView
     lateinit var send_gall:ImageView
+
 
 
    // lateinit var option:ImageView
@@ -432,6 +433,18 @@ class Message : BaseActivity() {
            }
        }
 
+       send_gall.setOnClickListener {
+           if(Addprofile().checkpermission(this)){
+               var intent= Intent(Intent.ACTION_GET_CONTENT)
+               intent.type="image/*"
+               startActivityForResult(intent,112)
+               more_card.visibility=View.GONE
+           }
+           else{
+               Addprofile().requestStoragePermission()
+           }
+       }
+
         Dashboard().checkStatus()
         checkSeen().execute()
         searchElement()
@@ -672,7 +685,7 @@ class Message : BaseActivity() {
                 val tm: Date = Date(System.currentTimeMillis())
                if(application!=null){
                    if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                       MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false))
+                       MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false,false))
                    }
                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),userid))
                }
@@ -938,7 +951,7 @@ class Message : BaseActivity() {
         }
         if(photo!=null){
      //       image.setImageBitmap(photo)
-         sendImageMessageToUser(photo,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
+         sendImageMessageToUser(photo!!,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
     //        val path=saveToInternalStorage(photo).execute().get()
    //         uploadImage(name.text.toString(), photo,about.text.toString()).execute()
 //            val baos= ByteArrayOutputStream()
@@ -1047,23 +1060,23 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false,false))
                 }
                 ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),userid))
             }
 
 
             val baos= ByteArrayOutputStream()
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG,50,baos)
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG,25,baos)
             val fileinBytes: ByteArray =baos.toByteArray()
 
             val refStore= FirebaseDatabase.getInstance().reference
             val profilekey=refStore.push().key
 
             val store: StorageReference = FirebaseStorage.getInstance().reference.child("Chat Images/")
-            val path=store.child("$profilekey.jpg")
+            val pathupload=store.child("$profilekey.jpg")
             val uploadTask: StorageTask<*>
-            uploadTask=path.putBytes(fileinBytes)
+            uploadTask=pathupload.putBytes(fileinBytes)
 
             uploadTask.addOnSuccessListener(OnSuccessListener { taskSnapshot ->
                 val firebaseUri = taskSnapshot.storage.downloadUrl
@@ -1080,6 +1093,9 @@ class Message : BaseActivity() {
                     messageHashmap.put("seen",false)
 
                     ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
+
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false,true))
+                    adapter.notifyDataSetChanged()
                 }
             })
 

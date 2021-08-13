@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +39,8 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         val parent:RelativeLayout=view.findViewById(R.id.msg_par)
         val select:ImageView=view.findViewById(R.id.select)
         val image_msg:ImageView=view.findViewById(R.id.img_msg)
+        val progressBar:ProgressBar=view.findViewById(R.id.progressbar)
+      //  val box:CardView=view.findViewById(R.id.box)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -65,14 +68,28 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
 
         if(chat.type=="image"){
+
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),chat.message)
             holder.image_msg.setImageBitmap(BitmapFactory.decodeStream(FileInputStream(f)))
+
+            if(chat.sender==firebaseUser!!.uid){
+                if(chat.sent){
+                    holder.seen_txt.text="sent"
+                    holder.progressBar.visibility=View.GONE
+                }
+                else{
+                    holder.seen_txt.text="sending..."
+                    holder.progressBar.visibility=View.VISIBLE
+                }
+            }
+
         }
         else{
             holder.message.text=chat.message
+            holder.seen_txt.text="sent"
         }
         holder.time.text=chat.time
-        holder.seen_txt.text="sent"
+
         holder.select.visibility=View.GONE
 
         if(chat in selectedMsg){
@@ -167,6 +184,9 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             return 0
         }
     }
+
+
+
 
     fun updateList(msgList:ArrayList<MessageEntity>){
         allMsgs.clear()

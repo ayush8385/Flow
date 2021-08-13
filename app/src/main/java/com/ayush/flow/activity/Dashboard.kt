@@ -213,6 +213,17 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 startActivity(callScreen)
             }
 
+            override fun videoCall(name: String, id: String) {
+
+                val sinchServiceInterface=getSinchServiceInterface()
+                val callId=sinchServiceInterface!!.callUserVideo(id).callId
+                val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
+                callScreen.putExtra("name",name)
+                callScreen.putExtra("CALL_ID", callId)
+                Message().sendNotification(id,FirebaseAuth.getInstance().currentUser!!.uid,"",1)
+                startActivity(callScreen)
+            }
+
         })
         layoutManager=LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).reverseLayout=true
@@ -376,96 +387,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         var number:String=""
                         var imagepath:String=""
 
-                        if(type=="image"){
-                            val photo = GetImageFromUrl().execute(msg).get()
-
-                            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
-                                if (Environment.isExternalStorageManager()) {
-                                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                                    if(directory.exists()){
-                                        msg=messageKey+".jpg"
-                                        var fos: FileOutputStream =
-                                            FileOutputStream(File(directory, msg))
-                                        try {
-                                            photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        } finally {
-                                            try {
-                                                fos.close()
-                                            } catch (e: IOException) {
-                                                e.printStackTrace()
-                                            }
-                                        }
-                                    }
-                                    else{
-                                        directory.mkdirs()
-                                        if (directory.isDirectory) {
-                                            msg=messageKey+".jpg"
-                                            val fos =
-                                                FileOutputStream(File(directory, msg))
-                                            try {
-                                               photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                            } catch (e: Exception) {
-                                                e.printStackTrace()
-                                            } finally {
-                                                try {
-                                                    fos.close()
-                                                } catch (e: IOException) {
-                                                    e.printStackTrace()
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    //request for the permission
-                                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                    val uri = Uri.fromParts("package", packageName, null)
-                                    intent.data = uri
-                                    startActivity(intent)
-                                }
-                            }
-                            else{
-                                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                                if(directory.exists()){
-                                    msg=messageKey+".jpg"
-                                    var fos: FileOutputStream =
-                                        FileOutputStream(File(directory,msg))
-                                    try {
-                                        photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    } finally {
-                                        try {
-                                            fos.close()
-                                        } catch (e: IOException) {
-                                            e.printStackTrace()
-                                        }
-                                    }
-                                }
-                                else{
-                                    directory.mkdirs()
-                                    if (directory.isDirectory) {
-                                        msg=messageKey+".jpg"
-                                        val fos =
-                                            FileOutputStream(File(directory, msg))
-                                        try {
-                                            photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        } finally {
-                                            try {
-                                                fos.close()
-                                            } catch (e: IOException) {
-                                                e.printStackTrace()
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-
 
                         if(ChatViewModel(application).isUserExist(sender)){
                             //get image and name from room db
@@ -474,7 +395,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=chatEntity.number
                             imagepath=chatEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
                             }
                             else{
                                 ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
@@ -486,7 +407,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=contactEntity.number
                             imagepath=contactEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
                             }
                             else{
                                 ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
@@ -495,8 +416,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         else{
                             //get number as a name from firebase
                             //get image and sav it to local storage and ibternal path from firebase
-                            val ref=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
-                            ref.addValueEventListener(object :ValueEventListener{
+                            val refer=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
+                            refer.addValueEventListener(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     number=snapshot.child("number").value.toString()
                                     if(type=="image"){
@@ -526,11 +447,102 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             })
                         }
 
-                        if(!received){
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false))
-                            if(name==""){
-                                name=number
+                        if(type=="image"){
+
+                        //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
+
+                            val photo = GetImageFromUrl().execute(msg).get()
+
+                            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+                                if (Environment.isExternalStorageManager()) {
+                                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                                    if(directory.exists()){
+                                        msg=messageKey+".jpg"
+                                        var fos: FileOutputStream =
+                                            FileOutputStream(File(directory, msg))
+                                        try {
+                                            photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        } finally {
+                                            try {
+                                                fos.close()
+                                            } catch (e: IOException) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        directory.mkdirs()
+                                        if (directory.isDirectory) {
+                                            msg=messageKey+".jpg"
+                                            val fos =
+                                                FileOutputStream(File(directory, msg))
+                                            try {
+                                               photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            } finally {
+                                                try {
+                                                    fos.close()
+                                                } catch (e: IOException) {
+                                                    e.printStackTrace()
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    //request for the permission
+                                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                                    val uri = Uri.fromParts("package", packageName, null)
+                                    intent.data = uri
+                                    startActivity(intent)
+                                }
                             }
+                            else{
+                                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                                if(directory.exists()){
+                                    msg=messageKey+".jpg"
+                                    var fos: FileOutputStream =
+                                        FileOutputStream(File(directory,msg))
+                                    try {
+                                        photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    } finally {
+                                        try {
+                                            fos.close()
+                                        } catch (e: IOException) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                                else{
+                                    directory.mkdirs()
+                                    if (directory.isDirectory) {
+                                        msg=messageKey+".jpg"
+                                        val fos =
+                                            FileOutputStream(File(directory, msg))
+                                        try {
+                                            photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        } finally {
+                                            try {
+                                                fos.close()
+                                            } catch (e: IOException) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if(!received){
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false,false))
+
+
                            // sendNotification(sender,name,msg,imagepath,application).execute()
                             val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
                             refer.addListenerForSingleValueEvent(object :ValueEventListener{

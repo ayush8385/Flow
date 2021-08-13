@@ -4,24 +4,31 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
+import android.widget.RelativeLayout
 import android.widget.TextView
+import com.ayush.flow.R
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.video.VideoCallListener
+import com.sinch.android.rtc.video.VideoScalingType
+import de.hdodenhof.circleimageview.CircleImageView
 
 
 class Incoming_vdo : BaseActivity() {
     private var mCallId: String? = null
     private var mAudioPlayer: AudioPlayer? = null
+    lateinit var localView:RelativeLayout
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_incoming_vdo)
-        val answer: Button = findViewById<View>(com.ayush.flow.R.id.answerButton) as Button
+        val answer: CircleImageView = findViewById<View>(com.ayush.flow.R.id.answerButton) as CircleImageView
         answer.setOnClickListener(mClickListener)
-        val decline: Button = findViewById<View>(com.ayush.flow.R.id.declineButton) as Button
+        val decline: CircleImageView = findViewById<View>(com.ayush.flow.R.id.declineButton) as CircleImageView
         decline.setOnClickListener(mClickListener)
+
+        localView=findViewById(R.id.localVideo)
+
         mAudioPlayer = AudioPlayer(this)
         mAudioPlayer!!.playRingtone()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)
@@ -30,6 +37,11 @@ class Incoming_vdo : BaseActivity() {
     override fun onServiceConnected() {
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
+
+            val vc = sinchServiceInterface!!.getVideoController()
+            vc!!.setLocalVideoResizeBehaviour(VideoScalingType.ASPECT_FILL)
+            localView.addView(vc.localView)
+
             call.addCallListener(SinchCallListener())
             val remoteUser = findViewById<View>(com.ayush.flow.R.id.remoteUser) as TextView
             remoteUser.setText(call.getRemoteUserId())
@@ -47,6 +59,8 @@ class Incoming_vdo : BaseActivity() {
             val intent = Intent(this, Outgoing_vdo::class.java)
             intent.putExtra(SinchService.CALL_ID, mCallId)
             startActivity(intent)
+            finish()
+            localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
         } else {
             finish()
         }
@@ -86,11 +100,11 @@ class Incoming_vdo : BaseActivity() {
         }
 
         override fun onVideoTrackPaused(p0: Call?) {
-            TODO("Not yet implemented")
+            p0!!.pauseVideo()
         }
 
         override fun onVideoTrackResumed(p0: Call?) {
-            TODO("Not yet implemented")
+            p0!!.resumeVideo()
         }
     }
 

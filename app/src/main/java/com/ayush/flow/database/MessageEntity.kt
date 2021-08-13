@@ -13,5 +13,6 @@ data class MessageEntity(
     @ColumnInfo(name = "time") val time : String,
     @ColumnInfo(name = "msg_type") val type: String,
     @ColumnInfo(name = "recev") val recev:Boolean,
-    @ColumnInfo(name = "seen") val seen:Boolean
+    @ColumnInfo(name = "seen") val seen:Boolean,
+    @ColumnInfo(name = "sent") val sent:Boolean
 )
