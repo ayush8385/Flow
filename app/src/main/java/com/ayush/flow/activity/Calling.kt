@@ -3,18 +3,22 @@ package com.ayush.flow.activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.PowerManager
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import com.ayush.flow.R
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -24,27 +28,22 @@ import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
+import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
-
-
-
-
-
-
-
-
-
-
-
+import java.io.File
+import java.io.FileInputStream
 
 
 class Calling : BaseActivity(){
     private var mCallId: String? = null
+    lateinit var mCallerimg:CircleImageView
     private var mAudioPlayer: AudioPlayer? = null
     lateinit var remoteUser:TextView
     var mAction=""
     var sensorManager: SensorManager? = null
     var proximitySensor: Sensor? = null
+    lateinit var backimg: ImageView
+    lateinit var pickintent:Intent
     protected var proximityWakelock: PowerManager.WakeLock? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +53,11 @@ class Calling : BaseActivity(){
         answer.setOnClickListener(mClickListener)
         val decline = findViewById(com.ayush.flow.R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
+
+        mCallerimg=findViewById(R.id.user_img)
+        backimg=findViewById(R.id.back_img)
+
+        pickintent = Intent(this, Outgoing::class.java)
 
         window.addFlags(
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
@@ -129,7 +133,6 @@ class Calling : BaseActivity(){
                 mAction= intent.action!!
             }
         }
-
     }
 
 
@@ -138,13 +141,23 @@ class Calling : BaseActivity(){
     override fun onServiceConnected() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
         if (call != null) {
+
             call.addCallListener(SinchCallListener())
+
             val cons=ContactViewModel(application).getContact(call.remoteUserId)
             if(cons == null){
                 val ref=FirebaseDatabase.getInstance().reference.child("Users")
                 ref.addValueEventListener(object :ValueEventListener{
                     override fun onDataChange(snapshot: DataSnapshot) {
                         remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
+
+                        val url=snapshot.child("profile_photo").value.toString()
+
+                        if(url!=""){
+                            Picasso.get().load(url).into(mCallerimg)
+                            Picasso.get().load(url).into(backimg)
+
+                        }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
@@ -155,11 +168,24 @@ class Calling : BaseActivity(){
             }
             else{
                 remoteUser.setText(cons.name)
+
+                pickintent.putExtra(SinchService.CALL_ID, mCallId)
+                pickintent.putExtra("name",remoteUser.text)
+
+                if(cons.image!=""){
+                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
+                    val b = BitmapFactory.decodeStream(FileInputStream(f))
+                    mCallerimg.setImageBitmap(b)
+
+                    backimg.setImageBitmap(b)
+
+                    pickintent.putExtra("image",cons.image)
+                }
             }
 
             if ("answer".equals(mAction)) {
                 mAction = "";
-                answerClicked();
+                answerClicked(pickintent);
             } else if ("ignore".equals(mAction)) {
                 mAction = "";
                 declineClicked();
@@ -171,14 +197,12 @@ class Calling : BaseActivity(){
         }
     }
 
-    private fun answerClicked() {
+    private fun answerClicked(intent: Intent) {
         mAudioPlayer!!.stopRingtone()
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
         if (call != null) {
             call.answer()
-            val intent = Intent(this, Outgoing::class.java)
-            intent.putExtra(SinchService.CALL_ID, mCallId)
-            intent.putExtra("name",remoteUser.text)
+
             startActivity(intent)
         } else {
             finish()
@@ -217,7 +241,7 @@ class Calling : BaseActivity(){
 
     private val mClickListener = View.OnClickListener { v ->
         when (v.id) {
-            com.ayush.flow.R.id.pick_btn -> answerClicked()
+            com.ayush.flow.R.id.pick_btn -> answerClicked(pickintent)
             com.ayush.flow.R.id.end_btn -> declineClicked()
         }
     }

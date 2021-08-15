@@ -72,13 +72,15 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                             // here is example for notifying user about missed/canceled call:
                             if (result != null && result.isValid && result.isCall) {
                                 val callResult = result.callResult
-                                Toast.makeText(applicationContext,"Here I am",Toast.LENGTH_SHORT).show()
+
                                 if (callResult != null && result.displayName != null) {
                                     val editor: SharedPreferences.Editor = sharedPreferences.edit()
                                     editor.putString(callResult.remoteUserId, result.displayName)
                                     editor.apply()
+                                    Toast.makeText(applicationContext,"Here I am", Toast.LENGTH_SHORT).show()
                                 }
                                 if (callResult != null && callResult.isCallCanceled) {
+
                                     var displayName = result.displayName
                                     if (displayName == null) {
                                         displayName = sharedPreferences.getString(

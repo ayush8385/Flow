@@ -292,6 +292,7 @@ class Message : BaseActivity() {
            val callScreen = Intent(this, Outgoing::class.java)
            callScreen.putExtra("name",userName)
            callScreen.putExtra("CALL_ID", callId)
+           callScreen.putExtra("image",user_image)
            sendNotification(userid,firebaseUser.uid,"",1)
            startActivity(callScreen)
 
@@ -304,6 +305,7 @@ class Message : BaseActivity() {
            val callScreen = Intent(this, Outgoing_vdo::class.java)
            callScreen.putExtra("name",userName)
            callScreen.putExtra("CALL_ID", callId)
+           callScreen.putExtra("image",user_image)
            sendNotification(userid,firebaseUser.uid,"",1)
            startActivity(callScreen)
        }
@@ -332,7 +334,7 @@ class Message : BaseActivity() {
 //        }
 
         if(user_image!=""){
-            setIconImage(image).execute()
+            setIconImage(image,user_image).execute()
         }
 
         layoutManager= LinearLayoutManager(this)
@@ -710,7 +712,7 @@ class Message : BaseActivity() {
         }
     }
 
-    inner class setIconImage(val image:CircleImageView):AsyncTask<Void,Void,Boolean>(){
+    inner class setIconImage(val image:CircleImageView,val user_image:String):AsyncTask<Void,Void,Boolean>(){
         var b: Bitmap?=null
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)

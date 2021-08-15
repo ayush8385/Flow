@@ -1,8 +1,10 @@
 package com.ayush.flow.activity
 
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -17,6 +19,8 @@ import com.sinch.android.rtc.calling.CallState
 import com.sinch.android.rtc.video.VideoCallListener
 import com.sinch.android.rtc.video.VideoScalingType
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
+import java.io.FileInputStream
 import java.util.*
 
 
@@ -49,6 +53,7 @@ class Outgoing_vdo : BaseActivity() {
     lateinit var flip:CircleImageView
     lateinit var openfull:CircleImageView
     lateinit var localbox:RelativeLayout
+    lateinit var mCallerimg:CircleImageView
     var local:Boolean=false
     var paused:Boolean=false
     var muted:Boolean=false
@@ -81,6 +86,7 @@ class Outgoing_vdo : BaseActivity() {
         mCallState = findViewById<View>(com.ayush.flow.R.id.callState) as TextView
         localView = findViewById<View>(com.ayush.flow.R.id.localVideo) as RelativeLayout
         remoteview = findViewById<View>(com.ayush.flow.R.id.remoteVideo) as RelativeLayout
+        mCallerimg=findViewById(R.id.user_image)
 
         top=findViewById(R.id.top_box) as LinearLayout
         bottom=findViewById(R.id.bottomPanel) as RelativeLayout
@@ -122,6 +128,18 @@ class Outgoing_vdo : BaseActivity() {
                 local=false
 
 
+                offvdo.setOnClickListener {
+                    if(paused){
+                        call.resumeVideo()
+                        paused=false
+                    }
+                    else{
+                        call.pauseVideo()
+                        paused=true
+                    }
+                }
+
+
             }
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.")
@@ -138,22 +156,20 @@ class Outgoing_vdo : BaseActivity() {
         }
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
-            mCallerName!!.setText(call.getRemoteUserId())
+            mCallerName!!.text=intent.getStringExtra("name")
             mCallState!!.setText(call.getState().toString())
+
+            if(intent.getStringExtra("image")!=""){
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
+                val b = BitmapFactory.decodeStream(FileInputStream(f))
+                mCallerimg.setImageBitmap(b)
+            }
+
             if (call.getState() === CallState.ESTABLISHED) {
                 //when the call is established, addVideoViews configures the video to  be shown
                 addVideoViews()
 
-                offvdo.setOnClickListener {
-                    if(paused){
-                        call.resumeVideo()
-                        paused=false
-                    }
-                    else{
-                        call.pauseVideo()
-                        paused=true
-                    }
-                }
+
             }
         }
     }

@@ -1,24 +1,36 @@
 package com.ayush.flow.activity
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
+import com.ayush.flow.database.ContactViewModel
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.video.VideoCallListener
 import com.sinch.android.rtc.video.VideoScalingType
+import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
+import java.io.FileInputStream
 
 
 class Incoming_vdo : BaseActivity() {
     private var mCallId: String? = null
     private var mAudioPlayer: AudioPlayer? = null
     lateinit var localView:RelativeLayout
+    lateinit var mCallerimg:CircleImageView
+    lateinit var pickintent:Intent
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_incoming_vdo)
@@ -28,10 +40,13 @@ class Incoming_vdo : BaseActivity() {
         decline.setOnClickListener(mClickListener)
 
         localView=findViewById(R.id.localVideo)
+        mCallerimg=findViewById(R.id.user_image)
 
         mAudioPlayer = AudioPlayer(this)
         mAudioPlayer!!.playRingtone()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)
+
+        pickintent = Intent(this, Outgoing_vdo::class.java)
     }
 
     override fun onServiceConnected() {
@@ -44,7 +59,43 @@ class Incoming_vdo : BaseActivity() {
 
             call.addCallListener(SinchCallListener())
             val remoteUser = findViewById<View>(com.ayush.flow.R.id.remoteUser) as TextView
-            remoteUser.setText(call.getRemoteUserId())
+
+            val cons= ContactViewModel(application).getContact(call.remoteUserId)
+
+            if(cons == null){
+                val ref= FirebaseDatabase.getInstance().reference.child("Users")
+                ref.addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
+
+                        val url=snapshot.child("profile_photo").value.toString()
+
+                        if(url!=""){
+                            Picasso.get().load(url).into(mCallerimg)
+
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+
+                })
+            }
+            else{
+                remoteUser.text = cons.name
+
+                pickintent.putExtra(SinchService.CALL_ID, mCallId)
+                pickintent.putExtra("name",remoteUser.text)
+
+                if(cons.image!=""){
+                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
+                    val b = BitmapFactory.decodeStream(FileInputStream(f))
+                    mCallerimg.setImageBitmap(b)
+
+                    pickintent.putExtra("image",cons.image)
+                }
+            }
         } else {
             Log.e(TAG, "Started with invalid callId, aborting")
             finish()
@@ -56,9 +107,8 @@ class Incoming_vdo : BaseActivity() {
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
             call.answer()
-            val intent = Intent(this, Outgoing_vdo::class.java)
-            intent.putExtra(SinchService.CALL_ID, mCallId)
-            startActivity(intent)
+
+            startActivity(pickintent)
             finish()
             localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
         } else {

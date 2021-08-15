@@ -1,11 +1,14 @@
 package com.ayush.flow.activity
 
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -17,6 +20,8 @@ import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
+import java.io.FileInputStream
 import java.util.*
 
 
@@ -30,11 +35,13 @@ class Outgoing : BaseActivity() {
     lateinit var mCallDuration: TextView
     lateinit var mCallState: TextView
     lateinit var mCallerName: TextView
+    lateinit var mCallerimg:CircleImageView
     lateinit var mute:CircleImageView
     var apiService: APIService?=null
     lateinit var speeaker:CircleImageView
     var isMute:Boolean=false
     var isSpeaker:Boolean=false
+    lateinit var backimg:ImageView
 
 
     private inner class UpdateCallDurationTask : TimerTask() {
@@ -51,6 +58,11 @@ class Outgoing : BaseActivity() {
         mCallDuration = findViewById<View>(R.id.timer) as TextView
         mCallerName = findViewById<View>(R.id.user_name) as TextView
         mCallState = findViewById<View>(R.id.status) as TextView
+        mCallerimg=findViewById(R.id.user_img)
+        backimg=findViewById(R.id.back_img)
+
+
+
         apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
         val endCallButton = findViewById<View>(R.id.end_btn) as CircleImageView
         endCallButton.setOnClickListener { endCall() }
@@ -100,6 +112,14 @@ class Outgoing : BaseActivity() {
             call.addCallListener(SinchCallListener())
             mCallerName.text=intent.getStringExtra("name")
             mCallState.setText(call.getState().toString())
+
+            if(intent.getStringExtra("image")!=""){
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
+                val b = BitmapFactory.decodeStream(FileInputStream(f))
+                mCallerimg.setImageBitmap(b)
+
+                backimg.setImageBitmap(b)
+            }
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.")
             finish()
