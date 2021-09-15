@@ -25,6 +25,12 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE id = :id")
     fun getContactbyId(id : String) : ContactEntity
 
+    @Query("UPDATE contacts SET contact_image = :path WHERE id = :id")
+    fun update(id: String, path: String)
+
+    @Query("UPDATE contacts SET contact_name = :name, contact_number = :phoneNum WHERE id = :userid")
+    fun updateDetails(userid: String, name: String?, phoneNum: String)
+
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
 }

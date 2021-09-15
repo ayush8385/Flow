@@ -21,8 +21,8 @@ class ChatRepository(private val chatDao: ChatDao) {
         return chatDao.getChatbyId(userid)
     }
 
-    fun update(mid: String, img: String, name: String) {
-        chatDao.update(mid,img,name)
+    fun update(id: String, img: String) {
+        chatDao.update(id,img)
     }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)

@@ -6,7 +6,6 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
 import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE
 import android.app.NotificationManager.IMPORTANCE_HIGH
-import android.app.PendingIntent.FLAG_ONE_SHOT
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.*
 import android.graphics.*
@@ -184,83 +183,6 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
         return (appProcessInfo.importance == IMPORTANCE_FOREGROUND
                 || appProcessInfo.importance == IMPORTANCE_VISIBLE)
     }
-
-
-    @SuppressLint("ResourceAsColor")
-    fun sendCallnf(user: String, name: String, callID: String?, context: Context?) {
-
-        val notId: Int = Regex("[\\D]").replace(user, "").toInt()
-            val receiveCallAction = Intent(
-                context,
-                CallNotificationActionReceiver::class.java
-            )
-            receiveCallAction.putExtra(
-                "ConstantApp.CALL_RESPONSE_ACTION_KEY",
-                "ConstantApp.CALL_RECEIVE_ACTION"
-            )
-            receiveCallAction.putExtra("ACTION_TYPE", "RECEIVE_CALL")
-            receiveCallAction.putExtra("NOTIFICATION_ID", notId)
-            receiveCallAction.action = "RECEIVE_CALL"
-            val cancelCallAction = Intent(
-               context,
-                CallNotificationActionReceiver::class.java
-            )
-            cancelCallAction.putExtra(
-                "ConstantApp.CALL_RESPONSE_ACTION_KEY",
-                "ConstantApp.CALL_CANCEL_ACTION"
-            )
-            cancelCallAction.putExtra("ACTION_TYPE", "CANCEL_CALL")
-            cancelCallAction.putExtra("NOTIFICATION_ID", notId)
-            cancelCallAction.action = "CANCEL_CALL"
-
-
-            val receiveCallPendingIntent = PendingIntent.getBroadcast(
-              context,
-                1200,
-                receiveCallAction,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            val cancelCallPendingIntent = PendingIntent.getBroadcast(
-                context,
-                1201,
-                cancelCallAction,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-
-
-        val intent = Intent(context, Calling::class.java)
-        intent.putExtra("CALL_ID", callID)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(context, notId, intent, FLAG_ONE_SHOT)
-        val notificationBuilder =
-            NotificationCompat.Builder(context!!, "com.ayush.flow")
-                .setContentIntent(pendingIntent)
-                .setContentTitle(name)
-                .setContentText("Incoming Audio Call...")
-                .setSmallIcon(R.drawable.flow)
-                .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setOngoing(true)
-                .setAutoCancel(true)
-                .addAction(
-                        R.drawable.icons8_call,
-                        "Reject",
-                        cancelCallPendingIntent
-                    )
-                    .addAction(
-                        R.drawable.icons8_video_call,
-                        "Accept",
-                        receiveCallPendingIntent
-                    )
-                .setColor(R.color.purple_500)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-
-        val notificationManager = NotificationManagerCompat.from(context)
-
-        notificationManager.notify(notId, notificationBuilder.build())
-    }
-
 
 
 
@@ -455,8 +377,12 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
     inner class loadImage(val image:String): AsyncTask<Void, Void, Bitmap>(){
 
         override fun doInBackground(vararg params: Void?): Bitmap {
+            var b:Bitmap?=null
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-            return BitmapFactory.decodeStream(FileInputStream(f))
+            if(f.exists()){
+                b = BitmapFactory.decodeStream(FileInputStream(f))
+            }
+             return b!!
         }
     }
 

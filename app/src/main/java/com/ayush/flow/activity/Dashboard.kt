@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.*
 import android.provider.ContactsContract
 import android.provider.Settings
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -37,10 +38,14 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.sinch.android.rtc.SinchError
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+
+
+
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -86,36 +91,17 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         contact=findViewById(R.id.contact)
         search=findViewById(R.id.chat_searchview)
         profile=findViewById(R.id.user_img)
+
+
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
+        openChatHome()
 
-       openChatHome()
         profile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
         }
-
-
-//        chatAdapter= ChatAdapter(this@Dashboard)
-//        layoutManager=LinearLayoutManager(this)
-//        (layoutManager as LinearLayoutManager).reverseLayout=true
-//        chatsRecyclerView.layoutManager=layoutManager
-//
-//        chatsRecyclerView.adapter=chatAdapter
-//
-//        ChatViewModel(application).allChats.observe(this, Observer { list->
-//            list?.let {
-//                chatList.clear()
-//                chatList.addAll(list)
-//                chatAdapter.updateList(list)
-//            }
-//
-//        })
-
-//        storyRecyclerView.adapter=StoryAdapter(this,storyList)
-//        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-
 
         contact.setOnClickListener {
             startActivity(Intent(this, Contact::class.java))
@@ -160,17 +146,41 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             return@setOnNavigationItemSelectedListener true
         }
 
-       searchElement()
-        createNotificationChannel().execute()
+        searchElement()
 
        if(checkpermission()){
-          // loadContacts().execute()
+           loadContacts(application).execute()
         }
         else{
             requestContactPermission()
         }
 
         UpdateToken()
+    }
+
+    inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
+        override fun doInBackground(vararg params: Void?): Boolean {
+            for(chat in chatList){
+                if(chat.name==""){
+                    val ref=FirebaseDatabase.getInstance().reference.child("Users").child(chat.id)
+                    ref.addValueEventListener(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val image_url=snapshot.child("profile_photo").value.toString()
+                            if(image_url!=""){
+                                GetImageFromUrl(chat.id,application).execute(image_url)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+
+                        }
+
+                    })
+                }
+            }
+            return true
+        }
+
     }
 
     private fun openCallHome() {
@@ -225,13 +235,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             }
 
         })
+
         layoutManager=LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).reverseLayout=true
         chatsRecyclerView.layoutManager=layoutManager
         runAnimation(chatsRecyclerView,1)
         chatsRecyclerView.adapter=chatAdapter
-
-
 
         chatsRecyclerView.layoutAnimation=controller
         chatsRecyclerView.scheduleLayoutAnimation()
@@ -240,9 +249,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             list?.let {
                 chatList.clear()
                 chatList.addAll(list)
-                chatAdapter.updateList(list)
+
+                chatAdapter.updateList(chatList)
             }
         })
+
+        updateUnsavedImage().execute()
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -262,6 +274,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //    }
 
     fun searchElement(){
+
         search.queryHint="Search Your friends..."
         search.setIconifiedByDefault(false)
         val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
@@ -293,7 +306,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         for(item in chatList){
             if(item.name.toLowerCase().contains(text.toLowerCase())||item.number.contains(text)){
-                //recyclerView.scrollToPosition(mChatlist.indexOf(item))
                 filteredlist.add(item)
             }
 //            else if(item.number.toLowerCase().contains(text.toLowerCase())){
@@ -369,8 +381,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
             ref.addValueEventListener(object : ValueEventListener {
                 @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for(snapshot in snapshot.children){
+
                         val messageKey=snapshot.child("mid").value.toString()
                         val user=snapshot.child("userid").value.toString()
                         val sender=snapshot.child("sender").value.toString()
@@ -415,7 +429,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         }
                         else{
                             //get number as a name from firebase
-                            //get image and sav it to local storage and ibternal path from firebase
+                            //get image and sav it to local storage and internal path from firebase
                             val refer=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
                             refer.addValueEventListener(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -428,16 +442,15 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     }
                                     val image_url=snapshot.child("profile_photo").value.toString()
                                     if(image_url!=""){
-                                        val photo=GetImageFromUrl().execute(image_url).get()
-                                        imagepath=saveToInternalStorage(photo,user).execute().get()
+                                        GetImageFromUrl(sender,application).execute(image_url)
                                         if(type=="image"){
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Image", sdf.format(tm),sender))
                                         }
                                         else{
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),sender))
                                         }
                                     }
-                                    //     ContactViewModel(application).inserContact(ContactEntity(name,number,imagepath,sender))
+                                    //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
 
                                 }
                                 override fun onCancelled(error: DatabaseError) {
@@ -451,7 +464,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
                         //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
-                            val photo = GetImageFromUrl().execute(msg).get()
+                          //  val photo = GetImageFromUrl(userid).execute(msg).get()
 
                             if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                                 if (Environment.isExternalStorageManager()) {
@@ -461,7 +474,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                         var fos: FileOutputStream =
                                             FileOutputStream(File(directory, msg))
                                         try {
-                                            photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                      //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
                                         } catch (e: Exception) {
                                             e.printStackTrace()
                                         } finally {
@@ -479,7 +492,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                             val fos =
                                                 FileOutputStream(File(directory, msg))
                                             try {
-                                               photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                        //       photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
                                             } catch (e: Exception) {
                                                 e.printStackTrace()
                                             } finally {
@@ -506,7 +519,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     var fos: FileOutputStream =
                                         FileOutputStream(File(directory,msg))
                                     try {
-                                        photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                   //     photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     } finally {
@@ -524,7 +537,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                         val fos =
                                             FileOutputStream(File(directory, msg))
                                         try {
-                                            photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                 //           photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
                                         } catch (e: Exception) {
                                             e.printStackTrace()
                                         } finally {
@@ -774,7 +787,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     inner class loadContacts(val applicat: Application) : AsyncTask<Void, Void, Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
-            var firebaseUser= FirebaseAuth.getInstance().currentUser!!
+            var firebaseUser=FirebaseAuth.getInstance().currentUser!!
             val contentResolver = applicat.contentResolver
             val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
@@ -791,21 +804,31 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 }
 
                 val ref=FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addListenerForSingleValueEvent(object :ValueEventListener{
+                ref.addValueEventListener(object :ValueEventListener{
                     override fun onDataChange(snapshot: DataSnapshot) {
                         for(snapshot in snapshot.children){
                             val num=snapshot.child("number").value.toString()
                             val userid=snapshot.child("uid").value.toString()
                             val url=snapshot.child("profile_photo").value.toString()
-                            if(userid!=firebaseUser.uid){
-                                if(phone_num==num){
-                                    var imagepath=""
-                                    if(url!=""){
-                                        val photo=GetImageFromUrl().execute(url).get()
-                                        imagepath=saveToInternalStorage(photo,userid).execute().get()
-                                    }
-                                    ContactViewModel(applicat).inserContact(ContactEntity(name,phone_num,imagepath,userid))
+                            if(userid!=firebaseUser.uid && phone_num==num){
+
+                                if(ContactViewModel(application).isUserExist(userid)){
+                                    ContactViewModel(application).updateDetails(userid,name,phone_num)
                                 }
+                                else{
+                                    ContactViewModel(applicat).inserContact(ContactEntity(name,phone_num,"",userid))
+                                }
+
+                                val sdf = SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z")
+                                var currentDateandTime: String = sdf.format(Date())
+                                Log.d("tiome1......",currentDateandTime)
+
+                                if(url!=""){
+                                   GetImageFromUrl(userid,application).execute(url)
+                                }
+
+                                currentDateandTime = sdf.format(Date())
+                                Log.d("time......",currentDateandTime)
                             }
                         }
                     }
@@ -822,16 +845,25 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
     }
 
-    inner class saveToInternalStorage:AsyncTask<Void,Void,String>{
+    inner class saveToInternalStorage:AsyncTask<Void,Void,Boolean>{
         var path:String?=null
         var user:String?=null
         var bitmapImage:Bitmap?=null
-        constructor(bitmapImage: Bitmap, user: String) : super() {
+        var app:Application?=null
+        constructor(bitmapImage: Bitmap, user: String,appl: Application) : super() {
             this.user=user
             this.bitmapImage=bitmapImage
+            app=appl
         }
 
-        override fun doInBackground(vararg params: Void?): String {
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            ChatViewModel(app!!).updatetChat(user!!,path!!)
+            ContactViewModel(app!!).updateImage(user!!,path!!)
+            chatAdapter.notifyDataSetChanged()
+        }
+
+        override fun doInBackground(vararg params: Void?): Boolean {
             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
             if(directory.exists()){
                 path=user+".jpg"
@@ -868,9 +900,39 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     }
                 }
             }
-            return path!!
+            return true
         }
 
+    }
+
+
+    inner class GetImageFromUrl(val userid: String,val appl:Application) : AsyncTask<String?, Void?, Bitmap>() {
+        var bmp:Bitmap?=null
+
+        override fun onPostExecute(result: Bitmap?) {
+            super.onPostExecute(result)
+            saveToInternalStorage(bmp!!,userid,appl).execute()
+        }
+
+        override fun doInBackground(vararg url: String?): Bitmap {
+            val stringUrl = url[0]
+            bmp= null
+
+            val options = BitmapFactory.Options()
+            options.inSampleSize = 1
+            while (options.inSampleSize <= 32) {
+                val inputStream = URL(stringUrl).openStream()
+                try {
+                    bmp= BitmapFactory.decodeStream(inputStream, null, options)
+                    inputStream.close()
+                    break
+                } catch (outOfMemoryError: OutOfMemoryError) {
+                }
+                options.inSampleSize++
+            }
+
+         return bmp!!
+        }
     }
 
     override fun onResume() {

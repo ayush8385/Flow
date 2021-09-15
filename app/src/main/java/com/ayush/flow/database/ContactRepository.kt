@@ -16,6 +16,14 @@ class ContactRepository(private val contactDao: ContactDao) {
         return contactDao.getContactbyId(userid)
     }
 
+    fun updateImg(id: String, path: String) {
+        contactDao.update(id,path)
+    }
+
+    fun updateDetails(userid: String, name: String?, phoneNum: String) {
+        contactDao.updateDetails(userid,name,phoneNum)
+    }
+
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

@@ -33,7 +33,7 @@ class ChatViewModel(application: Application):AndroidViewModel(application) {
         repository.delete(userid)
     }
 
-    fun updatetChat(mid: String, img: String,name: String) =viewModelScope.launch (Dispatchers.IO){
-        repository.update(mid,img,name)
+    fun updatetChat(id: String, img: String) =viewModelScope.launch (Dispatchers.IO){
+        repository.update(id,img)
     }
 }

@@ -1,11 +1,14 @@
 package com.ayush.flow.activity
 
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
@@ -31,6 +34,7 @@ class Incoming_vdo : BaseActivity() {
     lateinit var localView:RelativeLayout
     lateinit var mCallerimg:CircleImageView
     lateinit var pickintent:Intent
+    var mAction=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_incoming_vdo)
@@ -47,11 +51,37 @@ class Incoming_vdo : BaseActivity() {
         mCallId = intent.getStringExtra(SinchService.CALL_ID)
 
         pickintent = Intent(this, Outgoing_vdo::class.java)
+
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val intent=intent
+        if(intent!=null){
+            if(intent.getSerializableExtra(SinchService.CALL_ID)!=null){
+                mCallId = getIntent().getStringExtra(SinchService.CALL_ID)
+            }
+            val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(1)
+            if(intent.action!=null){
+                mAction= intent.action!!
+            }
+        }
     }
 
     override fun onServiceConnected() {
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
+
+            if ("ignore".equals(mAction)) {
+                mAction = "";
+                declineClicked()
+            }
 
             val vc = sinchServiceInterface!!.getVideoController()
             vc!!.setLocalVideoResizeBehaviour(VideoScalingType.ASPECT_FILL)
@@ -85,7 +115,6 @@ class Incoming_vdo : BaseActivity() {
             else{
                 remoteUser.text = cons.name
 
-                pickintent.putExtra(SinchService.CALL_ID, mCallId)
                 pickintent.putExtra("name",remoteUser.text)
 
                 if(cons.image!=""){
@@ -96,6 +125,7 @@ class Incoming_vdo : BaseActivity() {
                     pickintent.putExtra("image",cons.image)
                 }
             }
+
         } else {
             Log.e(TAG, "Started with invalid callId, aborting")
             finish()
@@ -107,10 +137,10 @@ class Incoming_vdo : BaseActivity() {
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
             call.answer()
-
+            localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
+            pickintent.putExtra(SinchService.CALL_ID, mCallId)
             startActivity(pickintent)
             finish()
-            localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
         } else {
             finish()
         }
@@ -130,6 +160,7 @@ class Incoming_vdo : BaseActivity() {
             val cause: CallEndCause = call.getDetails().getEndCause()
             Log.d(TAG, "Call ended, cause: $cause")
             mAudioPlayer!!.stopRingtone()
+            localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
             finish()
         }
 

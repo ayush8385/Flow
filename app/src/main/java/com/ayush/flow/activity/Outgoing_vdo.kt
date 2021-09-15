@@ -1,10 +1,8 @@
 package com.ayush.flow.activity
 
-import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -19,8 +17,6 @@ import com.sinch.android.rtc.calling.CallState
 import com.sinch.android.rtc.video.VideoCallListener
 import com.sinch.android.rtc.video.VideoScalingType
 import de.hdodenhof.circleimageview.CircleImageView
-import java.io.File
-import java.io.FileInputStream
 import java.util.*
 
 
@@ -114,6 +110,9 @@ class Outgoing_vdo : BaseActivity() {
     public override fun onServiceConnected() {
         val call: Call = sinchServiceInterface!!.getCall(mCallId)
         if (call != null) {
+
+            call.answer()
+
             if (!mAddedListener) {
                 call.addCallListener(SinchCallListener())
                 mAddedListener = true
@@ -122,12 +121,10 @@ class Outgoing_vdo : BaseActivity() {
 
                 val vc=sinchServiceInterface!!.getVideoController()
                 vc!!.setLocalVideoResizeBehaviour(VideoScalingType.ASPECT_FILL)
-                vc!!.setLocalVideoZOrder(false)
-
-                remoteview.addView(vc!!.localView)
-                local=false
+                vc!!.setLocalVideoZOrder(true)
 
 
+                call.resumeVideo()
                 offvdo.setOnClickListener {
                     if(paused){
                         call.resumeVideo()
@@ -159,11 +156,11 @@ class Outgoing_vdo : BaseActivity() {
             mCallerName!!.text=intent.getStringExtra("name")
             mCallState!!.setText(call.getState().toString())
 
-            if(intent.getStringExtra("image")!=""){
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
-                val b = BitmapFactory.decodeStream(FileInputStream(f))
-                mCallerimg.setImageBitmap(b)
-            }
+//            if(intent.getStringExtra("image")!=""){
+//                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
+//                val b = BitmapFactory.decodeStream(FileInputStream(f))
+//                mCallerimg.setImageBitmap(b)
+//            }
 
             if (call.getState() === CallState.ESTABLISHED) {
                 //when the call is established, addVideoViews configures the video to  be shown
@@ -293,13 +290,11 @@ class Outgoing_vdo : BaseActivity() {
 
             removeVideoViews()
 
-            vc.setLocalVideoZOrder(true)
             remoteview.addView(rview)
             localView.addView(lview)
             local=true
 
             mVideoViewsAdded = true
-
 
 
             localbox.setOnClickListener {
@@ -389,7 +384,8 @@ class Outgoing_vdo : BaseActivity() {
 
         override fun onCallProgressing(call: Call?) {
             Log.d(TAG, "Call progressing")
-
+            remoteview.addView(sinchServiceInterface!!.getVideoController()!!.localView)
+            local=false
             mAudioPlayer!!.playProgressTone()
         }
 

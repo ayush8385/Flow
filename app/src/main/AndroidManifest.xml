@@ -31,7 +31,8 @@
         android:roundIcon="@drawable/flow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Flow"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:largeHeap="true">
         <activity
             android:name=".activity.Outgoing_vdo"
             android:exported="true" />

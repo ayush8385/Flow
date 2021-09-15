@@ -447,7 +447,7 @@ class Message : BaseActivity() {
            }
        }
 
-        Dashboard().checkStatus()
+        Dashboard().checkStatus().execute()
         checkSeen().execute()
         searchElement()
        // deleteMessage()

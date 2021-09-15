@@ -25,7 +25,15 @@ class ContactViewModel(application: Application):AndroidViewModel(application) {
         repository.insert(contactEntity)
     }
 
+    fun updateImage(id:String,path:String)=viewModelScope.launch (Dispatchers.IO){
+        repository.updateImg(id,path)
+    }
+
     fun getContact(userid: String):ContactEntity{
         return repository.getContactbyId(userid)
+    }
+
+    fun updateDetails(userid: String, name: String?, phoneNum: String) {
+        repository.updateDetails(userid,name,phoneNum)
     }
 }

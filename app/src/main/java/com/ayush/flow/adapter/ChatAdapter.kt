@@ -19,6 +19,7 @@ import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ChatEntity
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
+import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
@@ -61,6 +62,10 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         if(chat.image!=""){
           loadImage(chat.image, holder).execute()
         }
+        else{
+            holder.image.setImageResource(R.drawable.user)
+        }
+
         holder.chat_box.setOnClickListener {
 
             if(holder.swipeRevealLayout.isOpened){
@@ -114,13 +119,18 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
     inner class loadImage(val image:String,val holder: HomeViewHolder):
         AsyncTask<Void, Void, Boolean>(){
         var b: Bitmap?=null
+        var f:File?=null
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
-            holder.image.setImageBitmap(b)
+            Picasso.get().load(f!!).into(holder.image)
+
         }
         override fun doInBackground(vararg params: Void?): Boolean {
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-            b= BitmapFactory.decodeStream(FileInputStream(f))
+            f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+
+            if(f!!.exists()){
+                b= BitmapFactory.decodeStream(FileInputStream(f))
+            }
             return true
         }
     }

@@ -21,7 +21,9 @@ import java.io.File
 import java.io.FileInputStream
 
 class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.HomeViewHolder>() {
+
     val allCons=ArrayList<ContactEntity>()
+
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)

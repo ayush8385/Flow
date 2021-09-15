@@ -23,8 +23,8 @@ interface ChatDao {
     @Query("SELECT * FROM chats WHERE id = :userid")
     fun getChatbyId(userid: String): ChatEntity
 
-    @Query("UPDATE chats SET image = :img, name = :name WHERE id = :userid")
-    fun update(userid: String, img: String, name: String)
+    @Query("UPDATE chats SET image = :img WHERE id = :userid")
+    fun update(userid: String, img: String)
 
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
