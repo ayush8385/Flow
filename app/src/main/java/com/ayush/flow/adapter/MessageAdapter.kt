@@ -72,6 +72,8 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),chat.message)
             holder.image_msg.setImageBitmap(BitmapFactory.decodeStream(FileInputStream(f)))
 
+
+
             if(chat.sender==firebaseUser!!.uid){
                 if(chat.sent){
                     holder.seen_txt.text="sent"

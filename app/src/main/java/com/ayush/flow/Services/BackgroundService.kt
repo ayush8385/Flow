@@ -7,17 +7,11 @@ import android.widget.Toast
 import com.ayush.flow.activity.Dashboard
 
 
-
-
-
 class BackgroundService: Service() {
 
     override fun onCreate() {
 
         Toast.makeText(applicationContext,"This is a Service running in Background", Toast.LENGTH_SHORT).show();
-
-//        Message()
-//        Dashboard()
 
     }
 
@@ -26,7 +20,6 @@ class BackgroundService: Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Let it continue running until it is stopped.
         Toast.makeText(this, "Retrieving Message", Toast.LENGTH_LONG).show()
         Dashboard().retrieveMessage(application).execute()
         return START_STICKY

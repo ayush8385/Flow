@@ -46,9 +46,9 @@ class Addprofile : AppCompatActivity() {
     lateinit var about:EditText
     lateinit var edit_btn:Button
     lateinit var parent:RelativeLayout
-    lateinit var camera:ImageView
-    lateinit var gallery:ImageView
-    lateinit var delete:ImageView
+    lateinit var camera: android.widget.ImageView
+    lateinit var gallery: android.widget.ImageView
+    lateinit var delete: ImageView
     lateinit var userimage:CircleImageView
     lateinit var progressBar: ProgressBar
     lateinit var sharedPreferences: SharedPreferences

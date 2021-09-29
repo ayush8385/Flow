@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class CallEntity(
     @ColumnInfo(name = "name") val name : String,
     @ColumnInfo(name = "image") val image : String,
-    @ColumnInfo(name = "time") val time:String,
+    @ColumnInfo(name = "calltype") val calltype :String,
+    @ColumnInfo(name = "duration") val duration:String,
     @PrimaryKey var id:String
     )

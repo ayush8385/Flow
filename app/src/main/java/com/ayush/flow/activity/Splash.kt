@@ -27,6 +27,7 @@ class Splash : AppCompatActivity() {
 
         Handler().postDelayed({
             if(isLoggedIn){
+                Dashboard().retrieveMessage(application).execute()
                 Dashboard().checkStatus().execute()
                 val username=sharedPreferences.getString("name","")
                 startService(Intent(this, BackgroundService::class.java))

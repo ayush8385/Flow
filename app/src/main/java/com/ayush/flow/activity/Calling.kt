@@ -19,6 +19,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.ayush.flow.R
+import com.ayush.flow.database.CallEntity
+import com.ayush.flow.database.CallViewModel
+import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -44,13 +47,18 @@ class Calling : BaseActivity(){
     var proximitySensor: Sensor? = null
     lateinit var backimg: ImageView
     lateinit var pickintent:Intent
+    lateinit var image:String
     protected var proximityWakelock: PowerManager.WakeLock? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_calling)
-        val answer = findViewById(com.ayush.flow.R.id.pick_btn) as CircleImageView
+
+
         remoteUser = findViewById(com.ayush.flow.R.id.user_name)
+
+        val answer = findViewById(com.ayush.flow.R.id.pick_btn) as CircleImageView
         answer.setOnClickListener(mClickListener)
+
         val decline = findViewById(com.ayush.flow.R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
 
@@ -144,33 +152,56 @@ class Calling : BaseActivity(){
 
             call.addCallListener(SinchCallListener())
 
-            val cons=ContactViewModel(application).getContact(call.remoteUserId)
+            var cons=ContactViewModel(application).getContact(call.remoteUserId)
             if(cons == null){
-                val ref=FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addValueEventListener(object :ValueEventListener{
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
+                var chat = ChatViewModel(application).getChat(call.remoteUserId)
+                if(chat==null){
+                    val ref=FirebaseDatabase.getInstance().reference.child("Users")
+                    ref.addValueEventListener(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
 
-                        val url=snapshot.child("profile_photo").value.toString()
+                            val url=snapshot.child("profile_photo").value.toString()
 
-                        if(url!=""){
-                            Picasso.get().load(url).into(mCallerimg)
-                            Picasso.get().load(url).into(backimg)
+                            if(url!=""){
+                                Picasso.get().load(url).into(mCallerimg)
+                                Picasso.get().load(url).into(backimg)
 
+                            }
+                            image="";
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
 
-                })
+                    })
+                }
+                else{
+                    remoteUser.setText(chat.number)
+                    pickintent.putExtra(SinchService.CALL_ID, mCallId)
+                    pickintent.putExtra("name",remoteUser.text)
+
+                    image=chat.image
+
+                    if(chat.image!=""){
+                        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
+                        val b = BitmapFactory.decodeStream(FileInputStream(f))
+                        mCallerimg.setImageBitmap(b)
+
+                        backimg.setImageBitmap(b)
+
+                        pickintent.putExtra("image",chat.image)
+                    }
+                }
             }
             else{
                 remoteUser.setText(cons.name)
 
                 pickintent.putExtra(SinchService.CALL_ID, mCallId)
                 pickintent.putExtra("name",remoteUser.text)
+
+                image=cons.image
 
                 if(cons.image!=""){
                     val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
@@ -222,6 +253,11 @@ class Calling : BaseActivity(){
         override fun onCallEnded(call: Call) {
             val cause: CallEndCause = call.getDetails().getEndCause()
             Log.d(TAG, "Call ended, cause: " + cause.toString())
+
+            CallViewModel(application).inserCall(
+                CallEntity(remoteUser.text.toString(), image,cause.toString(), call.details.duration.toString(),call.remoteUserId)
+            )
+
             mAudioPlayer!!.stopRingtone()
             finish()
         }

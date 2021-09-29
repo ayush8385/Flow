@@ -70,7 +70,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     var controller:LayoutAnimationController?=null
     lateinit var sharedPreferences: SharedPreferences
     var previousMenuItem: MenuItem?=null
-    lateinit var contact:ImageView
+    lateinit var contact: ImageView
     lateinit var firebaseUser: FirebaseUser
 
     override fun onServiceConnected() {
@@ -168,6 +168,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             val image_url=snapshot.child("profile_photo").value.toString()
                             if(image_url!=""){
                                 GetImageFromUrl(chat.id,application).execute(image_url)
+
                             }
                         }
 
@@ -184,7 +185,32 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
     private fun openCallHome() {
-        callAdapter= CallAdapter(this@Dashboard)
+        callAdapter= CallAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
+            override fun audioCall(name: String, id: String,image:String) {
+
+                val sinchServiceInterface=getSinchServiceInterface()
+                val callId=sinchServiceInterface!!.callUser(id).callId
+                val callScreen = Intent(this@Dashboard, Outgoing::class.java)
+                callScreen.putExtra("name",name)
+                callScreen.putExtra("CALL_ID", callId)
+                callScreen.putExtra("image",image)
+                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
+                startActivity(callScreen)
+            }
+
+            override fun videoCall(name: String, id: String,image:String) {
+
+                val sinchServiceInterface=getSinchServiceInterface()
+                val callId=sinchServiceInterface!!.callUserVideo(id).callId
+                val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
+                callScreen.putExtra("name",name)
+                callScreen.putExtra("CALL_ID", callId)
+                callScreen.putExtra("image",image)
+                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
+                startActivity(callScreen)
+            }
+
+        })
         layoutManager=LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).reverseLayout=true
         chatsRecyclerView.layoutManager=layoutManager
@@ -212,25 +238,27 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     private fun openChatHome() {
         chatAdapter= ChatAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
-            override fun audioCall(name: String, id: String) {
+            override fun audioCall(name: String, id: String,image:String) {
 
                 val sinchServiceInterface=getSinchServiceInterface()
                 val callId=sinchServiceInterface!!.callUser(id).callId
                 val callScreen = Intent(this@Dashboard, Outgoing::class.java)
                 callScreen.putExtra("name",name)
                 callScreen.putExtra("CALL_ID", callId)
-                Message().sendNotification(id,FirebaseAuth.getInstance().currentUser!!.uid,"",1)
+                callScreen.putExtra("image",image)
+                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
                 startActivity(callScreen)
             }
 
-            override fun videoCall(name: String, id: String) {
+            override fun videoCall(name: String, id: String,image:String) {
 
                 val sinchServiceInterface=getSinchServiceInterface()
                 val callId=sinchServiceInterface!!.callUserVideo(id).callId
                 val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
                 callScreen.putExtra("name",name)
                 callScreen.putExtra("CALL_ID", callId)
-                Message().sendNotification(id,FirebaseAuth.getInstance().currentUser!!.uid,"",1)
+                callScreen.putExtra("image",image)
+                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
                 startActivity(callScreen)
             }
 
@@ -255,6 +283,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         })
 
         updateUnsavedImage().execute()
+        chatAdapter.notifyDataSetChanged()
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -265,22 +294,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.scheduleLayoutAnimation()
     }
 
-//    inner class searchElement():AsyncTask<Void,Void,Boolean>() {
-//        override fun doInBackground(vararg params: Void?): Boolean {
-//
-//            return true
-//        }
-//
-//    }
-
     fun searchElement(){
 
         search.queryHint="Search Your friends..."
         search.setIconifiedByDefault(false)
-        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon);
+        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon);
         searchIcon.visibility= View.GONE
         searchIcon.setImageDrawable(null)
-        val closeIcon:ImageView = search.findViewById(R.id.search_close_btn);
+        val closeIcon: ImageView = search.findViewById(R.id.search_close_btn);
         closeIcon.setColorFilter(Color.WHITE)
         val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
         theTextArea.setTextColor(Color.WHITE)
@@ -434,17 +455,20 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             refer.addValueEventListener(object :ValueEventListener{
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     number=snapshot.child("number").value.toString()
+                                    //check message type
                                     if(type=="image"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Image", sdf.format(tm),sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
                                     }
                                     else{
                                         ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
                                     }
+
+                                    //get image of sender
                                     val image_url=snapshot.child("profile_photo").value.toString()
                                     if(image_url!=""){
                                         GetImageFromUrl(sender,application).execute(image_url)
                                         if(type=="image"){
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Image", sdf.format(tm),sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),sender))
                                         }
                                         else{
                                             ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),sender))
@@ -464,7 +488,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
                         //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
-                          //  val photo = GetImageFromUrl(userid).execute(msg).get()
+                            val photo =  GetImageFromUrl().execute(msg).get()
 
                             if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                                 if (Environment.isExternalStorageManager()) {
@@ -519,7 +543,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     var fos: FileOutputStream =
                                         FileOutputStream(File(directory,msg))
                                     try {
-                                   //     photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                        photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     } finally {
@@ -537,7 +561,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                         val fos =
                                             FileOutputStream(File(directory, msg))
                                         try {
-                                 //           photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                           photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                                         } catch (e: Exception) {
                                             e.printStackTrace()
                                         } finally {
@@ -587,120 +611,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         const val CHANNEL_ID="com.ayush.flow"
         private const val CHANNEL_NAME="Flow"
     }
-
-
-
-    inner class createNotificationChannel():AsyncTask<Void,Void,Boolean>() {
-
-        override fun doInBackground(vararg params: Void?): Boolean {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel=NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
-
-                channel.enableLights(false)
-                channel.enableVibration(true)
-                channel.setShowBadge(true)
-                channel.lockscreenVisibility= Notification.VISIBILITY_PUBLIC
-
-                // Register the channel with the system
-                val notificationManager: NotificationManager =
-                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.createNotificationChannel(channel)
-            }
-            return true
-        }
-    }
-
-//    @SuppressLint("ResourceAsColor")
-//    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-//    inner class sendNotification(val userid:String,val name:String,val msg:String,val image:String,val application: Application):AsyncTask<Void,Void,Boolean>(){
-//        override fun doInBackground(vararg params: Void?): Boolean {
-//            if(application!=null){
-//                val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-//
-//                val intent = Intent(application, Message::class.java).apply {
-//                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//                }
-//
-//                intent.putExtra("name",name)
-//                intent.putExtra("userid",userid)
-//                intent.putExtra("image","")
-//                val j: Int = Regex("[\\D]").replace(userid, "").toInt()
-//                val pendingIntent: PendingIntent = PendingIntent.getActivity(application, j, intent, 0)
-//
-//                //Add Reply Button
-//                // Key for the string that's delivered in the action's intent.
-//                var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
-//                    setLabel("Your reply...")
-//                    build()
-//                }
-//
-//                val replyIntent = Intent(application, ReplyReciever::class.java)
-//                replyIntent.putExtra("userid",userid)
-//                replyIntent.putExtra("title", name)
-//
-//                // Build a PendingIntent for the reply action to trigger.
-//                var replyPendingIntent: PendingIntent =
-//                    PendingIntent.getBroadcast(application,j,replyIntent,0)
-//
-//
-//                // Create the reply action and add the remote input.
-//                var replyAction: NotificationCompat.Action =
-//                    NotificationCompat.Action.Builder(R.drawable.flow, "Reply", replyPendingIntent)
-//                        .addRemoteInput(remoteInput)
-//                        .build()
-//
-//                val builder = Person.Builder()
-//                var bmp:Bitmap?=null
-//                try {
-//                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-//                    bmp = BitmapFactory.decodeStream(FileInputStream(f))
-//
-//                } catch (e: FileNotFoundException) {
-//                    e.printStackTrace()
-//                }
-//                val userr=builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bmp!!))).setName(name).build()
-//
-//                if (hashMap.containsKey(j)) {
-//                    val messagingStyle = hashMap[j]
-//                    messageStyle = messagingStyle
-//                } else {
-//                    messageStyle = NotificationCompat.MessagingStyle(name)
-//                    hashMap[j] = messageStyle
-//                }
-//
-//                val str: String = "com.ayush.flow.WORK_EMAIL"
-//                val notificationBuilder = NotificationCompat.Builder(application, "com.ayush.flow")
-//                    .setContentIntent(pendingIntent)
-//                    .setStyle( messageStyle)
-//                    .setSmallIcon(R.drawable.flow).
-//                    setCategory(NotificationCompat.CATEGORY_MESSAGE)
-//                    .setOnlyAlertOnce(true)
-//                    .setGroup(str)
-//                    .setSound(defaultSound)
-//                    .setAutoCancel(true)
-//                    .setColor(R.color.white)
-//                    .setPriority(1)
-//                    .addAction(replyAction)
-//
-//
-//
-//                val summaryNotification = NotificationCompat.Builder(application, "com.ayush.flow")
-//                    .setSmallIcon(R.drawable.flow)
-//                    .setColor(R.color.purple_500)
-//                    .setStyle( NotificationCompat.InboxStyle())
-//                    .setGroup(str)
-//                    .setGroupSummary(true).build()
-//
-//
-//                messageStyle!!.addMessage(msg, "767".toLong(), userr)
-//
-//                val notificationManager=NotificationManagerCompat.from(application)
-//                notificationManager.notify(j,notificationBuilder.build())
-//                notificationManager.notify(0, summaryNotification)
-//            }
-//            return true
-//        }
-//    }
 
     fun getCircularBitmap(bitmap: Bitmap): Bitmap {
         val bitmap2: Bitmap
@@ -846,10 +756,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
     inner class saveToInternalStorage:AsyncTask<Void,Void,Boolean>{
+
         var path:String?=null
         var user:String?=null
         var bitmapImage:Bitmap?=null
         var app:Application?=null
+
         constructor(bitmapImage: Bitmap, user: String,appl: Application) : super() {
             this.user=user
             this.bitmapImage=bitmapImage
@@ -860,7 +772,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             super.onPostExecute(result)
             ChatViewModel(app!!).updatetChat(user!!,path!!)
             ContactViewModel(app!!).updateImage(user!!,path!!)
-            chatAdapter.notifyDataSetChanged()
+//            chatAdapter.notifyDataSetChanged()
         }
 
         override fun doInBackground(vararg params: Void?): Boolean {
@@ -951,7 +863,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
     override fun onStarted() {
-        Toast.makeText(this,"STarted", Toast.LENGTH_LONG).show()
+
     }
 
     private fun UpdateToken() {

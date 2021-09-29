@@ -43,7 +43,7 @@ class UserProfile : AppCompatActivity() {
     lateinit var gallery: ImageView
     lateinit var delete: ImageView
     lateinit var sharedPreferences: SharedPreferences
-    lateinit var edt_img:ImageView
+    lateinit var edt_img: ImageView
     lateinit var image_card:CardView
     lateinit var parent:RelativeLayout
     var url=""
@@ -51,8 +51,8 @@ class UserProfile : AppCompatActivity() {
     private var imageuri: Uri?=null
     var imagepath=""
     lateinit var photo:Bitmap
-    lateinit var edt_name:ImageView
-    lateinit var edt_about:ImageView
+    lateinit var edt_name: ImageView
+    lateinit var edt_about: ImageView
     lateinit var firebaseUser: FirebaseUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

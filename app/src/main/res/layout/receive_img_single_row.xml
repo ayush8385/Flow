@@ -37,21 +37,19 @@
             android:layout_width="match_parent"
             android:id="@+id/msg_box"
             android:layout_height="match_parent">
+            <ProgressBar
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_centerInParent="true"
+                android:padding="10dp"
+                android:id="@+id/progressbar"/>
             <ImageView
                 android:id="@+id/img_msg"
                 android:layout_width="match_parent"
                 android:scaleType="centerCrop"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true" />
-            <ProgressBar
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:visibility="gone"
-                android:background="@drawable/bottom_nav_back"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:padding="10dp"
-                android:id="@+id/progressbar"/>
+
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 

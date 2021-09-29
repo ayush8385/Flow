@@ -91,12 +91,12 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         holder.call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.audioCall(holder.name.text.toString(),chat.id)
+            clickListener.audioCall(holder.name.text.toString(),chat.id,chat.image)
 
         }
         holder.vdo_call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.videoCall(holder.name.text.toString(),chat.id)
+            clickListener.videoCall(holder.name.text.toString(),chat.id,chat.image)
         }
 
     }
@@ -112,8 +112,8 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
     }
 
     interface OnAdapterItemClickListener {
-        fun audioCall(toString: String, id: String)
-        fun videoCall(toString: String,id: String)
+        fun audioCall(toString: String, id: String,image: String)
+        fun videoCall(toString: String,id: String,image: String)
     }
 
     inner class loadImage(val image:String,val holder: HomeViewHolder):

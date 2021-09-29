@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
 import android.provider.ContactsContract
 import android.view.View
 import android.widget.*
@@ -27,9 +26,9 @@ class Contact : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
     lateinit var layoutManager: RecyclerView.LayoutManager
     lateinit var recyclerAdapter: ContactAdapter
-    lateinit var back:ImageView
+    lateinit var back: ImageView
     lateinit var title:TextView
-    lateinit var add:ImageView
+    lateinit var add: ImageView
     lateinit var con_card:CardView
     lateinit var search: androidx.appcompat.widget.SearchView
     val sortCon = arrayListOf<ContactEntity>()
@@ -125,7 +124,7 @@ class Contact : AppCompatActivity() {
     fun searchElement() {
 
         search.queryHint="Search Your friends..."
-        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon)
+        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
         searchIcon.setColorFilter(Color.WHITE)
         val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
         theTextArea.setTextColor(Color.WHITE)

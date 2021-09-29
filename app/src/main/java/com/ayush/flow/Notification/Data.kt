@@ -4,13 +4,15 @@ class Data {
     private var receiver:String=""
     private var sender:String=""
     private var message:String=""
+    private var messageKey:String=""
     private var type:Int=0
 
     constructor(){}
-    constructor(receiver: String,sender: String,message:String,type:Int) {
+    constructor(receiver: String,sender: String,message:String,messageKey: String,type:Int) {
         this.receiver=receiver
         this.sender=sender
         this.message=message
+        this.messageKey=messageKey
         this.type=type
     }
 

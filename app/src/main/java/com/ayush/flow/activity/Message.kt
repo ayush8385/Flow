@@ -3,6 +3,7 @@ package com.ayush.flow.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Application
 import android.app.SearchManager
 import android.content.Context
 import android.content.DialogInterface
@@ -62,18 +63,18 @@ class Message : BaseActivity() {
     lateinit var fwdtorecyclerView:RecyclerView
     lateinit var layoutManager: RecyclerView.LayoutManager
     var chatList= arrayListOf<ChatEntity>()
-    lateinit var more:ImageView
+    lateinit var more: ImageView
     lateinit var name:TextView
     lateinit var more_card:CardView
     lateinit var parent:RelativeLayout
-    lateinit var audiocall:ImageView
-    lateinit var videocall:ImageView
-    lateinit var back:ImageView
+    lateinit var audiocall: ImageView
+    lateinit var videocall: ImageView
+    lateinit var back: ImageView
     lateinit var send_txt:EditText
     var handler = Handler()
     var runnable: Runnable? = null
     var delay = 100
-    lateinit var send:ImageView
+    lateinit var send: ImageView
     lateinit var image:CircleImageView
     lateinit var viewModel: MessageViewModel
     lateinit var selectAll:CheckBox
@@ -91,29 +92,29 @@ class Message : BaseActivity() {
     val allMsg = arrayListOf<MessageEntity>()
     val selectedMsg = arrayListOf<MessageEntity>()
     public val selectedChat = arrayListOf<ChatEntity>()
-    lateinit var up:ImageView
-    lateinit var down:ImageView
+    lateinit var up: ImageView
+    lateinit var down: ImageView
     lateinit var search_txt:TextView
     lateinit var searched:CardView
-    lateinit var delete:ImageView
+    lateinit var delete: ImageView
     private var imageuri: Uri?=null
-    lateinit var forward:ImageView
-    lateinit var close:ImageView
+    lateinit var forward: ImageView
+    lateinit var close: ImageView
     lateinit var select_txt:TextView
     lateinit var selected:CardView
     lateinit var mainViewModel: MainViewModel
     lateinit var fwdViewModel: ForwardViewModel
     lateinit var send_box:CardView
     lateinit var forward_card:CardView
-    lateinit var close_fwd:ImageView
+    lateinit var close_fwd: ImageView
     lateinit var dim:View
     private lateinit var photofile: File
     lateinit var searchfwd:SearchView
-    lateinit var fwd_btn:ImageView
-    lateinit var send_cam:ImageView
-    lateinit var send_con:ImageView
-    lateinit var send_doc:ImageView
-    lateinit var send_gall:ImageView
+    lateinit var fwd_btn: ImageView
+    lateinit var send_cam: ImageView
+    lateinit var send_con: ImageView
+    lateinit var send_doc: ImageView
+    lateinit var send_gall: ImageView
 
 
 
@@ -293,7 +294,7 @@ class Message : BaseActivity() {
            callScreen.putExtra("name",userName)
            callScreen.putExtra("CALL_ID", callId)
            callScreen.putExtra("image",user_image)
-           sendNotification(userid,firebaseUser.uid,"",1)
+           sendNotification(userid, firebaseUser.uid, "", "", 1)
            startActivity(callScreen)
 
        }
@@ -306,7 +307,7 @@ class Message : BaseActivity() {
            callScreen.putExtra("name",userName)
            callScreen.putExtra("CALL_ID", callId)
            callScreen.putExtra("image",user_image)
-           sendNotification(userid,firebaseUser.uid,"",1)
+           sendNotification(userid, firebaseUser.uid, "","", 1)
            startActivity(callScreen)
        }
 //        option.setOnClickListener {
@@ -340,7 +341,7 @@ class Message : BaseActivity() {
         layoutManager= LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).stackFromEnd=true
         recyclerView.layoutManager=layoutManager
-        adapter= MessageAdapter(this,selectedMsg,object:MessageAdapter.OnAdapterItemClickListener{
+        adapter = MessageAdapter(this,selectedMsg,object:MessageAdapter.OnAdapterItemClickListener{
             override fun updateCount() {
                 mainViewModel.setText(selectedMsg.size.toString())
             }
@@ -545,7 +546,7 @@ class Message : BaseActivity() {
     fun searchElement() {
 
         search.queryHint="Search messages..."
-        val searchIcon:ImageView = search.findViewById(R.id.search_mag_icon)
+        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
         searchIcon.setColorFilter(Color.WHITE)
         val theTextArea = search.findViewById(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
         theTextArea.setTextColor(Color.WHITE)
@@ -677,37 +678,35 @@ class Message : BaseActivity() {
     inner class sendMessageToUser(val msg:String,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
-            if(msg!=""){
-                val ref=FirebaseDatabase.getInstance().reference
-                val messageKey=ref.push().key
+            val ref=FirebaseDatabase.getInstance().reference
+            val messageKey=ref.push().key
 
-                firebaseUser=FirebaseAuth.getInstance().currentUser!!
+            firebaseUser=FirebaseAuth.getInstance().currentUser!!
 
-                val sdf = SimpleDateFormat("hh:mm a")
-                val tm: Date = Date(System.currentTimeMillis())
-               if(application!=null){
-                   if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                       MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false,false))
-                   }
-                   ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),userid))
-               }
-                val messageHashmap=HashMap<String,Any>()
-                messageHashmap.put("mid", messageKey!!)
-                messageHashmap.put("userid",userid)
-                messageHashmap.put("sender",firebaseUser.uid)
-                messageHashmap.put("message",msg)
-                messageHashmap.put("time",System.currentTimeMillis())
-                messageHashmap.put("type","message")
-                messageHashmap.put("received",false)
-                messageHashmap.put("seen",false)
+            val sdf = SimpleDateFormat("hh:mm a")
+            val tm: Date = Date(System.currentTimeMillis())
 
-                ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
-
-
-      //          sendNotification(messageKey,firebaseUser.uid,userid,user_name, msg,0)
-                sendNotification(userid, firebaseUser.uid, msg, 0)
-
+            if(application!=null){
+                if(!MessageViewModel(application).isMsgExist(messageKey!!)){
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false,false))
+                }
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),userid))
             }
+
+            val messageHashmap=HashMap<String,Any>()
+            messageHashmap.put("mid", messageKey!!)
+            messageHashmap.put("userid",userid)
+            messageHashmap.put("sender",firebaseUser.uid)
+            messageHashmap.put("message",msg)
+            messageHashmap.put("time",System.currentTimeMillis())
+            messageHashmap.put("type","message")
+            messageHashmap.put("received",false)
+            messageHashmap.put("seen",false)
+
+            ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
+
+            sendNotification(userid, firebaseUser.uid, msg,messageKey, 0)
+
             return true
         }
     }
@@ -747,7 +746,9 @@ class Message : BaseActivity() {
                             MessageViewModel(application).updatetMessage(mid,rec,seen)
                             adapter.notifyDataSetChanged()
                             if(seen){
-                                snap.child(mid).ref.parent!!.removeValue()
+                                Handler().postDelayed({
+                                    snap.child(mid).ref.parent!!.removeValue()
+                                },5000)
                             }
                         }
                     }
@@ -792,88 +793,13 @@ class Message : BaseActivity() {
         }
     }
 
-//    fun sendNotification(
-//        mid: String,
-//        senderid: String,
-//        recieverid: String,
-//        username: String,
-//        msg: String,
-//        type:Int
-//    ) {
-//
-//        Log.d("Here you","reached....")
-//        val ref=FirebaseDatabase.getInstance().reference.child("Token")
-//        val query=ref.orderByKey().equalTo(recieverid)
-//
-//        var nf_url:String?=null
-//        val refer=FirebaseDatabase.getInstance().reference.child("Users")
-//        refer.addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                for (snapshot in snapshot.children) {
-//                    val id = snapshot.child("uid").value.toString()
-//                    if (id.equals(recieverid)) {
-//                        nf_url = snapshot.child("profile_photo").value.toString()
-//                    }
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//
-//        })
-//
-//        query.addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                for (snapshoshot in snapshot.children) {
-//                    val token: Token? = snapshoshot.getValue(Token::class.java)
-//
-//                    val data = Data(
-//                        mid,
-//                        senderid,
-//                        R.drawable.flow,
-//                        nf_url!!,
-//                        msg,
-//                        username,
-//                        recieverid,
-//                        type
-//                    )
-//
-//                    val sender = Sender(data, token!!.getToken().toString())
-//
-//                    apiService!!.sendNotification(sender)
-//                        .enqueue(object : retrofit2.Callback<MyResponse> {
-//                            override fun onResponse(
-//                                call: Call<MyResponse>,
-//                                response: Response<MyResponse>
-//                            ) {
-//                                if (response.code() == 200) {
-//                                    if (response.body()!!.success != 1) {
-//                                        Toast.makeText(
-//                                            applicationContext,
-//                                            "Hey you",
-//                                            Toast.LENGTH_LONG
-//                                        ).show()
-//                                    }
-//                                }
-//                            }
-//
-//                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
-//                                TODO("Not yet implemented")
-//                            }
-//
-//                        })
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//
-//        })
-//    }
-
-    fun sendNotification(recieverid: String, senderid: String, msg: String, type:Int) {
+    fun sendNotification(
+        recieverid: String,
+        senderid: String,
+        msg: String,
+        messageKey: String,
+        type: Int
+    ) {
 
         val ref=FirebaseDatabase.getInstance().reference.child("Token")
         val query=ref.orderByKey().equalTo(recieverid)
@@ -885,16 +811,11 @@ class Message : BaseActivity() {
                 for (snapshoshot in snapshot.children) {
                     val token: Token? = snapshoshot.getValue(Token::class.java)
 
-                    val data = Data(
-                        recieverid,
-                        senderid,
-                        msg,
-                        type
-                    )
+                    val data = Data(recieverid, senderid, msg, messageKey, type)
 
                     val sender = Sender(data, token!!.getToken().toString())
 
-                    apiService!!.sendNotification(sender)
+                    apiService.sendNotification(sender)
                         .enqueue(object : retrofit2.Callback<MyResponse> {
                             override fun onResponse(
                                 call: Call<MyResponse>,
@@ -931,9 +852,10 @@ class Message : BaseActivity() {
         return File.createTempFile(fileName, ".jpg", storage)
     }
 
+
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if(requestCode==110 && resultCode== Activity.RESULT_OK){
             if(imageuri!=null){
                 try {
@@ -953,7 +875,18 @@ class Message : BaseActivity() {
         }
         if(photo!=null){
      //       image.setImageBitmap(photo)
-         sendImageMessageToUser(photo!!,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
+            val name = intent.getStringExtra("name")
+            val number = intent.getStringExtra("number")
+            val intent = Intent(this,SelectedImage::class.java)
+            var fos  =  ByteArrayOutputStream()
+            photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+            val byteArray = fos.toByteArray()
+            intent.putExtra("image", byteArray )
+            intent.putExtra("userid",userid)
+            intent.putExtra("name",name)
+            intent.putExtra("number",number)
+            intent.putExtra("user_image",user_image)
+            startActivity(intent)
     //        val path=saveToInternalStorage(photo).execute().get()
    //         uploadImage(name.text.toString(), photo,about.text.toString()).execute()
 //            val baos= ByteArrayOutputStream()
@@ -962,7 +895,9 @@ class Message : BaseActivity() {
         }
     }
 
-    inner class sendImageMessageToUser(val bitmapImage: Bitmap,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
+
+
+    inner class sendImageMessageToUser(val bitmapImage: Bitmap,val userid:String,val user_name:String,val user_number:String,val user_img:String,val application: Application):AsyncTask<Void,Void,Boolean>(){
         var path:String?=null
         override fun doInBackground(vararg params: Void?): Boolean {
             val ref=FirebaseDatabase.getInstance().reference
@@ -1088,7 +1023,7 @@ class Message : BaseActivity() {
                     messageHashmap.put("mid", messageKey!!)
                     messageHashmap.put("userid",userid)
                     messageHashmap.put("sender",firebaseUser.uid)
-                    messageHashmap.put("message",url)
+                    messageHashmap.put("message",url)  //image url here
                     messageHashmap.put("time",System.currentTimeMillis())
                     messageHashmap.put("type","image")
                     messageHashmap.put("received",false)
@@ -1097,12 +1032,16 @@ class Message : BaseActivity() {
                     ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
 
                     MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false,true))
-                    adapter.notifyDataSetChanged()
+                    MessageAdapter(this@Message,selectedMsg,object:MessageAdapter.OnAdapterItemClickListener{
+                        override fun updateCount() {
+                            mainViewModel.setText(selectedMsg.size.toString())
+                        }
+
+                    }).notifyDataSetChanged()
+
+                    sendNotification(userid, firebaseUser.uid, "Image", messageKey!!, 0)
                 }
             })
-
-
-            sendNotification(userid, firebaseUser.uid, "Image", 0)
 
             return true
         }

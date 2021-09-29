@@ -15,6 +15,8 @@ import androidx.annotation.RequiresApi
 import com.ayush.flow.Notification.*
 import com.ayush.flow.R
 import com.ayush.flow.Services.APIService
+import com.ayush.flow.database.CallEntity
+import com.ayush.flow.database.CallViewModel
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
@@ -41,7 +43,8 @@ class Outgoing : BaseActivity() {
     lateinit var speeaker:CircleImageView
     var isMute:Boolean=false
     var isSpeaker:Boolean=false
-    lateinit var backimg:ImageView
+    lateinit var image: String
+    lateinit var backimg: ImageView
 
 
     private inner class UpdateCallDurationTask : TimerTask() {
@@ -114,7 +117,8 @@ class Outgoing : BaseActivity() {
             mCallState.setText(call.getState().toString())
 
             if(intent.getStringExtra("image")!=""){
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
+                image = intent.getStringExtra("image")!!
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
                 val b = BitmapFactory.decodeStream(FileInputStream(f))
                 mCallerimg.setImageBitmap(b)
 
@@ -183,6 +187,9 @@ class Outgoing : BaseActivity() {
         override fun onCallEnded(call: Call) {
             val cause: CallEndCause = call.getDetails().getEndCause()
             Log.d(TAG, "Call ended. Reason: " + cause.toString())
+
+            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),image,cause.toString(), call.details.duration.toString(),call.remoteUserId))
+
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE
             val endMsg = "Call ended: " + call.getDetails().toString()

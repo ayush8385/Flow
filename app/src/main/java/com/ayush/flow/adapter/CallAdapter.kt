@@ -19,12 +19,16 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-class CallAdapter(val context: Context):RecyclerView.Adapter<CallAdapter.HomeViewHolder>() {
+class CallAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<CallAdapter.HomeViewHolder>() {
     val allCalls=ArrayList<CallEntity>()
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
-        val image:CircleImageView=view.findViewById(R.id.profile_pic)
-        val name:TextView=view.findViewById(R.id.profile_name)
-        val chat_box:RelativeLayout=view.findViewById(R.id.paren)
+        val image:CircleImageView=view.findViewById(R.id.caller_pic)
+        val name:TextView=view.findViewById(R.id.caller_name)
+        val cause:TextView = view.findViewById(R.id.call_reason)
+//        val duration:TextView = view.findViewById(R.id.callDuration)
+        val call_box:RelativeLayout=view.findViewById(R.id.paren)
+        val audioCall:CircleImageView=view.findViewById(R.id.audiocall_btn)
+        val videoCall:CircleImageView=view.findViewById(R.id.vdocall_btn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
@@ -37,12 +41,21 @@ class CallAdapter(val context: Context):RecyclerView.Adapter<CallAdapter.HomeVie
         var call=allCalls[position]
 
         holder.name.text=call.name
+        holder.cause.text=call.calltype
 
-        if(call.image!=""){
+        if(call.image!="" && call.image!=null){
           loadImage(call.image, holder).execute()
         }
 
-        holder.chat_box.setOnClickListener {
+        holder.audioCall.setOnClickListener {
+            clickListener.audioCall(call.name,call.id,call.image)
+        }
+
+        holder.videoCall.setOnClickListener {
+            clickListener.videoCall(call.name,call.id,call.image)
+        }
+
+        holder.call_box.setOnClickListener {
 
         }
 
