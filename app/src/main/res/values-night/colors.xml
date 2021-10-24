@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#6790F6</color>
+    <color name="purple_500">#4569C8</color>
+    <color name="purple_700">#324E95</color>
+    <color name="teal_200">#0FAA9B</color>
+    <color name="teal_700">#205A5A</color>
+    <color name="black">#FFFFFFFF</color>
+    <color name="white">#FF000000</color>
+    <color name="back">#F7151515</color>
+    <color name="lightdark">#333333</color>
+    <color name="bottom">@layout/navigation_state</color>
+
+    <color name="shine_startColor">#00151515</color>
+    <color name="shine_centerColor">#AA151515</color>
+    <color name="shine_endColor">#00151515</color>
+</resources>
