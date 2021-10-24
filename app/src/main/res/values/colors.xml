@@ -5,7 +5,13 @@
     <color name="purple_700">#324E95</color>
     <color name="teal_200">#0FAA9B</color>
     <color name="teal_700">#205A5A</color>
-    <color name="black">#FF000000</color>
+    <color name="black">#000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="back">#F0F0F0</color>
+    <color name="lightdark">#D5DDDDDD</color>
     <color name="bottom">@layout/navigation_state</color>
+
+    <color name="shine_startColor">#00FFFFFF</color>
+    <color name="shine_centerColor">#AAFFFFFF</color>
+    <color name="shine_endColor">#00FFFFFF</color>
 </resources>

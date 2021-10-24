@@ -125,9 +125,9 @@ class Contact : AppCompatActivity() {
 
         search.queryHint="Search Your friends..."
         val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
-        searchIcon.setColorFilter(Color.WHITE)
+
         val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
-        theTextArea.setTextColor(Color.WHITE)
+
         theTextArea.isCursorVisible=false
 
         search.setOnSearchClickListener {

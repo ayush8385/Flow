@@ -8,9 +8,9 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.os.*
 import android.provider.MediaStore
@@ -18,10 +18,13 @@ import android.provider.Settings
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import android.view.animation.RotateAnimation
 import android.widget.*
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -39,6 +42,7 @@ import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.MessageEntity
 import com.ayush.flow.database.MessageViewModel
 import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
@@ -55,6 +59,8 @@ import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
+import android.graphics.drawable.BitmapDrawable
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
 class Message : BaseActivity() {
@@ -65,10 +71,8 @@ class Message : BaseActivity() {
     var chatList= arrayListOf<ChatEntity>()
     lateinit var more: ImageView
     lateinit var name:TextView
-    lateinit var more_card:CardView
+    lateinit var more_card:LinearLayout
     lateinit var parent:RelativeLayout
-    lateinit var audiocall: ImageView
-    lateinit var videocall: ImageView
     lateinit var back: ImageView
     lateinit var send_txt:EditText
     var handler = Handler()
@@ -115,7 +119,9 @@ class Message : BaseActivity() {
     lateinit var send_con: ImageView
     lateinit var send_doc: ImageView
     lateinit var send_gall: ImageView
-
+    lateinit var details:LinearLayout
+    lateinit var sharedPreferences:SharedPreferences
+    lateinit var profile:ImageView
 
 
    // lateinit var option:ImageView
@@ -138,6 +144,8 @@ class Message : BaseActivity() {
        fwd_btn=findViewById(R.id.fwd_btn)
        send_box=findViewById(R.id.send)
        close=findViewById(R.id.close)
+       details=findViewById(R.id.details)
+       profile=findViewById(R.id.user_profile)
 
        //send img doc cons box
        send_con=findViewById(R.id.send_con)
@@ -158,8 +166,7 @@ class Message : BaseActivity() {
        selectAll=findViewById(R.id.selectAll)
     //    option=findViewById(R.id.more_option)
 
-        audiocall=findViewById(R.id.call)
-       videocall=findViewById(R.id.video_call)
+
 
        searched=findViewById(R.id.searched)
        search_txt=findViewById(R.id.search_text)
@@ -172,6 +179,18 @@ class Message : BaseActivity() {
        forward=findViewById(R.id.forward)
 
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
+
+       sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
+//       if(sharedPreferences.getBoolean("nightMode",true)){
+//           audiocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.call))
+//           videocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.video_call))
+//       }
+//       else{
+//           audiocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.audio_black))
+//           videocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.video_black))
+//       }
+
+
 
        fwdViewModel=ViewModelProviders.of(this).get(ForwardViewModel::class.java)
        mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -218,6 +237,9 @@ class Message : BaseActivity() {
        }
 
        forward.setOnClickListener {
+
+           val toolbar:CardView=findViewById(R.id.toolbar)
+           toolbar.cardElevation=0F
 
            send_box.visibility=View.GONE
            dim.visibility=View.VISIBLE
@@ -275,6 +297,8 @@ class Message : BaseActivity() {
        }
 
        close_fwd.setOnClickListener {
+           val toolbar:CardView=findViewById(R.id.toolbar)
+           toolbar.cardElevation=50F
            dim.visibility=View.GONE
            forward_card.visibility=View.GONE
            send_box.visibility=View.VISIBLE
@@ -283,32 +307,6 @@ class Message : BaseActivity() {
            searchfwd.isIconified=true
 
            adapter.notifyDataSetChanged()
-       }
-
-       audiocall.setOnClickListener {
-           val userName: String = name.text.toString()
-      //
-           val sinchServiceInterface=getSinchServiceInterface()
-           val callId=sinchServiceInterface!!.callUser(userid).callId
-           val callScreen = Intent(this, Outgoing::class.java)
-           callScreen.putExtra("name",userName)
-           callScreen.putExtra("CALL_ID", callId)
-           callScreen.putExtra("image",user_image)
-           sendNotification(userid, firebaseUser.uid, "", "", 1)
-           startActivity(callScreen)
-
-       }
-
-       videocall.setOnClickListener {
-           val userName: String = name.text.toString()
-           val sinchServiceInterface=getSinchServiceInterface()
-           val callId=sinchServiceInterface!!.callUserVideo(userid).callId
-           val callScreen = Intent(this, Outgoing_vdo::class.java)
-           callScreen.putExtra("name",userName)
-           callScreen.putExtra("CALL_ID", callId)
-           callScreen.putExtra("image",user_image)
-           sendNotification(userid, firebaseUser.uid, "","", 1)
-           startActivity(callScreen)
        }
 //        option.setOnClickListener {
 //            val menuBuilder = MenuBuilder(this)
@@ -333,6 +331,19 @@ class Message : BaseActivity() {
 //            menuHelper.setForceShowIcon(true) // show icons!!!!!!!!
 //            menuHelper.show()
 //        }
+
+
+       image.setOnClickListener {
+           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       }
+
+       details.setOnClickListener {
+           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       }
+
+       profile.setOnClickListener {
+           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       }
 
         if(user_image!=""){
             setIconImage(image,user_image).execute()
@@ -374,6 +385,7 @@ class Message : BaseActivity() {
 
        fwd_btn.setOnClickListener{
            forwardMsg().execute()
+
            dim.visibility=View.GONE
            forward_card.visibility=View.GONE
            send_box.visibility=View.VISIBLE
@@ -382,6 +394,21 @@ class Message : BaseActivity() {
 
         more.setOnClickListener {
             if(more_card.visibility== View.GONE){
+
+                val rotate = RotateAnimation(
+                    0F,
+                    360F,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f
+                )
+                rotate.duration = 400
+                rotate.fillAfter=true
+                rotate.interpolator = LinearInterpolator()
+                more.startAnimation(rotate)
+
+
                 more_card.visibility=View.VISIBLE
                 val animFadein: Animation = AnimationUtils.loadAnimation(
                     applicationContext,
@@ -390,6 +417,20 @@ class Message : BaseActivity() {
                 more_card.startAnimation(animFadein)
             }
             else{
+                val rotate = RotateAnimation(
+                    0F,
+                    180F,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f
+                )
+                rotate.duration = 300
+                rotate.fillAfter=true
+                rotate.interpolator = LinearInterpolator()
+                more.startAnimation(rotate)
+
+
                 more_card.visibility=View.GONE
             }
         }
@@ -453,6 +494,70 @@ class Message : BaseActivity() {
         searchElement()
        // deleteMessage()
 
+    }
+
+    fun openProfileBottomSheet(context: Context,username:String,userimg:CircleImageView,user_id:String,user_image_path:String,isChat:Boolean) {
+        val bottomSheetDialog = BottomSheetDialog(context,R.style.AppBottomSheetDialogTheme)
+        bottomSheetDialog.setContentView(R.layout.profile_modal_bottomsheet)
+
+
+        val profile_image = bottomSheetDialog.findViewById<CircleImageView>(R.id.profile_image)
+        val user_name = bottomSheetDialog.findViewById<TextView>(R.id.user_name)
+        val user_about = bottomSheetDialog.findViewById<TextView>(R.id.user_about)
+
+        val chat = bottomSheetDialog.findViewById<CircleImageView>(R.id.chatview)
+        val audiocall=bottomSheetDialog.findViewById<CircleImageView>(R.id.call)
+        val videocall=bottomSheetDialog.findViewById<CircleImageView>(R.id.video_call)
+
+        profile_image!!.setImageBitmap((userimg.drawable as BitmapDrawable).bitmap)
+        user_name!!.text=username
+
+
+        chat!!.setOnClickListener {
+            if(isChat){
+                bottomSheetDialog.dismiss()
+            }
+            else{
+                val intent = Intent(context, Message::class.java)
+                intent.putExtra("name", username)
+                intent.putExtra("number",username)
+                intent.putExtra("userid", user_id)
+                intent.putExtra("image", user_image_path)
+                context.startActivity(intent)
+            }
+        }
+
+        audiocall!!.setOnClickListener {
+            val userName: String = username
+            //
+            val sinchServiceInterface=getSinchServiceInterface()
+            val callId=sinchServiceInterface!!.callUser(user_id).callId
+            val callScreen = Intent(this, Outgoing::class.java)
+            callScreen.putExtra("name",userName)
+            callScreen.putExtra("CALL_ID", callId)
+            callScreen.putExtra("image",user_image_path)
+            sendNotification(user_id, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
+            startActivity(callScreen)
+
+        }
+
+        videocall!!.setOnClickListener {
+            val userName: String = name.text.toString()
+            val sinchServiceInterface=getSinchServiceInterface()
+            val callId=sinchServiceInterface!!.callUserVideo(userid).callId
+            val callScreen = Intent(this, Outgoing_vdo::class.java)
+            callScreen.putExtra("name",userName)
+            callScreen.putExtra("CALL_ID", callId)
+            callScreen.putExtra("image",user_image)
+            sendNotification(userid, firebaseUser.uid, "","", 1)
+            startActivity(callScreen)
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun convertImageViewToBitmap(v: ImageView): Bitmap? {
+        return (v.drawable as BitmapDrawable).bitmap
     }
 
     override fun onBackPressed() {
@@ -547,17 +652,16 @@ class Message : BaseActivity() {
 
         search.queryHint="Search messages..."
         val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
-        searchIcon.setColorFilter(Color.WHITE)
+
         val theTextArea = search.findViewById(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
-        theTextArea.setTextColor(Color.WHITE)
+
         theTextArea.isCursorVisible=false
 
         search.setOnSearchClickListener {
             back.visibility= View.GONE
             name.visibility=View.GONE
             status.visibility=View.GONE
-            audiocall.visibility=View.GONE
-            videocall.visibility=View.GONE
+            profile.visibility=View.GONE
             image.visibility=View.GONE
             val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
             search.layoutParams=params
@@ -568,8 +672,7 @@ class Message : BaseActivity() {
                 back.visibility= View.VISIBLE
                 name.visibility=View.VISIBLE
                 status.visibility=View.VISIBLE
-                audiocall.visibility=View.VISIBLE
-                videocall.visibility=View.VISIBLE
+                profile.visibility=View.VISIBLE
                 image.visibility=View.VISIBLE
                 searched.visibility=View.GONE
                 send_box.visibility=View.VISIBLE
@@ -690,7 +793,7 @@ class Message : BaseActivity() {
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
                     MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false,false))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),false,userid))
             }
 
             val messageHashmap=HashMap<String,Any>()
@@ -999,7 +1102,7 @@ class Message : BaseActivity() {
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
                     MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false,false))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),false,userid))
             }
 
 

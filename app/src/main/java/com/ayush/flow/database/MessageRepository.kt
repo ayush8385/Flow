@@ -23,6 +23,10 @@ class MessageRepository(private val messageDao: MessageDao) {
     fun deleteMsg(item: MessageEntity) {
         messageDao.delete(item)
     }
+
+    fun deleteMsgWithId(id:String){
+        messageDao.deleteChat(id)
+    }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

@@ -38,6 +38,8 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         val call:ImageView=view.findViewById(R.id.call_chat)
         val vdo_call:ImageView=view.findViewById(R.id.vdo_call_chat)
+        val del_chat:ImageView=view.findViewById(R.id.del_chat)
+        val hide:ImageView=view.findViewById(R.id.hide_chat)
         val swipeRevealLayout:SwipeRevealLayout=view.findViewById(R.id.swipelayout)
     }
 
@@ -98,6 +100,18 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             viewBinderHelper.closeLayout(chat.id)
             clickListener.videoCall(holder.name.text.toString(),chat.id,chat.image)
         }
+        holder.del_chat.setOnClickListener {
+            viewBinderHelper.closeLayout(chat.id)
+            clickListener.deleteChat(chat.id,chat.name)
+        }
+        holder.hide.setOnClickListener {
+            viewBinderHelper.closeLayout(chat.id)
+            clickListener.hideChat(chat.id,chat.name)
+        }
+
+        holder.image.setOnClickListener {
+            Message().openProfileBottomSheet(context,chat.name,holder.image,chat.id,chat.image,false)
+        }
 
     }
 
@@ -114,6 +128,8 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
     interface OnAdapterItemClickListener {
         fun audioCall(toString: String, id: String,image: String)
         fun videoCall(toString: String,id: String,image: String)
+        fun deleteChat(id:String,name:String)
+        fun hideChat(id:String,name: String)
     }
 
     inner class loadImage(val image:String,val holder: HomeViewHolder):

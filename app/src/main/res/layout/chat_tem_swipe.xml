@@ -6,6 +6,8 @@
     android:id="@+id/swipelayout"
     app:dragEdge="right"
     app:flingVelocity="100"
+    android:layout_marginBottom="6dp"
+    android:background="?selectableItemBackground"
     app:mode="same_level">
 
     <RelativeLayout
@@ -27,99 +29,105 @@
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/call_chat"
             android:id="@+id/vdo_call_chat"/>
+        <ImageView
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:paddingHorizontal="10dp"
+            android:src="@drawable/hidden"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/vdo_call_chat"
+            android:id="@+id/hide_chat"/>
+        <ImageView
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:paddingHorizontal="10dp"
+            android:src="@drawable/delete"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/hide_chat"
+            android:id="@+id/del_chat"/>
+
     </RelativeLayout>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/paren"
-        android:background="?selectableItemBackground"
-        android:layout_marginBottom="4dp"
-        android:orientation="horizontal">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:id="@+id/paren"
+        android:paddingVertical="5dp">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="57dp"
+            android:layout_height="57dp"
+            android:id="@+id/profile_pic"
+            android:layout_centerVertical="true"
+            android:src="@drawable/user"
+            android:scaleType="centerCrop"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="14dp"
-            android:backgroundTint="#00000000">
-            <RelativeLayout
+            android:orientation="vertical"
+            android:layout_toRightOf="@+id/profile_pic"
+            android:layout_marginLeft="20dp"
+            android:layout_centerVertical="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="fdsfkhjk"
+                android:maxLines="1"
+                android:fontFamily="@font/senbold"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:id="@+id/profile_name"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:maxWidth="300dp"
+                android:text="sakhjs sd sah"
+                android:maxLines="1"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="2dp"
+                android:layout_below="@+id/profile_name"
+                android:textSize="15sp"
+                android:textStyle="normal"
+                android:textColor="@color/black"
+                android:fontFamily="@font/senregular"
+                android:id="@+id/profile_msg"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:orientation="vertical">
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="10dp">
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:id="@+id/profile_pic"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/user"
-                    android:scaleType="centerCrop"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="fdsfkhjk"
-                    android:maxLines="1"
-                    android:fontFamily="@font/open_sans"
-                    android:paddingLeft="12dp"
-                    android:layout_toRightOf="@+id/profile_pic"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:id="@+id/profile_name"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:maxWidth="300dp"
-                    android:text=""
-                    android:maxLines="1"
-                    android:paddingLeft="12dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_below="@+id/profile_name"
-                    android:layout_toRightOf="@+id/profile_pic"
-                    android:textSize="13sp"
-                    android:textStyle="normal"
-                    android:fontFamily="@font/open_sans"
-                    android:id="@+id/profile_msg"/>
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="10dp"
-                    android:orientation="vertical">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/timer"
-                        android:text=""
-                        android:fontFamily="@font/open_sans"
-                        android:layout_centerHorizontal="true"
-                        android:paddingHorizontal="6dp"
-                        android:textSize="10sp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/unread_chat"
-                        android:background="@drawable/story_unread_back"
-                        android:text=""
-                        android:layout_marginTop="10dp"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@+id/timer"
-                        android:visibility="gone"
-                        android:layout_alignParentRight="true"
-                        android:paddingHorizontal="6dp"
-                        android:textColor="@color/white"
-                        android:textSize="13sp"/>
-                </RelativeLayout>
-            </RelativeLayout>
-        </androidx.cardview.widget.CardView>
+                android:id="@+id/unread_chat"
+                android:text="24"
+                android:layout_marginLeft="10dp"
+                android:padding="5dp"
+                android:fontFamily="@font/senbold"
+                android:background="@drawable/bottom_back"
+                android:textColor="#FFFF"
+                android:textSize="10sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/timer"
+                android:text="12:39 pm"
+                android:textColor="@color/black"
+                android:fontFamily="@font/senregular"
+                android:layout_marginTop="4dp"
+                android:textSize="10sp"/>
+
+        </LinearLayout>
+    </RelativeLayout>
         <!--    <View-->
         <!--        android:layout_width="match_parent"-->
         <!--        android:layout_height="0.5dp"-->
         <!--        android:background="#6E6C6C"-->
         <!--        android:layout_marginHorizontal="20dp"/>-->
-
-    </RelativeLayout>
 
 </com.chauthai.swipereveallayout.SwipeRevealLayout>

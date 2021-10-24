@@ -6,10 +6,13 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "chats")
 data class ChatEntity(
-    @ColumnInfo(name = "name") val name : String,
-    @ColumnInfo(name = "number") val number : String,
-    @ColumnInfo(name = "image") val image : String,
-    @ColumnInfo(name = "last_msg") val lst_msg:String,
-    @ColumnInfo(name = "time") val time:String,
+    @ColumnInfo(name = "name") var name : String="",
+    @ColumnInfo(name = "number") var number : String="",
+    @ColumnInfo(name = "image") var image : String="",
+    @ColumnInfo(name = "last_msg") var lst_msg:String="",
+    @ColumnInfo(name = "time") var time:String="",
+    @ColumnInfo(name = "hide") var hide:Boolean=false,
     @PrimaryKey var id:String
-    )
+    ){
+    constructor():this("","","","","",false,"")
+}

@@ -6,26 +6,84 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable-hdpi/dr.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/addprofileback.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/bottom_back.xml" value="0.17407407407407408" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/bottom_nav_back.xml" value="0.15138888888888888" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/button_reg.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/call_back.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/call_background.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/callend_back.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/calltext_back.xml" value="0.17407407407407408" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/chat_back.xml" value="0.15138888888888888" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/editext_bg.xml" value="0.22037037037037038" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/getstartedbtn_back.xml" value="0.22037037037037038" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_arrow_back_ios_new_24.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_arrow_forward_24.xml" value="0.11666666666666667" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_brightness_3_24.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_brightness_7_24.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_call_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_chat_24.xml" value="0.23981481481481481" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_close_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_delete_sweep_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_info_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_keyboard_arrow_down_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_lock_24.xml" value="0.22256410256410256" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_mic_off_24.xml" value="0.14097222222222222" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1814814814814815" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_smartphone_24.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_videocam_24.xml" value="0.2361111111111111" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/img_back.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/indicator_default.xml" value="0.11666666666666667" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/local_vdo_back.xml" value="0.14444444444444443" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/receive_back.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/rounded_transparent_bottomsheet.xml" value="0.2361111111111111" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/send_back.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/shine.xml" value="0.22037037037037038" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/thumb.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/thumbfalse.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/thumbtrue.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/toolbar_back.xml" value="0.17407407407407408" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/track.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/vdo_handle.xml" value="0.17407407407407408" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/vdo_handle_btns.xml" value="0.14444444444444443" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/vdo_top_back.xml" value="0.15138888888888888" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/font/amiko_semibold.xml" value="0.22777777777777777" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_addprofile.xml" value="0.264" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_calling.xml" value="0.1597222222222222" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_contact.xml" value="0.12083333333333333" />
-        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_dashboard.xml" value="0.15138888888888888" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_dashboard.xml" value="0.264" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_image_view.xml" value="0.19453125" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_incoming_vdo.xml" value="0.19453125" />
-        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_message.xml" value="0.100390625" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_message.xml" value="0.264" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_outgoing.xml" value="0.12" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.176" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_passcode.xml" value="0.259375" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_register.xml" value="0.264" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_slider.xml" value="0.20989583333333334" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_splash.xml" value="0.17777777777777778" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_user_profile.xml" value="0.21203703703703702" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/calls_single_row.xml" value="0.15416666666666667" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/chat_tem_swipe.xml" value="0.21574074074074073" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/chats_single_row.xml" value="0.15416666666666667" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/contacts_single_row.xml" value="0.1388888888888889" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/delete_modal_bottomsheet.xml" value="0.259375" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/edit_modal_bottomsheet.xml" value="0.259375" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/fwd_single_row.xml" value="0.21203703703703702" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/fwd_to_single_row.xml" value="0.21203703703703702" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/layout_screen.xml" value="0.20989583333333334" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/modal_bottomsheet.xml" value="0.259375" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/persistent_bottomsheet.xml" value="0.259375" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/profile_modal_bottomsheet.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/receive_img_single_row.xml" value="0.19453125" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/receive_single_row.xml" value="0.11944444444444445" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/send_img_single_row.xml" value="0.19453125" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/send_single_row.xml" value="0.11944444444444445" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/story_single_row.xml" value="0.21574074074074073" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.22256410256410256" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.22256410256410256" />
       </map>
     </option>
   </component>

@@ -22,6 +22,8 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,19 +39,20 @@ import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 import java.net.URL
+import android.widget.CompoundButton
+
+
+
 
 
 class Addprofile : AppCompatActivity() {
     lateinit var next:Button
-    lateinit var edit_card:CardView
     lateinit var name:EditText
     lateinit var about:EditText
-    lateinit var edit_btn:Button
-    lateinit var parent:RelativeLayout
-    lateinit var camera: android.widget.ImageView
-    lateinit var gallery: android.widget.ImageView
+    lateinit var camera: ImageView
+    lateinit var gallery: ImageView
     lateinit var delete: ImageView
-    lateinit var userimage:CircleImageView
+    lateinit var userimage:ImageView
     lateinit var progressBar: ProgressBar
     lateinit var sharedPreferences: SharedPreferences
     var url=""
@@ -58,32 +61,26 @@ class Addprofile : AppCompatActivity() {
     private lateinit var photofile: File
     private var imageuri: Uri?=null
     lateinit var fileBytes: ByteArray
+
+    lateinit var mode:ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_addprofile)
+
         next=findViewById(R.id.nxt_btn)
-        edit_card=findViewById(R.id.more_card)
-        name=findViewById(R.id.name)
-        about=findViewById(R.id.about)
-        edit_btn=findViewById(R.id.edt_btn)
-        parent=findViewById(R.id.profile_parent)
+        name=findViewById(R.id.username)
+        about=findViewById(R.id.userabt)
         camera=findViewById(R.id.cam)
         gallery=findViewById(R.id.gall)
         delete=findViewById(R.id.del)
-        userimage=findViewById(R.id.image)
+        userimage=findViewById(R.id.userimg)
         progressBar=findViewById(R.id.progressbar)
+
+
 
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
-        edit_btn.setOnClickListener {
-            edit_btn.visibility=View.GONE
-            edit_card.visibility=View.VISIBLE
-        }
-
-        parent.setOnClickListener {
-            edit_btn.visibility=View.VISIBLE
-            edit_card.visibility=View.GONE
-        }
 
 
         var img=""
@@ -106,8 +103,7 @@ class Addprofile : AppCompatActivity() {
                 val intent=Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
                 startActivityForResult(intent,110)
-                edit_btn.visibility=View.VISIBLE
-                edit_card.visibility=View.GONE
+
             }
             else{
                 requestStoragePermission()
@@ -120,8 +116,7 @@ class Addprofile : AppCompatActivity() {
                 var intent= Intent(Intent.ACTION_GET_CONTENT)
                 intent.type="image/*"
                 startActivityForResult(intent,112)
-                edit_btn.visibility=View.VISIBLE
-                edit_card.visibility=View.GONE
+
             }
             else{
                 requestStoragePermission()
@@ -131,8 +126,6 @@ class Addprofile : AppCompatActivity() {
         delete.setOnClickListener {
             url=""
             userimage.setImageResource(R.drawable.user)
-            edit_btn.visibility=View.VISIBLE
-            edit_card.visibility=View.GONE
         }
 
 
@@ -153,10 +146,14 @@ class Addprofile : AppCompatActivity() {
                     next.clearAnimation()
                     saveandUploadimage(username,abt).execute()
                 }
-                startActivity(Intent(applicationContext, Dashboard::class.java))
+                val intent = Intent(this,Dashboard::class.java)
+                intent.putExtra("private",0)
+                startActivity(intent)
                 finishAffinity()
             }
         }
+
+
     }
 
     fun getphotofile(fileName: String):File{

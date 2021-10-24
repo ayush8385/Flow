@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.Slider">
+
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="350dp"-->
+<!--        android:id="@+id/view"-->
+<!--        android:background="#D24A738F"/>-->
+<!--    <ImageView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="80dp"-->
+<!--        android:layout_below="@+id/view"-->
+<!--        android:background="@drawable/ic_wave__2_"/>-->
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/tab_indicator"
+        android:background="@null"
+        android:layout_centerHorizontal="true"
+        app:tabIndicatorHeight="0dp"
+        android:layout_above="@+id/button"
+        app:tabBackground="@drawable/indicator_selector">
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Started"
+        android:visibility="invisible"
+        android:textColor="@color/white"
+        android:background="@drawable/getstartedbtn_back"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:paddingHorizontal="22dp"
+        android:layout_marginTop="6dp"/>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/next"
+        android:clickable="true"
+        android:backgroundTint="#FFFFFF"
+        android:focusable="true"
+        android:elevation="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="20dp"
+        app:fabSize="auto"
+        android:src="@drawable/ic_baseline_arrow_forward_24"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
+
+    <TextView
+        android:id="@+id/skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Skip"
+        android:textColor="@color/lightdark"
+        android:layout_margin="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" />
+
+</RelativeLayout>

@@ -5,8 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/user_parent"
-    android:background="@drawable/toolbar_back"
+    android:background="@color/back"
     tools:context=".activity.UserProfile">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="2dp"
+        android:layout_marginLeft="20dp"
+        android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
+        android:id="@+id/back"/>
 
     <RelativeLayout
         android:layout_width="120dp"
@@ -15,27 +24,25 @@
         android:layout_marginTop="60dp"
         android:id="@+id/user">
         <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="110dp"
-            android:layout_height="110dp"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
             android:src="@drawable/user"
             android:id="@+id/user_img" />
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:elevation="5dp"
-            app:cardElevation="50dp"
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/edt_img"
+            android:clickable="true"
+            android:backgroundTint="@color/lightdark"
+            android:focusable="true"
+            android:elevation="10dp"
+            app:fabSize="auto"
+            android:src="@drawable/ic_baseline_edit_24"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            app:cardBackgroundColor="#0000"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:scaleType="center"
-                android:id="@+id/edt_img"
-                android:background="@drawable/bottom_back"
-                android:src="@drawable/ic_baseline_edit_24"/>
-        </androidx.cardview.widget.CardView>
+            android:layout_alignParentRight="true"/>
+
     </RelativeLayout>
 
     <LinearLayout
@@ -61,7 +68,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/user_name"
-                android:fontFamily="@font/open_sans"
+                android:fontFamily="@font/senregular"
                 android:text=""
                 android:maxWidth="250dp"
                 android:maxLines="1"
@@ -93,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/user_about"
-                android:fontFamily="@font/open_sans"
+                android:fontFamily="@font/senregular"
                 android:text=""
                 android:maxWidth="250dp"
                 android:maxLines="1"

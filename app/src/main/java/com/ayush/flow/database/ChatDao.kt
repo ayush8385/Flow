@@ -15,7 +15,7 @@ interface ChatDao {
     fun deleteChat(id: String)
 
     @Query("SELECT * FROM chats")
-    fun getAllChats():LiveData<List<ChatEntity>>
+    fun getAllChats(): LiveData<List<ChatEntity>>
 
     @Query("SELECT EXISTS(SELECT * FROM chats WHERE id = :id)")
     fun isUserExist(id : String) : Boolean
@@ -26,6 +26,7 @@ interface ChatDao {
     @Query("UPDATE chats SET image = :img WHERE id = :userid")
     fun update(userid: String, img: String)
 
-//    @Query("SELECT * FROM contacts where contact_number=:number")
-//    fun getRestaurantsbyId(number:String):ContactEntity
+    @Query("UPDATE chats SET hide = :hide WHERE id = :userid")
+    fun setPrivate(userid: String, hide:Boolean)
+
 }

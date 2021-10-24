@@ -13,15 +13,14 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import com.ayush.flow.R
+import com.ayush.flow.database.ChatViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
@@ -54,6 +53,7 @@ class UserProfile : AppCompatActivity() {
     lateinit var edt_name: ImageView
     lateinit var edt_about: ImageView
     lateinit var firebaseUser: FirebaseUser
+    lateinit var back:ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_profile)
@@ -73,6 +73,7 @@ class UserProfile : AppCompatActivity() {
         image_card=findViewById(R.id.img_card)
         parent=findViewById(R.id.user_parent)
         firebaseUser=FirebaseAuth.getInstance().currentUser!!
+        back=findViewById(R.id.back)
 
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
@@ -88,6 +89,10 @@ class UserProfile : AppCompatActivity() {
 
         parent.setOnClickListener {
             image_card.visibility=View.GONE
+        }
+
+        back.setOnClickListener {
+            onBackPressed()
         }
 
         camera.setOnClickListener {
@@ -124,55 +129,61 @@ class UserProfile : AppCompatActivity() {
         }
 
         edt_name.setOnClickListener {
-            val edittext = EditText(this)
-            edittext.setText(name.text)
-            edittext.isCursorVisible=false
-            edittext.isSelected=true
-            val alert=AlertDialog.Builder(this)
 
-            alert.setTitle("Set your username")
+            val bottomSheetDialog = BottomSheetDialog(this)
+            bottomSheetDialog.setContentView(R.layout.edit_modal_bottomsheet)
 
-            alert.setView(edittext)
+            val title=bottomSheetDialog.findViewById<TextView>(R.id.textView)
+            val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_save)
+            val edt=bottomSheetDialog.findViewById<EditText>(R.id.set_name)
+            val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
 
-            alert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, whichButton -> //What ever you want to do with the value
+            title!!.text="Set your username"
 
-                    name.text = edittext.text.toString()
-                    sharedPreferences.edit().putString("name", name.text.toString()).apply()
-                    FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("username").setValue(name.text.toString())
-                })
+            edt!!.setText(name.text)
+            edt!!.isCursorVisible=false
+            edt!!.isSelected=true
 
-            alert.setNegativeButton("Cancel",
-                DialogInterface.OnClickListener { dialog, whichButton ->
-                    // what ever you want to do with No option.
-                })
+            btn1!!.setOnClickListener {
+                name.text = edt.text.toString()
+                sharedPreferences.edit().putString("name", name.text.toString()).apply()
+                FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("username").setValue(name.text.toString())
+                bottomSheetDialog.dismiss()
+            }
+            btn2!!.setOnClickListener {
+                bottomSheetDialog.dismiss()
+            }
 
-            alert.show()
+            bottomSheetDialog.show()
         }
 
         edt_about.setOnClickListener {
-            val edittext = EditText(this)
-            edittext.isCursorVisible=false
-            edittext.setText(about.text)
-            val alert=AlertDialog.Builder(this)
 
-            alert.setTitle("Set your status")
+            val bottomSheetDialog = BottomSheetDialog(this)
+            bottomSheetDialog.setContentView(R.layout.edit_modal_bottomsheet)
 
-            alert.setView(edittext)
+            val title=bottomSheetDialog.findViewById<TextView>(R.id.textView)
+            val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_save)
+            val edt=bottomSheetDialog.findViewById<EditText>(R.id.set_name)
+            val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
 
-            alert.setPositiveButton("Ok",
-                DialogInterface.OnClickListener { dialog, whichButton -> //What ever you want to do with the value
-                    about.text = edittext.text.toString()
-                    sharedPreferences.edit().putString("about",about.text.toString()).apply()
-                    FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("about").setValue(about.text.toString())
-                })
+            title!!.text="Set your status"
 
-            alert.setNegativeButton("Cancel",
-                DialogInterface.OnClickListener { dialog, whichButton ->
-                    // what ever you want to do with No option.
-                })
+            edt!!.setText(about.text)
+            edt!!.isCursorVisible=false
+            edt!!.isSelected=true
 
-            alert.show()
+            btn1!!.setOnClickListener {
+                about.text = edt.text.toString()
+                sharedPreferences.edit().putString("about",about.text.toString()).apply()
+                FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("about").setValue(about.text.toString())
+                bottomSheetDialog.dismiss()
+            }
+            btn2!!.setOnClickListener {
+                bottomSheetDialog.dismiss()
+            }
+
+            bottomSheetDialog.show()
         }
 
     }

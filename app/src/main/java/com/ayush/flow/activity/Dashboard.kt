@@ -13,11 +13,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -43,9 +42,16 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import android.view.animation.LinearInterpolator
 
+import android.view.animation.Animation
 
+import android.view.animation.RotateAnimation
+import android.widget.*
+import androidx.lifecycle.ViewModelProviders
 
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.hanks.passcodeview.PasscodeView
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -63,6 +69,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     var chatList= arrayListOf<ChatEntity>()
     var callList= arrayListOf<CallEntity>()
     var storyList= arrayListOf<Chats>()
+    lateinit var mode:ImageView
+    lateinit var hidden:ImageView
+    lateinit var hidden_close:ImageView
     val hashMap: HashMap<Int, NotificationCompat.MessagingStyle?> = HashMap()
     var messageStyle: NotificationCompat.MessagingStyle? =NotificationCompat.MessagingStyle("Me")
     lateinit var search: androidx.appcompat.widget.SearchView
@@ -72,6 +81,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     var previousMenuItem: MenuItem?=null
     lateinit var contact: ImageView
     lateinit var firebaseUser: FirebaseUser
+    lateinit var story_box:LinearLayout
+    lateinit var hiddenViewModel: HiddenViewModel
+
+    lateinit var theme: SwitchCompat
 
     override fun onServiceConnected() {
         sinchServiceInterface!!.setStartListener(this)
@@ -91,13 +104,20 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         contact=findViewById(R.id.contact)
         search=findViewById(R.id.chat_searchview)
         profile=findViewById(R.id.user_img)
+        hidden=findViewById(R.id.hidden)
+        mode=findViewById(R.id.mode)
+        hidden_close=findViewById(R.id.close_hidden)
+        story_box=findViewById(R.id.story_box)
 
 
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
+        hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
+
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
-        openChatHome()
+        openChatHome(intent.getIntExtra("private",0))
+
 
         profile.setOnClickListener{
             startActivity(Intent(this,UserProfile::class.java))
@@ -120,7 +140,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         chat_text.text="Chats"
 
 
-                       openChatHome()
+                       openChatHome(0)
 
                         it.isCheckable=true
                         it.isChecked=true
@@ -146,6 +166,69 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             return@setOnNavigationItemSelectedListener true
         }
 
+        if(sharedPreferences.getBoolean("nightMode",false)){
+            mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.moon))
+
+
+        }
+        else{
+            mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.sun))
+
+        }
+
+
+
+
+        hidden.setOnClickListener {
+
+            val intent = Intent(this,Passcode::class.java)
+            intent.putExtra("n",2)
+            startActivity(intent)
+
+
+        }
+
+        hidden_close.setOnClickListener {
+            story_box.visibility=View.VISIBLE
+            story_text.visibility=View.VISIBLE
+            hidden.visibility=View.VISIBLE
+
+            chat_text.text="Chats"
+            hidden_close.visibility=View.GONE
+
+            openChatHome(0)
+        }
+
+
+        mode.setOnClickListener {
+            val rotate = RotateAnimation(
+                0F,
+                360F,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f
+            )
+            rotate.duration = 800
+            rotate.interpolator = LinearInterpolator()
+            mode.startAnimation(rotate)
+
+            Handler().postDelayed({
+                if(sharedPreferences.getBoolean("nightMode",false)){
+                    // mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.sun))
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    sharedPreferences.edit().putBoolean("nightMode",false).apply()
+
+                }
+                else{
+                    //  mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.moon))
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    sharedPreferences.edit().putBoolean("nightMode",true).apply()
+
+                }
+            },600)
+        }
+
         searchElement()
 
        if(checkpermission()){
@@ -157,6 +240,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         UpdateToken()
     }
+
+
+
 
     inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
         override fun doInBackground(vararg params: Void?): Boolean {
@@ -184,6 +270,76 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
+//    fun openPasscode(n:Int,id:String){
+//        passcodeView.visibility=View.VISIBLE
+//        if(sharedPreferences.getString("passcode","")==""){
+//            val dialog= android.app.AlertDialog.Builder(this)
+//            dialog.setMessage("Set your 4 digit Passcode")
+//            dialog.setNegativeButton("Ok",object :DialogInterface.OnClickListener{
+//                override fun onClick(dialog: DialogInterface?, which: Int) {
+//                    dialog!!.dismiss()
+//                    passcodeView.setPasscodeLength(4)
+//                        .setListener(object :PasscodeView.PasscodeViewListener{
+//                            override fun onFail() {
+//                                Toast.makeText(applicationContext,"Wrong",Toast.LENGTH_LONG).show()
+//                            }
+//                            override fun onSuccess(number: String?) {
+//                                sharedPreferences.edit().putString("passcode",number).apply()
+//                                if(n==0){
+//                                    ChatViewModel(application).setPrivate(id,false)
+//                                }
+//                                if(n==1){
+//                                    ChatViewModel(application).setPrivate(id,true)
+//                                }
+//                                passcodeView.visibility=View.GONE
+//
+//                            }
+//
+//                        })
+//                }
+//
+//            })
+//            dialog.show()
+//
+//
+//        }
+//        else{
+//            passcodeView.setPasscodeLength(4)
+//                .setLocalPasscode(sharedPreferences.getString("passcode",""))
+//                .setListener(object :PasscodeView.PasscodeViewListener{
+//                    override fun onFail() {
+//                        Toast.makeText(applicationContext,"Wrong",Toast.LENGTH_LONG).show()
+//                    }
+//
+//                    override fun onSuccess(number: String?) {
+//                        if(n==0){
+//                            ChatViewModel(application).setPrivate(id,false)
+//                        }
+//                        if(n==1){
+//                            ChatViewModel(application).setPrivate(id,true)
+//                        }
+//                        else{
+//
+////                            val hiddenModel = ViewModelProviders.of(this@Dashboard).get(HiddenViewModel::class.java)
+////                            hiddenModel.setText("1")
+//                            story_box.visibility=View.GONE
+//                            story_text.visibility=View.GONE
+//                            hidden.visibility=View.GONE
+//
+//                            chat_text.text="Private Chats"
+//                            hidden_close.visibility=View.VISIBLE
+//
+//                            openChatHome(1)
+//
+//                        }
+//
+//                        passcodeView.visibility=View.GONE
+//                    }
+//
+//                })
+//        }
+//    }
+
     private fun openCallHome() {
         callAdapter= CallAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
             override fun audioCall(name: String, id: String,image:String) {
@@ -208,6 +364,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 callScreen.putExtra("image",image)
                 Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
                 startActivity(callScreen)
+            }
+
+            override fun deleteChat(id: String,name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun hideChat(id: String,name: String) {
+                TODO("Not yet implemented")
             }
 
         })
@@ -236,7 +400,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         storyRecyclerView.scheduleLayoutAnimation()
     }
 
-    private fun openChatHome() {
+    private fun openChatHome(i: Int) {
         chatAdapter= ChatAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
             override fun audioCall(name: String, id: String,image:String) {
 
@@ -262,6 +426,15 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 startActivity(callScreen)
             }
 
+            override fun deleteChat(id: String,name:String) {
+                showDeleteBottomSheetDialog(id,name)
+
+            }
+
+            override fun hideChat(id: String,name: String) {
+                showHideBottomSheetDialog(id,name)
+            }
+
         })
 
         layoutManager=LinearLayoutManager(this)
@@ -273,14 +446,41 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         chatsRecyclerView.layoutAnimation=controller
         chatsRecyclerView.scheduleLayoutAnimation()
 
-        ChatViewModel(application).allChats.observe(this, Observer { list->
-            list?.let {
-                chatList.clear()
-                chatList.addAll(list)
+        if(i==0){
+            ChatViewModel(application).allChats.observe(this, Observer { list->
+                list?.let {
+                    chatList.clear()
+                    for(j in list){
+                        if(!j.hide){
+                            chatList.add(j)
+                        }
+                    }
 
-                chatAdapter.updateList(chatList)
-            }
-        })
+                    chatAdapter.updateList(chatList)
+                }
+            })
+        }
+        else{
+            story_box.visibility=View.GONE
+            story_text.visibility=View.GONE
+            hidden.visibility=View.GONE
+
+            chat_text.text="Private Chats"
+            hidden_close.visibility=View.VISIBLE
+
+            ChatViewModel(application).allChats.observe(this, Observer { list->
+                list?.let {
+                    chatList.clear()
+                    for(j in list){
+                        if(j.hide){
+                            chatList.add(j)
+                        }
+                    }
+
+                    chatAdapter.updateList(chatList)
+                }
+            })
+        }
 
         updateUnsavedImage().execute()
         chatAdapter.notifyDataSetChanged()
@@ -294,18 +494,89 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.scheduleLayoutAnimation()
     }
 
+    private fun showHideBottomSheetDialog(id: String,name:String) {
+
+
+        val bottomSheetDialog = BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(R.layout.delete_modal_bottomsheet)
+
+        val text = bottomSheetDialog.findViewById<TextView>(R.id.textView)
+        val summary = bottomSheetDialog.findViewById<TextView>(R.id.text2)
+        val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_delete)
+        val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
+
+        val hideChat =  ChatViewModel(application).getChat(id)
+
+
+        if(!hideChat.hide){
+            text!!.text="Hide "+name+" Chats"
+            btn1!!.text="Hide"
+            summary!!.text="This will Hide your selected chat to private Section"
+        }
+        else{
+            text!!.text="Unhide "+name+" Chats"
+            btn1!!.text="Unhide"
+            summary!!.text="This will Unhide your selected chat to private Section"
+        }
+
+
+        btn1!!.setOnClickListener {
+
+
+
+            val intent = Intent(this,Passcode::class.java)
+            intent.putExtra("id",id)
+            if(!hideChat.hide){
+                intent.putExtra("n",1)
+            }
+            else{
+                intent.putExtra("n",0)
+            }
+            startActivity(intent)
+            bottomSheetDialog.dismiss()
+        }
+        btn2!!.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
+
+    private fun showDeleteBottomSheetDialog(id: String, name: String) {
+        val bottomSheetDialog = BottomSheetDialog(this,R.style.AppBottomSheetDialogTheme)
+        bottomSheetDialog.setContentView(R.layout.delete_modal_bottomsheet)
+
+        val text = bottomSheetDialog.findViewById<TextView>(R.id.textView)
+        val summary = bottomSheetDialog.findViewById<TextView>(R.id.text2)
+        val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_delete)
+        val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
+
+
+        text!!.text="Delete Chats with "+name
+        summary!!.text="This will delete your selected chat including Medias"
+
+        btn1!!.setOnClickListener {
+            Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_LONG).show()
+            ChatViewModel(application).deleteChat(id)
+            deleteMsgs(id).execute()
+            bottomSheetDialog.dismiss()
+        }
+        btn2!!.setOnClickListener {
+           bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
     fun searchElement(){
 
-        search.queryHint="Search Your friends..."
+        search.queryHint="Search Your Friends..."
         search.setIconifiedByDefault(false)
-        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon);
-        searchIcon.visibility= View.GONE
-        searchIcon.setImageDrawable(null)
         val closeIcon: ImageView = search.findViewById(R.id.search_close_btn);
-        closeIcon.setColorFilter(Color.WHITE)
+
         val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
-        theTextArea.setTextColor(Color.WHITE)
-        theTextArea.setHintTextColor(Color.LTGRAY)
+
         theTextArea.isCursorVisible=false
 
         search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
@@ -430,10 +701,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=chatEntity.number
                             imagepath=chatEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
                             }
                             else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
                             }
                         }
                         else if(ContactViewModel(application).isUserExist(sender)){
@@ -442,10 +713,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=contactEntity.number
                             imagepath=contactEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
                             }
                             else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
                             }
                         }
                         else{
@@ -457,10 +728,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     number=snapshot.child("number").value.toString()
                                     //check message type
                                     if(type=="image"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
                                     }
                                     else{
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
                                     }
 
                                     //get image of sender
@@ -468,10 +739,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     if(image_url!=""){
                                         GetImageFromUrl(sender,application).execute(image_url)
                                         if(type=="image"){
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),false,sender))
                                         }
                                         else{
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),false,sender))
                                         }
                                     }
                                     //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
@@ -817,6 +1088,44 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
+    inner class deleteMsgs(val id:String):AsyncTask<Void,Void,Boolean>(){
+        override fun doInBackground(vararg params: Void?): Boolean {
+            MessageViewModel(application).deleteMsgWithId(firebaseUser.uid+"-"+id)
+
+            val refer=FirebaseDatabase.getInstance().reference.child("Messages")
+            refer.addListenerForSingleValueEvent(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if(snapshot.hasChild(firebaseUser.uid)){
+                        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+
+                        ref.addListenerForSingleValueEvent(object :ValueEventListener{
+                            override fun onDataChange(snapShot: DataSnapshot) {
+                                for(snap in snapShot.children){
+                                    if(snap.child("sender").value==id){
+                                        snap.child("sender").ref.parent!!.removeValue()
+                                    }
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
+
+                        })
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+            return true
+        }
+
+    }
+
 
     inner class GetImageFromUrl(val userid: String,val appl:Application) : AsyncTask<String?, Void?, Bitmap>() {
         var bmp:Bitmap?=null
@@ -849,6 +1158,21 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     override fun onResume() {
         super.onResume()
+        hiddenViewModel.getText().observe(this,Observer{it->
+            if(it=="0a"){
+
+            }
+            else{
+                story_box.visibility=View.GONE
+                story_text.visibility=View.GONE
+                hidden.visibility=View.GONE
+
+                chat_text.text="Private Chats"
+                hidden_close.visibility=View.VISIBLE
+
+                openChatHome(1)
+            }
+        })
         try {
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))
             val b = BitmapFactory.decodeStream(FileInputStream(f))
@@ -873,5 +1197,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             FirebaseAuth.getInstance().currentUser!!.uid
         ).setValue(token)
     }
+
 
 }

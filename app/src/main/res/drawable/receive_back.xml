@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android">-->
+<!--    <corners-->
+<!--        android:bottomLeftRadius="10dp"-->
+<!--        android:bottomRightRadius="10dp"-->
+<!--        android:topRightRadius="10dp"/>-->
+<!--    <gradient-->
+<!--        android:startColor="#3A7FB5"-->
+<!--        android:endColor="#303737"-->
+<!--        android:angle="180"/>-->
+<!--</shape>-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners
         android:bottomLeftRadius="10dp"
         android:bottomRightRadius="10dp"
         android:topRightRadius="10dp"/>
-    <gradient
-        android:startColor="#3A7FB5"
-        android:endColor="#303737"
-        android:angle="180"/>
+    <solid
+        android:color="@color/black"/>
 </shape>

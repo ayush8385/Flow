@@ -4,28 +4,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/toolbar_back"
+    android:background="@color/back"
     tools:context=".activity.Dashboard">
+
+
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/title_detail"
-        android:background="@drawable/toolbar_back"
-        android:paddingVertical="10dp"
-        android:paddingHorizontal="20dp">
+        android:paddingHorizontal="20dp"
+        android:layout_marginBottom="10dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/michroma"
             android:text="Messages"
             android:id="@+id/title"
-            android:textColor="@color/white"
+            android:layout_centerVertical="true"
+            android:textColor="@color/black"
+            android:textStyle="bold"
             android:textSize="22sp"/>
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/theme_switch"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_toLeftOf="@+id/user_img"-->
+<!--            android:layout_marginRight="30dp"-->
+<!--            android:layout_centerInParent="true"-->
+<!--            android:thumb="@drawable/thumb"-->
+<!--            app:track="@drawable/track" />-->
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:id="@+id/mode"
+            android:layout_toLeftOf="@+id/user_img"
+            android:layout_marginRight="30dp"
+            android:layout_centerInParent="true"/>
+
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@drawable/user"
+            app:civ_border_width="1.2dp"
+            app:civ_circle_background_color="@color/black"
+            android:elevation="10dp"
+            app:civ_border_color="@color/black"
             android:id="@+id/user_img"
             android:background="?selectableItemBackground"
             android:layout_alignParentRight="true"/>
@@ -40,22 +65,22 @@
         android:id="@+id/search_detail"
         android:layout_marginHorizontal="16dp">
         <androidx.appcompat.widget.SearchView
-            style="@style/SearchViewStyle"
-            android:layout_width="300dp"
+            android:layout_width="wrap_content"
             android:layout_height="40dp"
             app:queryHint="Search for friend..."
             android:focusable="false"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/contact"
-            android:layout_marginRight="10dp"
+            android:layout_marginRight="30dp"
             android:id="@+id/chat_searchview"
             android:layout_centerVertical="true"
+            app:queryBackground="@android:color/transparent"
             android:background="@drawable/addprofileback"/>
         <ImageView
             android:layout_width="39dp"
             android:layout_height="40dp"
             android:elevation="10dp"
-            android:src="@drawable/contact_book"
+            android:src="@drawable/new_chat"
             android:id="@+id/contact"
             android:background="?selectableItemBackground"
             android:layout_centerVertical="true"
@@ -65,12 +90,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stories"
+        android:layout_marginTop="10dp"
         android:id="@+id/stories"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:layout_below="@id/search_detail"
         android:layout_marginLeft="20dp"
         android:textSize="18sp"
-        android:fontFamily="@font/open_sans"/>
+        android:fontFamily="@font/senregular"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -87,7 +113,8 @@
                 android:layout_width="55dp"
                 android:layout_height="55dp"
                 android:id="@+id/story_img"
-                android:background="@drawable/story_unread_back"
+                android:padding="10dp"
+                android:background="@drawable/bottom_back"
                 android:src="@drawable/ic_baseline_add_24"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -97,12 +124,15 @@
                 android:layout_below="@+id/story_img"
                 android:layout_centerHorizontal="true"
                 android:textSize="13sp"
-                android:textColor="@color/white"
-                android:fontFamily="@font/open_sans"/>
+                android:textColor="@color/black"
+                android:fontFamily="@font/senregular"/>
         </RelativeLayout>
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/story_single_row"
             android:id="@+id/storyrecycler"/>
     </LinearLayout>
     <TextView
@@ -111,20 +141,41 @@
         android:text="Chats"
         android:id="@+id/chats"
         android:layout_marginTop="6dp"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:layout_below="@id/story_box"
         android:layout_marginLeft="20dp"
         android:textSize="18sp"
-        android:fontFamily="@font/open_sans"/>
+        android:fontFamily="@font/senregular"/>
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/hidden"
+        android:layout_marginTop="6dp"
+        android:id="@+id/hidden"
+        android:layout_marginRight="16dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/story_box"/>
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_baseline_close_24"
+        android:layout_marginTop="6dp"
+        android:id="@+id/close_hidden"
+        android:visibility="gone"
+        android:layout_marginRight="16dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/story_box"/>
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatsrecycler"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/chats"
         android:layout_marginTop="5dp"
-        android:paddingBottom="60dp"
-        tools:listitem="cha"
         android:clipToPadding="false"
-        android:id="@+id/chatsrecycler"/>
+        android:paddingBottom="60dp"
+        tools:listitem="@layout/chats_single_row" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -153,5 +204,7 @@
                 app:menu="@menu/home_bottom_menu" />
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
+
+
 
 </RelativeLayout>

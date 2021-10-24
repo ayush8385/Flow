@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.text.method.PasswordTransformationMethod
 import android.view.MotionEvent
 import android.view.View
@@ -14,6 +15,7 @@ import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import com.ayush.flow.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -23,19 +25,16 @@ import com.google.firebase.database.ValueEventListener
 
 class Register : AppCompatActivity() {
     lateinit var welc: TextView
-    lateinit var em:TextView
     lateinit var email: EditText
-    lateinit var num:TextView
     lateinit var numb: EditText
-    lateinit var pas:TextView
     lateinit var pass: EditText
-    lateinit var cn_pas:TextView
     lateinit var cnf_pass: EditText
     lateinit var register: Button
     lateinit var sign_in: TextView
     lateinit var progressBar: ProgressBar
     lateinit var forgot: TextView
     lateinit var sign_up: TextView
+    lateinit var back:ImageView
     lateinit var sharedPreferences: SharedPreferences
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -44,62 +43,32 @@ class Register : AppCompatActivity() {
         setContentView(R.layout.activity_register)
 
         welc=findViewById(R.id.create)
-        em=findViewById(R.id.email_txt)
         email=findViewById(R.id.email_edt)
-        num=findViewById(R.id.number_txt)
         numb=findViewById(R.id.number_edt)
-        pas=findViewById(R.id.pass_txt)
         pass=findViewById(R.id.pass_edt)
-        cn_pas=findViewById(R.id.cnfpass_txt)
         cnf_pass=findViewById(R.id.cnfpass_edt)
         register=findViewById(R.id.register_button)
         sign_in=findViewById(R.id.signin)
         progressBar=findViewById(R.id.progressbar)
         forgot=findViewById(R.id.forgot)
         sign_up=findViewById(R.id.signup)
+        back=findViewById(R.id.back)
+
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
+        back.setOnClickListener {
+            onBackPressed()
+        }
+
         sign_in.setOnClickListener {
-            numb.visibility= View.GONE
-            num.visibility=View.GONE
-            cnf_pass.visibility= View.GONE
-            cn_pas.visibility=View.GONE
-            register.text="LOG IN"
-            sign_in.visibility= View.GONE
-            sign_up.visibility= View.VISIBLE
-            forgot.visibility= View.VISIBLE
-            pass.visibility= View.VISIBLE
-            pas.visibility=View.VISIBLE
-            welc.text="Welcome Back"
+            openLogin()
         }
         sign_up.setOnClickListener {
-            numb.visibility=View.VISIBLE
-            num.visibility=View.VISIBLE
-            cnf_pass.visibility=View.VISIBLE
-            cn_pas.visibility=View.VISIBLE
-            register.text="Register"
-            sign_in.visibility=View.VISIBLE
-            sign_up.visibility=View.GONE
-            forgot.visibility=View.GONE
-            pass.visibility=View.VISIBLE
-            pas.visibility=View.VISIBLE
-            welc.text="Create Account"
-            progressBar.visibility=View.GONE
-            register.visibility=View.VISIBLE
+            openSignUp()
         }
 
         forgot.setOnClickListener {
-            numb.visibility=View.GONE
-            num.visibility=View.GONE
-            cnf_pass.visibility=View.GONE
-            cn_pas.visibility=View.GONE
-            register.text="reset"
-            sign_in.visibility=View.GONE
-            sign_up.visibility=View.VISIBLE
-            forgot.visibility=View.GONE
-            pass.visibility=View.GONE
-            pas.visibility=View.GONE
-            welc.text="Password Reset"
+            openForgot()
         }
 
         register.setOnClickListener {
@@ -126,12 +95,12 @@ class Register : AppCompatActivity() {
                     if (pass.transformationMethod != null) {
                         pass.transformationMethod = null
                         pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.key,0,
+                            R.drawable.ic_baseline_lock_24,0,
                             R.drawable.unlock,0)
                     } else {
                         pass.transformationMethod = PasswordTransformationMethod()
                         pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.key,0,
+                            R.drawable.ic_baseline_lock_24,0,
                             R.drawable.lock,0)
                     }
                     return@OnTouchListener true
@@ -152,12 +121,12 @@ class Register : AppCompatActivity() {
                     if (cnf_pass.transformationMethod != null) {
                         cnf_pass.transformationMethod = null
                         cnf_pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.key,0,
+                            R.drawable.ic_baseline_lock_24,0,
                             R.drawable.unlock,0)
                     } else {
                         cnf_pass.transformationMethod = PasswordTransformationMethod()
                         cnf_pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.key,0,
+                            R.drawable.ic_baseline_lock_24,0,
                             R.drawable.lock,0)
                     }
                     return@OnTouchListener true
@@ -165,6 +134,80 @@ class Register : AppCompatActivity() {
             }
             false
         })
+    }
+
+    private fun openForgot() {
+        flipButton()
+        register.text="reset"
+        welc.text="Password Reset"
+
+        val slide: Animation =
+            AnimationUtils.loadAnimation(this, android.R.anim.fade_out) //the above transition
+        numb.startAnimation(slide)
+        cnf_pass.startAnimation(slide)
+        Handler().postDelayed({
+            numb.visibility=View.GONE
+            cnf_pass.visibility=View.GONE
+            sign_in.visibility=View.INVISIBLE
+            sign_up.visibility=View.VISIBLE
+            forgot.visibility=View.GONE
+            pass.visibility=View.GONE
+        },400)
+
+
+
+    }
+
+    private fun openSignUp() {
+        flipButton()
+        register.text="Register"
+        welc.text="Create Account"
+
+        val slide: Animation =
+            AnimationUtils.loadAnimation(this, android.R.anim.fade_in) //the above transition
+        numb.startAnimation(slide)
+        cnf_pass.startAnimation(slide)
+        Handler().postDelayed({
+            numb.visibility=View.VISIBLE
+            cnf_pass.visibility=View.VISIBLE
+            sign_in.visibility=View.VISIBLE
+            sign_up.visibility=View.INVISIBLE
+            forgot.visibility=View.INVISIBLE
+            pass.visibility=View.VISIBLE
+            progressBar.visibility=View.GONE
+            register.visibility=View.VISIBLE
+        },100)
+
+    }
+
+    private fun flipButton() {
+        val flip:Animation = AnimationUtils.loadAnimation(this,R.anim.flip)
+        register.startAnimation(flip)
+
+    }
+
+    private fun openLogin() {
+        flipButton()
+
+        welc.text="Welcome Back"
+        register.text="Log in"
+
+
+        val slide: Animation =
+            AnimationUtils.loadAnimation(this, android.R.anim.fade_out) //the above transition
+        numb.startAnimation(slide)
+        cnf_pass.startAnimation(slide)
+        Handler().postDelayed({
+            numb.visibility=View.GONE
+            cnf_pass.visibility=View.GONE
+            sign_in.visibility=View.INVISIBLE
+            sign_up.visibility=View.VISIBLE
+            forgot.visibility=View.VISIBLE
+            pass.visibility= View.VISIBLE
+        },400)
+
+
+
     }
 
     private fun registerUser() {

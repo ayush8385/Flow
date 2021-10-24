@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingTop="10dp"
+    android:background="#F3F3F3"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:text="Delete Chats With Ayush"
+        android:gravity="center"
+        android:fontFamily="@font/open_sans"
+        android:textColor="#272727"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:textSize="19sp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This will delete your all chats including all Medias"
+        android:layout_gravity="center"
+        android:textColor="#E8000000"
+        android:id="@+id/text2"
+        android:layout_marginTop="4dp"/>
+    <Button
+        android:layout_marginTop="10dp"
+        android:text="Delete"
+        style="@style/action_button_bs"
+        android:textAllCaps="false"
+        android:id="@+id/btn_delete"/>
+    <Button
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="10dp"
+        android:text="Cancel"
+        android:textColor="#D04D5B"
+        style="@style/action_button_bs"
+        android:id="@+id/btn_cancel"/>
+</LinearLayout>

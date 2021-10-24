@@ -23,6 +23,10 @@ interface MessageDao {
     @Delete
     fun delete(item: MessageEntity)
 
+    @Query("DELETE FROM messages WHERE user_id = :id")
+    fun deleteChat(id: String)
+
+
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
 }

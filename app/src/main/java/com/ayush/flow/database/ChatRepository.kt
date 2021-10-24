@@ -24,7 +24,8 @@ class ChatRepository(private val chatDao: ChatDao) {
     fun update(id: String, img: String) {
         chatDao.update(id,img)
     }
-//    suspend fun delete(noteEntity: NoteEntity){
-//        noteDao.delete(noteEntity)
-//    }
+
+    fun setPrivate(id:String,hide:Boolean){
+        chatDao.setPrivate(id,hide)
+    }
 }

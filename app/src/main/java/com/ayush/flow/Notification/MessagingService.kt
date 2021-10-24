@@ -228,6 +228,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     "Photo",
                                     sdf.format(tm),
+                                    false,
                                     sender
                                 )
                             )
@@ -239,6 +240,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     msg,
                                     sdf.format(tm),
+                                    false,
                                     sender
                                 )
                             )
@@ -256,6 +258,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     "Photo",
                                     sdf.format(tm),
+                                    false,
                                     sender
                                 )
                             )
@@ -267,6 +270,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     msg,
                                     sdf.format(tm),
+                                    false,
                                     sender
                                 )
                             )
@@ -287,6 +291,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             imagepath,
                                             "Photo",
                                             sdf.format(tm),
+                                            false,
                                             sender
                                         )
                                     )
@@ -298,6 +303,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             imagepath,
                                             msg,
                                             sdf.format(tm),
+                                            false,
                                             sender
                                         )
                                     )

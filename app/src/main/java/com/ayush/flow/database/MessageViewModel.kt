@@ -35,4 +35,8 @@ class MessageViewModel(application: Application): AndroidViewModel(application) 
     fun deleteMsg(item: MessageEntity) {
         repository.deleteMsg(item)
     }
+
+    fun deleteMsgWithId(id:String){
+        repository.deleteMsgWithId(id)
+    }
 }

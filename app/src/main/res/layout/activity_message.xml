@@ -6,20 +6,22 @@
     android:layout_height="match_parent"
     android:id="@+id/msg_parent"
     android:orientation="vertical"
-    android:background="@drawable/toolbar_back"
     tools:context=".flow.activity.Message">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="#0000"
-        android:id="@+id/toolbar">
+        app:cardCornerRadius="10dp"
+        android:id="@+id/toolbar"
+
+        android:layout_marginHorizontal="2dp"
+        app:cardElevation="60dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="7dp"
-            android:background="@drawable/toolbar_back"
-            android:paddingVertical="8dp">
+            android:background="@color/white"
+            android:paddingVertical="12dp">
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -30,8 +32,8 @@
                 android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
                 android:id="@+id/back"/>
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:src="@drawable/user"
                 android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
@@ -42,17 +44,18 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:orientation="vertical"
-                android:layout_marginLeft="10dp"
+                android:id="@+id/details"
+                android:layout_marginLeft="12dp"
                 android:layout_toRightOf="@+id/user_pic">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
                     android:maxWidth="180dp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:maxLines="1"
                     android:id="@+id/user_name"
-                    android:fontFamily="@font/open_sans"
+                    android:fontFamily="@font/senbold"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
                 <TextView
@@ -60,41 +63,26 @@
                     android:layout_height="wrap_content"
                     android:text="online"
                     android:maxWidth="180dp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:layout_marginLeft="2dp"
                     android:maxLines="1"
                     android:visibility="gone"
+                    android:layout_marginTop="3dp"
                     android:layout_toRightOf="@+id/user_pic"
                     android:layout_below="@id/user_name"
                     android:id="@+id/status"
-                    android:fontFamily="@font/open_sans"
+                    android:fontFamily="@font/senregular"
                     android:textSize="12sp"/>
             </LinearLayout>
-            <LinearLayout
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_baseline_person_24"
+                android:layout_toLeftOf="@+id/searchview"
                 android:layout_centerVertical="true"
-                android:id="@+id/calls"
-                android:layout_marginRight="28dp"
-                android:orientation="horizontal">
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:id="@+id/video_call"
-                    android:src="@drawable/video_call"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"/>
-                <ImageView
-                    android:layout_width="19dp"
-                    android:layout_height="19dp"
-                    android:src="@drawable/call"
-                    android:id="@+id/call"
-                    android:layout_marginHorizontal="26dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"/>
-
-            </LinearLayout>
+                android:id="@+id/user_profile"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp" />
 
             <androidx.appcompat.widget.SearchView
                 android:layout_width="20dp"
@@ -103,10 +91,10 @@
                 android:layout_marginRight="10dp"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
+                app:queryBackground="@android:color/transparent"
                 app:searchIcon="@drawable/ic_baseline_search_24"/>
 
         </RelativeLayout>
-
     </androidx.cardview.widget.CardView>
 
 <!--    <RelativeLayout-->
@@ -129,90 +117,90 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/send"
         android:layout_below="@+id/toolbar"
-        tools:listitem="@layout/contacts_single_row"
         android:id="@+id/message_recycler"/>
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="wrap_content"
-        app:cardCornerRadius="25dp"
-        android:visibility="gone"
-        app:cardBackgroundColor="@android:color/transparent"
-        android:layout_above="@+id/send"
-        android:layout_marginLeft="4dp"
-        android:id="@+id/more_card"
-        android:layout_height="wrap_content">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:id="@+id/send_con"
-                android:src="@drawable/cons"/>
-            <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:id="@+id/send_doc"
-                android:src="@drawable/documents"/>
-            <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:id="@+id/send_cam"
-                android:src="@drawable/camera"/>
-            <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_margin="10dp"
-                android:id="@+id/send_gall"
-                android:src="@drawable/gallery"/>
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/send"
-        app:cardBackgroundColor="#0000"
+        app:cardElevation="40dp"
         android:layout_alignParentBottom="true">
         <RelativeLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingVertical="8dp"
-            android:paddingHorizontal="6dp"
-            android:background="@drawable/bottom_nav_back">
-            <ImageView
-                android:layout_width="39dp"
-                android:layout_height="40dp"
-                android:src="@drawable/more"
-                android:id="@+id/more"
-                android:layout_alignParentLeft="true"/>
-            <EditText
+            android:background="@color/white">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="8dp"
+                android:id="@+id/send_box"
+                android:paddingHorizontal="6dp">
+                <ImageView
+                    android:layout_width="39dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+                    android:id="@+id/more"
+                    android:layout_alignParentLeft="true"/>
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:hint="Send a message..."
+                    android:textColor="@color/black"
+                    android:id="@+id/send_text"
+                    android:paddingVertical="5dp"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/senregular"
+                    android:cursorVisible="false"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:paddingHorizontal="12dp"
+
+                    android:background="@drawable/chat_back"
+                    android:layout_toRightOf="@+id/more"
+                    android:layout_toLeftOf="@+id/send_btn"/>
+                <ImageView
+                    android:layout_width="39dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/send"
+                    android:id="@+id/send_btn"
+                    android:layout_alignParentRight="true"/>
+            </RelativeLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:hint="Write a message..."
-                android:textColor="@color/white"
-                android:textColorHint="#A8A8A8"
-                android:id="@+id/send_text"
-                android:paddingVertical="5dp"
-                android:textSize="16sp"
-                android:cursorVisible="false"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/chat_back"
-                android:layout_toRightOf="@+id/more"
-                android:layout_toLeftOf="@+id/send_btn"/>
-            <ImageView
-                android:layout_width="39dp"
-                android:layout_height="40dp"
-                android:src="@drawable/send"
-                android:id="@+id/send_btn"
-                android:layout_alignParentRight="true"/>
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/send_box"
+                android:layout_marginVertical="10dp"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/more_card">
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:id="@+id/send_con"
+                    android:src="@drawable/cons"/>
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:id="@+id/send_doc"
+                    android:src="@drawable/documents"/>
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:id="@+id/send_cam"
+                    android:layout_marginHorizontal="20dp"
+                    android:src="@drawable/camera"/>
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:id="@+id/send_gall"
+                    android:layout_marginHorizontal="20dp"
+                    android:src="@drawable/gallery"/>
+            </LinearLayout>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
@@ -223,7 +211,6 @@
         app:cardCornerRadius="10dp"
         android:visibility="gone"
         android:layout_marginHorizontal="5dp"
-        app:cardBackgroundColor="@color/white"
         android:layout_alignParentBottom="true">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -364,6 +351,7 @@
                 android:id="@+id/searchview_fwd"
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
+                app:queryBackground="@android:color/transparent"
                 android:layout_below="@+id/forwarded_to"
                 android:layout_alignParentRight="true"/>
             <androidx.recyclerview.widget.RecyclerView

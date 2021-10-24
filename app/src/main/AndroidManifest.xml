@@ -34,6 +34,9 @@
         android:theme="@style/Theme.Flow"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".activity.Passcode"
+            android:exported="true" />
+        <activity
             android:name=".activity.SelectedImage"
             android:exported="true" />
         <activity
@@ -54,10 +57,11 @@
         <activity
             android:name=".activity.Message"
             android:parentActivityName=".activity.Dashboard" />
-        <activity android:name=".activity.Addprofile" />
-        <activity android:name=".activity.Dashboard" />
-        <activity android:name=".activity.Register" />
+        <activity android:name=".activity.Addprofile"></activity>
+        <activity android:name=".activity.Dashboard"></activity>
+        <activity android:name=".activity.Register"></activity>
         <activity android:name=".activity.BaseActivity" />
+        <activity android:name=".activity.Slider" />
         <activity android:name=".activity.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

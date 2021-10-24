@@ -47,12 +47,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxWidth="260dp"
-            android:textSize="13sp"
-            android:fontFamily="@font/open_sans"
+            android:textSize="16sp"
+            android:fontFamily="@font/senregular"
             android:id="@+id/txt_msg"
             android:text="Ayus"
-            android:textColor="@color/white"
-            android:paddingHorizontal="20dp"
+            android:textColor="@color/black"
+            android:paddingHorizontal="16dp"
             android:paddingVertical="10dp"/>
     </RelativeLayout>
     <TextView
