@@ -1,69 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    tools:context=".activity.Slider">-->
+
+<!--        <View-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="350dp"-->
+<!--            android:id="@+id/view"-->
+<!--            android:background="#D24A738F"/>-->
+<!--        <ImageView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="80dp"-->
+<!--            android:layout_below="@+id/view"-->
+<!--            android:background="@drawable/ic_wave__2_"/>-->
+
+
+<!--    <androidx.viewpager.widget.ViewPager-->
+<!--        android:id="@+id/viewpager"-->
+<!--        android:layout_width="409dp"-->
+<!--        android:layout_height="551dp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/tab_indicator"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--    <com.google.android.material.tabs.TabLayout-->
+<!--        android:id="@+id/tab_indicator"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@null"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/button"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/viewpager"-->
+<!--        app:tabBackground="@drawable/indicator_selector"-->
+<!--        app:tabIndicatorHeight="0dp">-->
+
+<!--    </com.google.android.material.tabs.TabLayout>-->
+
+<!--    <androidx.appcompat.widget.AppCompatButton-->
+<!--        android:id="@+id/button"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginBottom="50dp"-->
+<!--        android:background="@drawable/getstartedbtn_back"-->
+<!--        android:paddingHorizontal="22dp"-->
+<!--        android:text="Get Started"-->
+<!--        android:textColor="@color/white"-->
+<!--        android:visibility="invisible"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/next"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/tab_indicator" />-->
+
+
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/next"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginRight="20dp"-->
+<!--        android:layout_marginBottom="10dp"-->
+<!--        android:backgroundTint="#FFFFFF"-->
+<!--        android:clickable="true"-->
+<!--        android:elevation="10dp"-->
+<!--        android:focusable="true"-->
+<!--        android:src="@drawable/ic_baseline_arrow_forward_24"-->
+<!--        app:fabSize="auto"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/skip"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="20dp"-->
+<!--        android:text="Skip"-->
+<!--        android:textColor="#D5323131"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent" />-->
+
+<!--</androidx.constraintlayout.widget.ConstraintLayout>-->
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.Slider">
-
-<!--    <View-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="350dp"-->
-<!--        android:id="@+id/view"-->
-<!--        android:background="#D24A738F"/>-->
-<!--    <ImageView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="80dp"-->
-<!--        android:layout_below="@+id/view"-->
-<!--        android:background="@drawable/ic_wave__2_"/>-->
-
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-
-
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<androidx.viewpager.widget.ViewPager
+    android:id="@+id/viewpager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
     <com.google.android.material.tabs.TabLayout
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
         android:id="@+id/tab_indicator"
-        android:background="@null"
+        android:layout_width="60dp"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        app:tabIndicatorHeight="0dp"
-        android:layout_above="@+id/button"
-        app:tabBackground="@drawable/indicator_selector">
+        android:layout_marginBottom="30dp"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        app:tabBackground="@drawable/indicator_selector"
+        app:tabIndicatorHeight="0dp">
 
     </com.google.android.material.tabs.TabLayout>
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Get Started"
-        android:visibility="invisible"
-        android:textColor="@color/white"
-        android:background="@drawable/getstartedbtn_back"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20dp"
-        android:paddingHorizontal="22dp"
-        android:layout_marginTop="6dp"/>
-
+<View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:alpha=".5"
+    android:layout_above="@id/tab_indicator"
+    android:background="@android:color/white" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/next"
-        android:clickable="true"
-        android:backgroundTint="#FFFFFF"
-        android:focusable="true"
-        android:elevation="10dp"
-        android:layout_marginBottom="10dp"
         android:layout_marginRight="20dp"
-        app:fabSize="auto"
+        android:layout_marginBottom="10dp"
+        android:backgroundTint="#FFFFFF"
+        android:clickable="true"
+        android:elevation="10dp"
+        android:focusable="true"
         android:src="@drawable/ic_baseline_arrow_forward_24"
+        app:fabSize="auto"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
 
@@ -71,10 +134,21 @@
         android:id="@+id/skip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Skip"
-        android:textColor="@color/lightdark"
         android:layout_margin="20dp"
+        android:text="Skip"
+        android:textColor="#D5323131"
+        android:layout_alignParentBottom="true"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/getstartedbtn_back"
+        android:paddingHorizontal="22dp"
+        android:text="Get Started"
+        android:visibility="gone"
+        android:textColor="@color/white"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"/>
 
 </RelativeLayout>

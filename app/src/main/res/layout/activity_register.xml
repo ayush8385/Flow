@@ -7,6 +7,13 @@
     android:background="#3EFFFFFF"
     tools:context=".Slider">
 
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/register_blob"/>
+
+
 
     <ImageView
         android:layout_width="32dp"
@@ -15,7 +22,17 @@
         android:layout_marginLeft="13dp"
         android:id="@+id/back"
         android:background="?selectableItemBackground"
+        android:tint="@color/white"
         android:src="@drawable/ic_baseline_arrow_back_ios_new_24"/>
+
+    <ImageView
+        android:layout_width="32dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="12dp"
+        android:id="@+id/help"
+        android:src="@drawable/ic_baseline_help_outline_24"
+        android:layout_alignParentRight="true"/>
 
 
 
@@ -40,16 +57,18 @@
         android:autoSizeTextType="uniform"/>
 
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        app:cardElevation="60dp"
-        android:id="@+id/details"
-        android:layout_alignParentBottom="true">
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:gravity="center"-->
+<!--        app:cardElevation="60dp"-->
+<!--        android:id="@+id/details"-->
+<!--        android:layout_alignParentBottom="true">-->
         <RelativeLayout
             android:paddingBottom="10dp"
             android:layout_width="match_parent"
+            android:id="@+id/details"
+            android:layout_alignParentBottom="true"
             android:layout_height="wrap_content">
 
             <EditText
@@ -96,13 +115,12 @@
                 android:textColor="@color/black"
                 android:cursorVisible="false"
                 android:drawablePadding="10dp"
-                android:paddingRight="15dp"
                 android:elevation="25dp"
-                android:drawableLeft="@drawable/ic_baseline_lock_24"
+                android:drawableStart="@drawable/ic_baseline_lock_24"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
                 android:hint="Password"
-                android:drawableRight="@drawable/lock"
+                android:drawableEnd="@drawable/lock"
                 android:layout_marginHorizontal="20dp"
                 android:background="@drawable/editext_bg"
                 android:layout_below="@id/number_edt"
@@ -131,21 +149,39 @@
                 android:id="@+id/cnfpass_edt"/>
 
 
-            <androidx.appcompat.widget.AppCompatButton
+            <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
                 android:id="@+id/register_button"
-                android:layout_width="match_parent"
+                android:layout_width="160dp"
+                android:layout_marginLeft="30dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/cnfpass_edt"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="50dp"
                 android:textSize="19sp"
-                android:layout_marginHorizontal="80dp"
+                android:layout_alignParentLeft="true"
                 android:background="@drawable/getstartedbtn_back"
                 android:paddingHorizontal="22dp"
                 android:text="Register"
 
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                app:spinning_bar_width="4dp"
+                app:spinning_bar_color="#FFF"
+                app:spinning_bar_padding="6dp"/>
+
+
+<!--            <androidx.appcompat.widget.AppCompatButton-->
+<!--                android:id="@+id/register_button"-->
+<!--                android:layout_width="160dp"-->
+<!--                android:layout_marginLeft="30dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@+id/cnfpass_edt"-->
+<!--                android:layout_marginTop="50dp"-->
+<!--                android:textSize="19sp"-->
+<!--                android:layout_alignParentLeft="true"-->
+<!--                android:background="@drawable/getstartedbtn_back"-->
+<!--                android:paddingHorizontal="22dp"-->
+<!--                android:text="Register"-->
+
+<!--                android:textColor="@color/white" />-->
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -159,40 +195,41 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign In"
-                android:textSize="15sp"
-                android:textColor="@color/lightdark"
-                android:layout_marginTop="10dp"
+                android:textSize="19sp"
                 android:id="@+id/signin"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@+id/register_button"/>
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="60dp"
+                android:layout_marginRight="30dp"
+                android:textColor="@color/white"
+                android:layout_below="@id/cnfpass_edt"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign Up"
-                android:textSize="15sp"
-                android:layout_marginTop="10dp"
+                android:textSize="19sp"
                 android:id="@+id/signup"
-                android:visibility="invisible"
-                android:layout_marginLeft="16dp"
-                android:layout_alignParentLeft="true"
-                android:layout_centerHorizontal="true"
-                android:textColor="@color/lightdark"
-                android:layout_below="@+id/register_button"/>
+                android:visibility="gone"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="60dp"
+                android:layout_marginRight="30dp"
+                android:textColor="@color/white"
+                android:layout_below="@id/cnfpass_edt"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forgot Password?"
-                android:visibility="invisible"
                 android:textSize="15sp"
+                android:visibility="invisible"
                 android:layout_alignParentRight="true"
                 android:layout_marginTop="10dp"
                 android:id="@+id/forgot"
+                android:textColor="#DCDCDC"
                 android:layout_marginRight="16dp"
                 android:layout_centerHorizontal="true"
-                android:textColor="@color/lightdark"
                 android:layout_below="@+id/register_button"/>
         </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+
+
 
 
 

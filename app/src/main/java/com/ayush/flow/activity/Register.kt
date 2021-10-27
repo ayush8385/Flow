@@ -16,6 +16,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import br.com.simplepass.loadingbutton.customViews.CircularProgressButton
 import com.ayush.flow.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -29,12 +30,13 @@ class Register : AppCompatActivity() {
     lateinit var numb: EditText
     lateinit var pass: EditText
     lateinit var cnf_pass: EditText
-    lateinit var register: Button
+    lateinit var register: CircularProgressButton
     lateinit var sign_in: TextView
     lateinit var progressBar: ProgressBar
     lateinit var forgot: TextView
     lateinit var sign_up: TextView
     lateinit var back:ImageView
+    lateinit var help:ImageView
     lateinit var sharedPreferences: SharedPreferences
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -53,7 +55,7 @@ class Register : AppCompatActivity() {
         forgot=findViewById(R.id.forgot)
         sign_up=findViewById(R.id.signup)
         back=findViewById(R.id.back)
-
+        help=findViewById(R.id.help)
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
         back.setOnClickListener {
@@ -69,6 +71,10 @@ class Register : AppCompatActivity() {
 
         forgot.setOnClickListener {
             openForgot()
+        }
+
+        help.setOnClickListener {
+            openHelp()
         }
 
         register.setOnClickListener {
@@ -136,6 +142,10 @@ class Register : AppCompatActivity() {
         })
     }
 
+    private fun openHelp() {
+
+    }
+
     private fun openForgot() {
         flipButton()
         register.text="reset"
@@ -143,16 +153,12 @@ class Register : AppCompatActivity() {
 
         val slide: Animation =
             AnimationUtils.loadAnimation(this, android.R.anim.fade_out) //the above transition
-        numb.startAnimation(slide)
-        cnf_pass.startAnimation(slide)
+
         Handler().postDelayed({
-            numb.visibility=View.GONE
-            cnf_pass.visibility=View.GONE
-            sign_in.visibility=View.INVISIBLE
             sign_up.visibility=View.VISIBLE
-            forgot.visibility=View.GONE
+            forgot.visibility=View.INVISIBLE
             pass.visibility=View.GONE
-        },400)
+        },60)
 
 
 
@@ -176,7 +182,7 @@ class Register : AppCompatActivity() {
             pass.visibility=View.VISIBLE
             progressBar.visibility=View.GONE
             register.visibility=View.VISIBLE
-        },100)
+        },60)
 
     }
 
@@ -230,11 +236,7 @@ class Register : AppCompatActivity() {
             Toast.makeText(applicationContext, "Enter Proper number", Toast.LENGTH_SHORT).show()
         }
         else{
-            val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
-            register.startAnimation(animation)
-            register.visibility= View.GONE
-            progressBar.visibility= View.VISIBLE
-            register.clearAnimation()
+            register.startAnimation()
             sign_in.visibility=View.GONE
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener{ text->
@@ -265,8 +267,10 @@ class Register : AppCompatActivity() {
                             }
                     }
                     else{
-                        register.visibility=View.VISIBLE
-                        progressBar.visibility=View.GONE
+                        register.revertAnimation {
+                            register.text="Register"
+                            register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                        }
                         sign_in.visibility=View.VISIBLE
                         Toast.makeText(applicationContext, "Error in registering", Toast.LENGTH_SHORT).show()
                     }
@@ -289,19 +293,12 @@ class Register : AppCompatActivity() {
         val pass:String=pass.text.toString()
         val email:String=email.text.toString()
         sign_up.visibility=View.GONE
-        forgot.visibility=View.GONE
-        if(email==""){
-            Toast.makeText(applicationContext, "Enter Proper Details", Toast.LENGTH_SHORT).show()
-        }
-        else if(pass==""){
+        forgot.visibility=View.INVISIBLE
+        if(email=="" || pass==""){
             Toast.makeText(applicationContext, "Enter Proper Details", Toast.LENGTH_SHORT).show()
         }
         else{
-            val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
-            register.startAnimation(animation)
-            register.visibility= View.GONE
-            progressBar.visibility= View.VISIBLE
-            register.clearAnimation()
+            register.startAnimation()
 
             FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener { text->
@@ -320,7 +317,6 @@ class Register : AppCompatActivity() {
                                 userHashmap["about"]=snapshot.child("about").value.toString()
                                 userHashmap["profile_photo"]=snapshot.child("profile_photo").value.toString()
 
-
                                 val intent=Intent(this@Register, Addprofile::class.java)
                                 startActivity(intent)
                                 finishAffinity()
@@ -337,7 +333,10 @@ class Register : AppCompatActivity() {
                     }
                     else{
                         Toast.makeText(applicationContext, "Error in login", Toast.LENGTH_SHORT).show()
-                        register.visibility=View.VISIBLE
+                        register.revertAnimation {
+                            register.text="log in"
+                            register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                        }
                         sign_up.visibility=View.VISIBLE
                         forgot.visibility=View.VISIBLE
                     }
@@ -351,24 +350,31 @@ class Register : AppCompatActivity() {
             Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
         }
         else{
-            val animation: Animation = AnimationUtils.loadAnimation(applicationContext,R.anim.button_anim)
-            register.startAnimation(animation)
-            register.visibility= View.GONE
-            progressBar.visibility= View.VISIBLE
-            register.clearAnimation()
+
+            register.startAnimation()
             FirebaseAuth.getInstance().sendPasswordResetEmail(email).addOnCompleteListener { text->
                 if(text.isSuccessful){
                     Toast.makeText(applicationContext, "Reset link sent", Toast.LENGTH_SHORT).show()
+                    register.revertAnimation()
                     numb.visibility=View.GONE
                     cnf_pass.visibility=View.GONE
-                    register.text="LOG IN"
                     sign_in.visibility=View.GONE
                     pass.visibility=View.VISIBLE
                     sign_up.visibility=View.VISIBLE
                     forgot.visibility=View.VISIBLE
                     welc.text="Welcome Back"
-                    progressBar.visibility=View.GONE
-                    register.visibility=View.VISIBLE
+
+                    register.revertAnimation {
+                        register.text="log in"
+                        register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                    }
+                }
+                else{
+                    Toast.makeText(applicationContext,"This email is not Registered",Toast.LENGTH_LONG).show()
+                    register.revertAnimation {
+                        register.text="reset"
+                        register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                    }
                 }
             }
         }

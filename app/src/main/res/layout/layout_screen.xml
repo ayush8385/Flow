@@ -1,40 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context=".MainActivity">
-
-
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:scaleType="fitCenter"/>
-
+tools:context=".activity.MainActivity">
 
 
     <LinearLayout
+        android:id="@+id/contents"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
+        android:layout_marginStart="20dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@id/image"
-        android:layout_marginBottom="-40dp"
-        tools:ignore="MissingConstraints"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="0.685">
+        app:layout_constraintTop_toBottomOf="@id/image"
+        app:layout_constraintVertical_bias="0.0">
 
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:fontFamily="@font/senbold"
             android:text="Chats"
-            android:layout_marginBottom="6dp"
             android:textColor="@color/black"
             android:textSize="28sp" />
 
@@ -42,12 +35,23 @@ tools:context=".MainActivity">
             android:id="@+id/desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="xcsd ds ds cd d cj sd  sd  b c dsj esjcs c sjd j mm jksd jds j"
-            android:fontFamily="@font/senregular"
             android:layout_marginLeft="20dp"
-            android:textColor="@color/lightdark"
+            android:fontFamily="@font/senregular"
+            android:text="xcsd ds ds cd d cj sd  sd  b c dsj esjcs c sjd j mm jksd jds j"
+
             android:textSize="19sp" />
 
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="401dp"
+        android:layout_height="405dp"
+        android:layout_marginTop="4dp"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/calls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

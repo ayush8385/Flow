@@ -105,5 +105,8 @@ dependencies {
 
     implementation 'com.hanks:passcodeview:0.1.2'
 
+    implementation 'br.com.simplepass:loading-button-android:2.2.0'
+
+
 
 }

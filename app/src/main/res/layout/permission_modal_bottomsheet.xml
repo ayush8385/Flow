@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginVertical="20dp"
+        android:paddingHorizontal="20dp"
+        android:id="@+id/contents">
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/user"
+            android:layout_gravity="center"
+            android:id="@+id/image_access"
+            android:layout_alignParentLeft="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="We need access tou external storage to save the images to your internal storage for your ease"
+            android:textSize="21sp"
+            android:layout_gravity="center"
+            android:id="@+id/access_text"
+            android:layout_toRightOf="@id/image_access"
+            android:layout_marginLeft="20dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/contents"
+        android:weightSum="1.0">
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/deny"
+            android:paddingVertical="10dp"
+            android:drawableTop="@drawable/ic_baseline_close_24"
+            android:drawableTint="@color/purple_700"
+            android:background="@drawable/permission_btn_back"
+            android:textColor="@color/purple_700"
+            android:layout_weight="0.5"
+            android:text="Deny"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/allow"
+            android:layout_width="0dp"
+            android:paddingVertical="10dp"
+            android:drawableTop="@drawable/ic_baseline_done_24"
+            android:drawableTint="@color/purple_700"
+            android:background="@drawable/permission_btn_back"
+            android:textColor="@color/purple_700"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="Allow"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -49,6 +49,7 @@ import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.*
 import androidx.lifecycle.ViewModelProviders
+import com.ayush.flow.Services.Permissions
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hanks.passcodeview.PasscodeView
@@ -231,11 +232,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         searchElement()
 
-       if(checkpermission()){
+       if(Permissions().checkContactpermission(this)){
            loadContacts(application).execute()
         }
         else{
-            requestContactPermission()
+            Permissions().openPermissionBottomSheet(R.drawable.ic_baseline_person_add_24,this.resources.getString(R.string.contact_permission),this,"contact")
         }
 
         UpdateToken()
@@ -910,25 +911,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         return output
     }
 
-    fun checkpermission():Boolean {
-        if (ContextCompat.checkSelfPermission(
-                applicationContext,
-                android.Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    fun requestContactPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(android.Manifest.permission.READ_CONTACTS),
-            1234
-        )
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -937,32 +919,17 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     ) {
 
         when (requestCode) {
-            1234 -> {
+            103 -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Do_SOme_Operation()
                     loadContacts(application).execute()
 
-                }
-                else{
-                    showMessageOKCancel("You need to allow access permissions",
-                        DialogInterface.OnClickListener { dialog, which ->
-                            requestContactPermission()
-                        })
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
         }
 
-    }
-
-    private fun showMessageOKCancel(message: String, okListener: DialogInterface.OnClickListener) {
-        AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("OK", okListener)
-            .setNegativeButton("Cancel", null)
-            .create()
-            .show()
     }
 
     inner class loadContacts(val applicat: Application) : AsyncTask<Void, Void, Boolean>(){
@@ -1159,7 +1126,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     override fun onResume() {
         super.onResume()
         hiddenViewModel.getText().observe(this,Observer{it->
-            if(it=="0a"){
+            if(it=="0"){
 
             }
             else{

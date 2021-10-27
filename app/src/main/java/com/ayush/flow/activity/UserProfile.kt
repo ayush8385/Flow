@@ -96,30 +96,30 @@ class UserProfile : AppCompatActivity() {
         }
 
         camera.setOnClickListener {
-            if(Addprofile().checkpermission(this)){
-                photofile = getphotofile("profile_photo.jpg")
-                imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
-                val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
-                startActivityForResult(intent,110)
-                image_card.visibility=View.GONE
-            }
-            else{
-                Addprofile().requestStoragePermission()
-            }
+//            if(Addprofile().checkpermission(this)){
+//                photofile = getphotofile("profile_photo.jpg")
+//                imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
+//                val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//                intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
+//                startActivityForResult(intent,110)
+//                image_card.visibility=View.GONE
+//            }
+//            else{
+//                Addprofile().requestStoragePermission()
+//            }
         }
 
 
         gallery.setOnClickListener {
-            if(Addprofile().checkpermission(this)){
-                var intent= Intent(Intent.ACTION_GET_CONTENT)
-                intent.type="image/*"
-                startActivityForResult(intent,112)
-                image_card.visibility=View.GONE
-            }
-            else{
-                Addprofile().requestStoragePermission()
-            }
+//            if(Addprofile().checkpermission(this)){
+//                var intent= Intent(Intent.ACTION_GET_CONTENT)
+//                intent.type="image/*"
+//                startActivityForResult(intent,112)
+//                image_card.visibility=View.GONE
+//            }
+//            else{
+//                Addprofile().requestStoragePermission()
+//            }
         }
 
         delete.setOnClickListener {
@@ -215,9 +215,9 @@ class UserProfile : AppCompatActivity() {
         }
         if(photo!=null){
             image.setImageBitmap(photo)
-            Addprofile().saveToInternalStorage(photo).execute().get()
+         //   Addprofile().saveToInternalStorage(photo).execute().get()
             saveandUpload(photo).execute()
-            uploadImage(name.text.toString(), photo,about.text.toString()).execute()
+    //        Addprofile().uploadImage(name.text.toString(), photo, about.text.toString()).execute()
 //            val baos= ByteArrayOutputStream()
 //            photo.compress(Bitmap.CompressFormat.JPEG,50,baos)
 //            fileBytes =baos.toByteArray()

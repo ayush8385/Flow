@@ -464,29 +464,29 @@ class Message : BaseActivity() {
 
 
        send_cam.setOnClickListener {
-           if(Addprofile().checkpermission(this)){
-               photofile = getphotofile("photo.jpg")
-               imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
-               val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-               intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
-               startActivityForResult(intent,110)
-               more_card.visibility=View.GONE
-           }
-           else{
-               Addprofile().requestStoragePermission()
-           }
+//           if(Addprofile().checkpermission(this)){
+//               photofile = getphotofile("photo.jpg")
+//               imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
+//               val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//               intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
+//               startActivityForResult(intent,110)
+//               more_card.visibility=View.GONE
+//           }
+//           else{
+//               Addprofile().requestStoragePermission()
+//           }
        }
 
        send_gall.setOnClickListener {
-           if(Addprofile().checkpermission(this)){
-               var intent= Intent(Intent.ACTION_GET_CONTENT)
-               intent.type="image/*"
-               startActivityForResult(intent,112)
-               more_card.visibility=View.GONE
-           }
-           else{
-               Addprofile().requestStoragePermission()
-           }
+//           if(Addprofile().checkpermission(this)){
+//               var intent= Intent(Intent.ACTION_GET_CONTENT)
+//               intent.type="image/*"
+//               startActivityForResult(intent,112)
+//               more_card.visibility=View.GONE
+//           }
+//           else{
+//               Addprofile().requestStoragePermission()
+//           }
        }
 
         Dashboard().checkStatus().execute()
