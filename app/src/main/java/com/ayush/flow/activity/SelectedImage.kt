@@ -1,6 +1,7 @@
 package com.ayush.flow.activity
 
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -21,28 +22,37 @@ class SelectedImage : AppCompatActivity() {
         sendImg=findViewById(R.id.send_img_btn)
 
         var photoBitmap : Bitmap? =null
+
         if (intent.hasExtra("image")){
             //convert to bitmap
             val byteArray = intent.getByteArrayExtra("image")
             photoBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+            image.setImageBitmap(photoBitmap)
         }
-
-        image.setImageBitmap(photoBitmap)
 
         back.setOnClickListener {
             finish()
         }
 
         sendImg.setOnClickListener {
-            Message().sendImageMessageToUser(
-                photoBitmap!!,
-                intent.getStringExtra("userid")!!,
-                intent.getStringExtra("name")!!,
-                intent.getStringExtra("number")!!,
-                intent.getStringExtra("user_image")!!,
-                application
-            ).execute()
-            finish()
+            if(intent.getStringExtra("type")=="profile"){
+                var imagepath = Addprofile().saveToInternalStorage(photoBitmap!!).execute().get()
+
+                uploadImage(photoBitmap).execute()
+                getSharedPreferences("Shared Preference", Context.MODE_PRIVATE).edit().putString("profile", imagepath).apply()
+                finish()
+            }
+            else{
+                Message().sendImageMessageToUser(
+                    photoBitmap!!,
+                    intent.getStringExtra("userid")!!,
+                    intent.getStringExtra("name")!!,
+                    intent.getStringExtra("number")!!,
+                    intent.getStringExtra("user_image")!!,
+                    application
+                ).execute()
+                finish()
+            }
         }
     }
 }

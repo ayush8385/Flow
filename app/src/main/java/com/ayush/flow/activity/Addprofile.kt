@@ -85,7 +85,7 @@ class Addprofile : AppCompatActivity() {
                 openCamera()
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.camera,
+                Permissions().openPermissionBottomSheet(R.drawable.camera_permission,
                     this.resources.getString(R.string.camera_permission),this,"camera")
             }
         }
@@ -97,7 +97,7 @@ class Addprofile : AppCompatActivity() {
 
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
+                Permissions().openPermissionBottomSheet(R.drawable.gallery_permission,this.resources.getString(R.string.storage_permission),this,"storage")
             }
         }
 

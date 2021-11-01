@@ -54,6 +54,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
         android:id="@+id/paren"
+        android:background="?selectableItemBackground"
         android:paddingVertical="5dp">
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="57dp"

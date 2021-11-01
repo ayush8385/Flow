@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ChatEntity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.squareup.picasso.Picasso
@@ -58,11 +60,15 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         else{
             holder.name.text=chat.name
         }
+
         holder.message.text=chat.lst_msg
         holder.time.text=chat.time
 
         if(chat.image!=""){
-          loadImage(chat.image, holder).execute()
+            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(holder.image)
+//          loadImage(chat.image, holder).execute()
         }
         else{
             holder.image.setImageResource(R.drawable.user)
@@ -132,21 +138,16 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         fun hideChat(id:String,name: String)
     }
 
-    inner class loadImage(val image:String,val holder: HomeViewHolder):
-        AsyncTask<Void, Void, Boolean>(){
-        var b: Bitmap?=null
-        var f:File?=null
+    inner class loadImage(val image:String,val holder: HomeViewHolder):AsyncTask<Void,Void, Boolean>(){
+        var b:Bitmap?=null
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
-            Picasso.get().load(f!!).into(holder.image)
-
+            holder.image.setImageBitmap(b)
+//            Picasso.get().load(f!!).into(image)
         }
         override fun doInBackground(vararg params: Void?): Boolean {
-            f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-
-            if(f!!.exists()){
-                b= BitmapFactory.decodeStream(FileInputStream(f))
-            }
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+            b= BitmapFactory.decodeStream(FileInputStream(f))
             return true
         }
     }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.provider.ContactsContract
 import android.view.View
 import android.widget.*
@@ -60,17 +61,17 @@ class Contact : AppCompatActivity() {
         pullToRefresh = findViewById(R.id.pulTooRefresh)
 
         pullToRefresh.setOnClickListener {
-//            Handler().postDelayed(Runnable {
-//                if (pullToRefresh.isRefreshing) {
-//                    pullToRefresh.isRefreshing=false
-//                }
-//            }, 300)
-//            loadContacts().execute()
+            Handler().postDelayed(Runnable {
+                if (pullToRefresh.isRefreshing) {
+                    pullToRefresh.isRefreshing=false
+                }
+            }, 300)
 
         }
 
 
         searchElement()
+
         recyclerAdapter=ContactAdapter(this@Contact)
         recyclerView.layoutManager=layoutManager
         recyclerView.adapter=recyclerAdapter

@@ -14,6 +14,7 @@
         android:paddingVertical="10dp"
         android:paddingHorizontal="2dp"
         android:layout_marginLeft="20dp"
+        android:background="?selectableItemBackgroundBorderless"
         android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
         android:id="@+id/back"/>
 
@@ -127,7 +128,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:id="@+id/number"
-                android:src="@drawable/ic_baseline_call_24"/>
+                android:src="@drawable/ic_baseline_call_24"
+                android:tint="@color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -62,6 +62,7 @@
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_dashboard.xml" value="0.264" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_image_view.xml" value="0.19453125" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_incoming_vdo.xml" value="0.19453125" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_loading_cons.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_message.xml" value="0.264" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_outgoing.xml" value="0.12" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.176" />
@@ -73,7 +74,9 @@
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/calls_single_row.xml" value="0.15416666666666667" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/chat_tem_swipe.xml" value="0.21574074074074073" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/chats_single_row.xml" value="0.15416666666666667" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/contacts_list_item.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/contacts_single_row.xml" value="0.1388888888888889" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/content_main.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/delete_modal_bottomsheet.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/edit_modal_bottomsheet.xml" value="0.259375" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/layout/fwd_single_row.xml" value="0.21203703703703702" />

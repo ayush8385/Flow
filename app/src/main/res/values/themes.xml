@@ -17,8 +17,8 @@
 
         <item name="searchViewStyle">@style/MySearchViewStyle</item>
 
-        <item name="android:windowDisablePreview">true</item>
-        <item name="android:windowIsTranslucent">true</item>
+<!--        <item name="android:windowDisablePreview">true</item>-->
+<!--        <item name="android:windowIsTranslucent">true</item>-->
     </style>
     <style name="MySearchViewStyle" parent="Widget.AppCompat.SearchView">
         <item name="android:textColor">@color/black</item>

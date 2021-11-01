@@ -6,15 +6,12 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
 import android.os.*
-import android.provider.ContactsContract
 import android.provider.Settings
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.*
@@ -52,7 +49,9 @@ import androidx.lifecycle.ViewModelProviders
 import com.ayush.flow.Services.Permissions
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.hanks.passcodeview.PasscodeView
+
+import android.os.Bundle
+import android.provider.ContactsContract
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -112,10 +111,17 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
 
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
-
+        firebaseUser= FirebaseAuth.getInstance().currentUser!!
         hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
 
-        firebaseUser= FirebaseAuth.getInstance().currentUser!!
+        if(Permissions().checkContactpermission(this)){
+            micPermission()
+        }
+        else{
+            Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+        }
+
+
 
         openChatHome(intent.getIntExtra("private",0))
 
@@ -169,15 +175,15 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         if(sharedPreferences.getBoolean("nightMode",false)){
             mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.moon))
-
-
         }
         else{
             mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.sun))
-
         }
 
 
+        Handler().postDelayed({
+            updateImages()
+        },3000)
 
 
         hidden.setOnClickListener {
@@ -232,17 +238,18 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         searchElement()
 
-       if(Permissions().checkContactpermission(this)){
-           loadContacts(application).execute()
-        }
-        else{
-            Permissions().openPermissionBottomSheet(R.drawable.ic_baseline_person_add_24,this.resources.getString(R.string.contact_permission),this,"contact")
-        }
+
 
         UpdateToken()
     }
 
-
+    private fun micPermission() {
+        if(Permissions().checkMicpermission(this)){
+        }
+        else{
+            Permissions().openPermissionBottomSheet(R.drawable.mic_permission,this.resources.getString(R.string.mic_permission),this,"mic")
+        }
+    }
 
 
     inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
@@ -270,76 +277,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
 
     }
-
-//    fun openPasscode(n:Int,id:String){
-//        passcodeView.visibility=View.VISIBLE
-//        if(sharedPreferences.getString("passcode","")==""){
-//            val dialog= android.app.AlertDialog.Builder(this)
-//            dialog.setMessage("Set your 4 digit Passcode")
-//            dialog.setNegativeButton("Ok",object :DialogInterface.OnClickListener{
-//                override fun onClick(dialog: DialogInterface?, which: Int) {
-//                    dialog!!.dismiss()
-//                    passcodeView.setPasscodeLength(4)
-//                        .setListener(object :PasscodeView.PasscodeViewListener{
-//                            override fun onFail() {
-//                                Toast.makeText(applicationContext,"Wrong",Toast.LENGTH_LONG).show()
-//                            }
-//                            override fun onSuccess(number: String?) {
-//                                sharedPreferences.edit().putString("passcode",number).apply()
-//                                if(n==0){
-//                                    ChatViewModel(application).setPrivate(id,false)
-//                                }
-//                                if(n==1){
-//                                    ChatViewModel(application).setPrivate(id,true)
-//                                }
-//                                passcodeView.visibility=View.GONE
-//
-//                            }
-//
-//                        })
-//                }
-//
-//            })
-//            dialog.show()
-//
-//
-//        }
-//        else{
-//            passcodeView.setPasscodeLength(4)
-//                .setLocalPasscode(sharedPreferences.getString("passcode",""))
-//                .setListener(object :PasscodeView.PasscodeViewListener{
-//                    override fun onFail() {
-//                        Toast.makeText(applicationContext,"Wrong",Toast.LENGTH_LONG).show()
-//                    }
-//
-//                    override fun onSuccess(number: String?) {
-//                        if(n==0){
-//                            ChatViewModel(application).setPrivate(id,false)
-//                        }
-//                        if(n==1){
-//                            ChatViewModel(application).setPrivate(id,true)
-//                        }
-//                        else{
-//
-////                            val hiddenModel = ViewModelProviders.of(this@Dashboard).get(HiddenViewModel::class.java)
-////                            hiddenModel.setText("1")
-//                            story_box.visibility=View.GONE
-//                            story_text.visibility=View.GONE
-//                            hidden.visibility=View.GONE
-//
-//                            chat_text.text="Private Chats"
-//                            hidden_close.visibility=View.VISIBLE
-//
-//                            openChatHome(1)
-//
-//                        }
-//
-//                        passcodeView.visibility=View.GONE
-//                    }
-//
-//                })
-//        }
-//    }
 
     private fun openCallHome() {
         callAdapter= CallAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
@@ -402,6 +339,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
     private fun openChatHome(i: Int) {
+
         chatAdapter= ChatAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
             override fun audioCall(name: String, id: String,image:String) {
 
@@ -441,11 +379,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         layoutManager=LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).reverseLayout=true
         chatsRecyclerView.layoutManager=layoutManager
-        runAnimation(chatsRecyclerView,1)
+      //  runAnimation(chatsRecyclerView,1)
         chatsRecyclerView.adapter=chatAdapter
 
-        chatsRecyclerView.layoutAnimation=controller
-        chatsRecyclerView.scheduleLayoutAnimation()
+      //  chatsRecyclerView.layoutAnimation=controller
+      //  chatsRecyclerView.scheduleLayoutAnimation()
 
         if(i==0){
             ChatViewModel(application).allChats.observe(this, Observer { list->
@@ -483,8 +421,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             })
         }
 
-        updateUnsavedImage().execute()
-        chatAdapter.notifyDataSetChanged()
+        updateImages()
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -493,6 +430,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.adapter=adapter2
 //        storyRecyclerView.layoutAnimation=controller
 //        storyRecyclerView.scheduleLayoutAnimation()
+    }
+
+    private fun updateImages() {
+        updateUnsavedImage().execute()
+        chatAdapter.notifyDataSetChanged()
     }
 
     private fun showHideBottomSheetDialog(id: String,name:String) {
@@ -598,7 +540,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         val filteredlist:ArrayList<ChatEntity> = ArrayList()
 
         for(item in chatList){
-            if(item.name.toLowerCase().contains(text.toLowerCase())||item.number.contains(text)){
+            if(item.name.toLowerCase().contains(text.toLowerCase())||item.number.contains(text)||item.lst_msg.contains(text)){
                 filteredlist.add(item)
             }
 //            else if(item.number.toLowerCase().contains(text.toLowerCase())){
@@ -668,7 +610,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //    }
 
     inner class retrieveMessage(val application:Application): AsyncTask<Void, Void, Boolean>(){
+
         override fun doInBackground(vararg params: Void?): Boolean {
+
             val firebaseUser=FirebaseAuth.getInstance().currentUser!!
             val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
 
@@ -701,11 +645,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             name=chatEntity.name
                             number=chatEntity.number
                             imagepath=chatEntity.image
+                            val hide=chatEntity.hide
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),hide,sender))
                             }
                             else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),hide,sender))
                             }
                         }
                         else if(ContactViewModel(application).isUserExist(sender)){
@@ -923,6 +868,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Do_SOme_Operation()
                     loadContacts(application).execute()
+                    micPermission()
 
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
@@ -932,60 +878,63 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
+
     inner class loadContacts(val applicat: Application) : AsyncTask<Void, Void, Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
             var firebaseUser=FirebaseAuth.getInstance().currentUser!!
             val contentResolver = applicat.contentResolver
-            val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
+           val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
+
 
             while (contacts?.moveToNext() == true) {
                 val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-                val phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                var i=0
-                var phone_num:String=""
-                while(i!=phoneNumber.length){
-                    if(phoneNumber[i]>='0'&&phoneNumber[i]<='9'){
-                        phone_num=phone_num+phoneNumber[i]
-                    }
-                    i++
+                var phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+
+                phoneNumber=phoneNumber.replace("\\s".toRegex(), "")
+                if(phoneNumber.length==13){
+                    phoneNumber=phoneNumber.replace("\\+91".toRegex(),"")
                 }
 
-                val ref=FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addValueEventListener(object :ValueEventListener{
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for(snapshot in snapshot.children){
-                            val num=snapshot.child("number").value.toString()
-                            val userid=snapshot.child("uid").value.toString()
-                            val url=snapshot.child("profile_photo").value.toString()
-                            if(userid!=firebaseUser.uid && phone_num==num){
+                if (phoneNumber.length==10){
+                    val ref=FirebaseDatabase.getInstance().reference.child("Users")
+                    ref.addValueEventListener(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for(snapshot in snapshot.children){
+                                val num=snapshot.child("number").value.toString()
+                                val userid=snapshot.child("uid").value.toString()
+                                val url=snapshot.child("profile_photo").value.toString()
 
-                                if(ContactViewModel(application).isUserExist(userid)){
-                                    ContactViewModel(application).updateDetails(userid,name,phone_num)
+                                if(userid!=firebaseUser.uid && phoneNumber==num){
+
+//                                    if(ContactViewModel(application).isUserExist(userid)){
+//                                        ContactViewModel(application).updateDetails(userid,name,phoneNumber)
+//                                    }
+//                                    else{
+                                        ContactViewModel(applicat).inserContact(ContactEntity(name,phoneNumber,"",userid))
+                                  //  }
+
+                                  //  val sdf = SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z")
+                                  //  var currentDateandTime: String = sdf.format(Date())
+
+                                    if(url!=""){
+                                        GetImageFromUrl(userid,applicat).execute(url)
+                                    }
+
+                                   // currentDateandTime = sdf.format(Date())
+
                                 }
-                                else{
-                                    ContactViewModel(applicat).inserContact(ContactEntity(name,phone_num,"",userid))
-                                }
-
-                                val sdf = SimpleDateFormat("yyyy.MM.dd G 'at' HH:mm:ss z")
-                                var currentDateandTime: String = sdf.format(Date())
-                                Log.d("tiome1......",currentDateandTime)
-
-                                if(url!=""){
-                                   GetImageFromUrl(userid,application).execute(url)
-                                }
-
-                                currentDateandTime = sdf.format(Date())
-                                Log.d("time......",currentDateandTime)
                             }
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
 
-                })
+                    })
+                }
+
+
 
             }
             contacts!!.close()
@@ -1104,8 +1053,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         override fun doInBackground(vararg url: String?): Bitmap {
             val stringUrl = url[0]
-            bmp= null
-
             val options = BitmapFactory.Options()
             options.inSampleSize = 1
             while (options.inSampleSize <= 32) {

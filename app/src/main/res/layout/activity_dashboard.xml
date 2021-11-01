@@ -52,7 +52,7 @@
             android:elevation="10dp"
             app:civ_border_color="@color/black"
             android:id="@+id/user_img"
-            android:background="?selectableItemBackground"
+            android:background="?selectableItemBackgroundBorderless"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>
 
@@ -82,7 +82,7 @@
             android:elevation="10dp"
             android:src="@drawable/new_chat"
             android:id="@+id/contact"
-            android:background="?selectableItemBackground"
+            android:background="?selectableItemBackgroundBorderless"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>

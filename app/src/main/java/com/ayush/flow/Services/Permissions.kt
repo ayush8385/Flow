@@ -36,6 +36,9 @@ class Permissions {
             if(type=="contact"){
                 requestContactPermission(context)
             }
+            if(type=="mic"){
+                requestMicPermission(context)
+            }
             bottomSheetDialog.dismiss()
         }
 
@@ -45,6 +48,8 @@ class Permissions {
 
         bottomSheetDialog.show()
     }
+
+
 
     fun checkCamerapermission(context: Context):Boolean {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
@@ -56,6 +61,10 @@ class Permissions {
 
     fun checkContactpermission(context: Context):Boolean{
         return ContextCompat.checkSelfPermission(context,Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun checkMicpermission(context: Context):Boolean{
+        return ContextCompat.checkSelfPermission(context,Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
     }
 
     fun requestCameraPermission(context: Context) {
@@ -78,6 +87,14 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.READ_CONTACTS),
+            102
+        )
+    }
+
+    fun requestMicPermission(context: Context) {
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
             102
         )
     }

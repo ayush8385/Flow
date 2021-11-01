@@ -3,5 +3,6 @@
     <string name="camera_permission">To take your photos for profile and to share photos in chat/stories allow Flow to access to your camera</string>
     <string name="storage_permission">To save your medias to internal storage and send medias from your device allow Flow to access your media files</string>
     <string name="contact_permission">To get your friends list using Flow chat application allow Flow to access your contacts</string>
+    <string name="mic_permission">To do and receive Audio/Video Calls allow Flow to access to your Microphone</string>
 
 </resources>

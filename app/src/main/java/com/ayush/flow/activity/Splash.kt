@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
 import com.ayush.flow.R
 import com.ayush.flow.Services.BackgroundService
+import com.ayush.flow.Services.Permissions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -55,7 +56,14 @@ class Splash : AppCompatActivity() {
         firebaseuser= FirebaseAuth.getInstance().currentUser
 
 
+
         val isLoggedIn=sharedPreferences.getBoolean("isLoggedIn",false)
+
+        if(isLoggedIn){
+            if(Permissions().checkContactpermission(this)){
+                Dashboard().loadContacts(application).execute()
+            }
+        }
 
      //   startShine()
 
@@ -85,7 +93,7 @@ class Splash : AppCompatActivity() {
                 startActivity(Intent(this,Slider::class.java))
                 finish()
             }
-        },1000)
+        },1200)
 
 
     }

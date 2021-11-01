@@ -70,6 +70,7 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
         allCons.addAll(contactList)
         notifyDataSetChanged()
     }
+
     inner class loadImage(val image:String,val holder:HomeViewHolder):AsyncTask<Void,Void, Boolean>(){
         var b:Bitmap?=null
         override fun onPostExecute(result: Boolean?) {

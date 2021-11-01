@@ -203,7 +203,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     var msg = snapshot.child("message").value.toString()
                     val time = snapshot.child("time").value.toString()
                     val type = snapshot.child("type").value.toString()
-                    val received = snapshot.child("received").value as Boolean
+                    val received = true
 
                     //time set
                     val sdf = SimpleDateFormat("hh:mm a")

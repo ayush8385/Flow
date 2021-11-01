@@ -790,9 +790,13 @@ class Message : BaseActivity() {
             val tm: Date = Date(System.currentTimeMillis())
 
             if(application!=null){
-                if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",false,false,false))
-                }
+//                if(!MessageViewModel(application).isMsgExist(messageKey!!)){
+//                }
+                MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,msg,sdf.format(tm),"message",
+                    recev = false,
+                    seen = false,
+                    sent = false
+                ))
                 ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),false,userid))
             }
 
@@ -984,6 +988,7 @@ class Message : BaseActivity() {
             var fos  =  ByteArrayOutputStream()
             photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
             val byteArray = fos.toByteArray()
+            intent.putExtra("type","message")
             intent.putExtra("image", byteArray )
             intent.putExtra("userid",userid)
             intent.putExtra("name",name)

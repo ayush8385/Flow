@@ -9,6 +9,7 @@ class MyFirebaseInstanceIdService:FirebaseMessagingService() {
     override fun onNewToken(p0: String) {
         super.onNewToken(p0)
 
+
         val  firebaseUser=FirebaseAuth.getInstance().currentUser
         val refreshToken=FirebaseInstanceId.getInstance().token
 
