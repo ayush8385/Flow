@@ -203,7 +203,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     var msg = snapshot.child("message").value.toString()
                     val time = snapshot.child("time").value.toString()
                     val type = snapshot.child("type").value.toString()
-                    val received = true
+                    val received = snapshot.child("received").value as Boolean
 
                     //time set
                     val sdf = SimpleDateFormat("hh:mm a")
@@ -212,6 +212,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     var name: String = ""
                     var number: String = ""
                     var imagepath: String = ""
+
+
 
 
                     if (ChatViewModel(application).isUserExist(sender)) {
@@ -232,7 +234,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     sender
                                 )
                             )
-                        } else {
+                        }
+                        else {
                             ChatViewModel(application).inserChat(
                                 ChatEntity(
                                     name,
@@ -245,7 +248,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                 )
                             )
                         }
-                    } else if (ContactViewModel(application).isUserExist(sender)) {
+                    }
+                    else if (ContactViewModel(application).isUserExist(sender)) {
                         val contactEntity = ContactViewModel(application).getContact(sender)
                         name = contactEntity.name
                         number = contactEntity.number
@@ -275,7 +279,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                 )
                             )
                         }
-                    } else {
+                    }
+                    else {
                         //get number as a name from firebase
                         //get image and sav it to local storage and internal path from firebase
                         val refer = FirebaseDatabase.getInstance().reference.child("Users")
@@ -348,7 +353,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                     if (type == "image") {
 
-                        //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
                           val photo =  GetImageFromUrl().execute(msg).get()
 

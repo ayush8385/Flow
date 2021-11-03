@@ -238,7 +238,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         searchElement()
 
-
+        retrieveMessage(application).execute()
 
         UpdateToken()
     }

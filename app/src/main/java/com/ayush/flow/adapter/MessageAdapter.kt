@@ -103,7 +103,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
             refer.addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if(snapshot.child(chat.mid).exists()){
+                    if(snapshot.hasChild(chat.mid)){
                         FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(chat.mid).child("seen").setValue(true)
                     }
                 }
