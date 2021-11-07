@@ -6,74 +6,81 @@
     android:background="?selectableItemBackground"
     android:layout_height="wrap_content">
 
-
-    <ImageView
-        android:layout_width="wrap_content"
+    <me.thanel.swipeactionview.SwipeActionView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/select"
-        android:layout_toRightOf="@id/txt_seen"
-        android:layout_marginLeft="20dp"
-        android:src="@drawable/ic_baseline_done_24"
-        android:layout_centerVertical="true"/>
+        android:id="@+id/swipe_view">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="9sp"
+            android:layout_gravity="end|bottom"
+            android:fontFamily="@font/open_sans"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="12dp"
+            android:id="@+id/txt_seen"
+            android:text="sent"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="10sp"
-        android:fontFamily="@font/open_sans"
-        android:id="@+id/msg_time"
-        android:text="05::00 pm"
-        android:layout_toLeftOf="@+id/box"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="10dp"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="200dp"
-        android:layout_marginVertical="4dp"
-        android:layout_marginRight="10dp"
-        app:cardCornerRadius="15dp"
-        android:id="@+id/box"
-        android:layout_alignParentRight="true"
-        android:layout_height="200dp">
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:id="@+id/msg_box"
-            android:layout_height="match_parent">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
             <ImageView
-                android:id="@+id/img_msg"
-                android:layout_width="match_parent"
-                android:scaleType="centerCrop"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true" />
-            <ProgressBar
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:background="@drawable/bottom_nav_back"
-                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/select"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/ic_baseline_done_24"
+                android:layout_centerVertical="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:fontFamily="@font/open_sans"
+                android:id="@+id/msg_time"
+                android:text="05::00 pm"
+                android:layout_toLeftOf="@+id/box"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="200dp"
+                android:layout_marginVertical="4dp"
+                android:layout_marginRight="10dp"
+                app:cardCornerRadius="15dp"
+                android:id="@+id/box"
                 android:layout_alignParentRight="true"
-                android:padding="10dp"
-                android:id="@+id/progressbar"/>
+                android:layout_height="200dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:id="@+id/msg_box"
+                    android:layout_height="match_parent">
+                    <ImageView
+                        android:id="@+id/img_msg"
+                        android:layout_width="match_parent"
+                        android:scaleType="centerCrop"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentTop="true" />
+                    <ProgressBar
+                        android:layout_width="55dp"
+                        android:layout_height="55dp"
+                        android:background="@drawable/bottom_nav_back"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:padding="10dp"
+                        android:id="@+id/progressbar"/>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:id="@+id/txt_msg" />
         </RelativeLayout>
-    </androidx.cardview.widget.CardView>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:id="@+id/txt_msg" />
+    </me.thanel.swipeactionview.SwipeActionView>
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="9sp"
-        android:visibility="gone"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="-4dp"
-        android:layout_below="@+id/box"
-        android:fontFamily="@font/open_sans"
-        android:id="@+id/txt_seen"
-        android:text="sent"/>
+
 
 </RelativeLayout>

@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.database.CallEntity
@@ -26,7 +27,7 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         val name:TextView=view.findViewById(R.id.caller_name)
         val cause:TextView = view.findViewById(R.id.call_reason)
 //        val duration:TextView = view.findViewById(R.id.callDuration)
-        val call_box:RelativeLayout=view.findViewById(R.id.paren)
+        val call_box:CardView=view.findViewById(R.id.paren)
         val audioCall:CircleImageView=view.findViewById(R.id.audiocall_btn)
         val videoCall:CircleImageView=view.findViewById(R.id.vdocall_btn)
     }

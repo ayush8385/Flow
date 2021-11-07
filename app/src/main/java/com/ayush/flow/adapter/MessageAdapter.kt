@@ -3,7 +3,11 @@ package com.ayush.flow.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
@@ -15,12 +19,15 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.MessageEntity
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 
@@ -70,7 +77,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         if(chat.type=="image"){
 
             val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),chat.message)
-            holder.image_msg.setImageBitmap(BitmapFactory.decodeStream(FileInputStream(f)))
+            Glide.with(context).load(f).into(holder.image_msg)
 
 
 
@@ -122,16 +129,20 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     holder.seen_txt.text="seen"
                 }
             }
-            holder.msg_box.setOnClickListener {
-
-                holder.seen_txt.visibility=View.VISIBLE
-                Handler().postDelayed({
-                    holder.seen_txt.visibility=View.GONE
-                },400)
-            }
+//            holder.msg_box.setOnClickListener {
+//
+//                holder.seen_txt.visibility=View.VISIBLE
+//                Handler().postDelayed({
+//                    holder.seen_txt.visibility=View.GONE
+//                },400)
+//            }
         }
 
-        holder.parent.setOnClickListener {
+//        holder.msg_box.setOnClickListener {
+//
+//        }
+
+        holder.msg_box.setOnClickListener {
             if(selectedMsg.size!=0){
                 if(chat in selectedMsg){
                     selectedMsg.remove(chat)
@@ -143,10 +154,23 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 }
                 clickListener.updateCount()
             }
+            else if(chat.type=="image"){
+                val intent = Intent(context, SelectedImage::class.java)
+                var fos  =  ByteArrayOutputStream()
+                ((holder.image_msg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                val byteArray = fos.toByteArray()
+                intent.putExtra("type","view")
+                intent.putExtra("image", byteArray)
+                intent.putExtra("userid","")
+                intent.putExtra("name","")
+                intent.putExtra("number","")
+                intent.putExtra("user_image","")
+                context.startActivity(intent)
+            }
         }
 
 
-        holder.parent.setOnLongClickListener(object :View.OnLongClickListener{
+        holder.msg_box.setOnLongClickListener(object :View.OnLongClickListener{
             override fun onLongClick(v: View?): Boolean {
 
                 if(chat !in selectedMsg){

@@ -1,84 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/paren"
     android:background="?selectableItemBackground"
     android:layout_marginBottom="4dp"
+    app:cardCornerRadius="7dp"
+    android:backgroundTint="#00000000"
     android:orientation="horizontal">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
+    <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="7dp"
-        android:backgroundTint="#00000000">
-        <RelativeLayout
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:id="@+id/caller_pic"
+            android:layout_centerVertical="true"
+            android:src="@drawable/user"
+            android:scaleType="centerCrop"/>
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="10dp">
+            android:text="fdsfkhjk"
+            android:maxLines="1"
+            android:fontFamily="@font/open_sans"
+            android:paddingLeft="12dp"
+            android:layout_toRightOf="@+id/caller_pic"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:id="@+id/caller_name"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="300dp"
+            android:text=""
+            android:maxLines="1"
+            android:paddingLeft="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_below="@+id/caller_name"
+            android:layout_toRightOf="@+id/caller_pic"
+            android:textSize="13sp"
+            android:textStyle="normal"
+            android:fontFamily="@font/open_sans"
+            android:id="@+id/call_reason"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="20dp"
+            android:layout_height="wrap_content">
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:id="@+id/caller_pic"
-                android:layout_centerVertical="true"
-                android:src="@drawable/user"
-                android:scaleType="centerCrop"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="fdsfkhjk"
-                android:maxLines="1"
-                android:fontFamily="@font/open_sans"
-                android:paddingLeft="12dp"
-                android:layout_toRightOf="@+id/caller_pic"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:id="@+id/caller_name"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxWidth="300dp"
-                android:text=""
-                android:maxLines="1"
-                android:paddingLeft="12dp"
-                android:layout_marginTop="4dp"
-                android:layout_below="@+id/caller_name"
-                android:layout_toRightOf="@+id/caller_pic"
-                android:textSize="13sp"
-                android:textStyle="normal"
-                android:fontFamily="@font/open_sans"
-                android:id="@+id/call_reason"/>
-            <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/call_back"
+                android:scaleType="centerCrop"
+                android:id="@+id/audiocall_btn"
+                android:layout_marginRight="18dp"
+                android:padding="7dp"
+                android:src="@drawable/ic_baseline_call_24"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="7dp"
+                android:background="@drawable/callend_back"
+                android:scaleType="centerCrop"
+                android:id="@+id/vdocall_btn"
                 android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="20dp"
-                android:layout_height="wrap_content">
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/call_back"
-                    android:scaleType="centerCrop"
-                    android:id="@+id/audiocall_btn"
-                    android:layout_marginRight="18dp"
-                    android:padding="7dp"
-                    android:src="@drawable/ic_baseline_call_24"/>
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:padding="7dp"
-                    android:background="@drawable/callend_back"
-                    android:scaleType="centerCrop"
-                    android:id="@+id/vdocall_btn"
-                    android:layout_alignParentRight="true"
-                    android:src="@drawable/video_call"/>
-            </LinearLayout>
-        </RelativeLayout>
-
-
-    </androidx.cardview.widget.CardView>
-
-</RelativeLayout>
+                android:src="@drawable/video_call"/>
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

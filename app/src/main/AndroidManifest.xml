@@ -39,6 +39,7 @@
             android:name=".activity.Passcode"
             android:exported="true" />
         <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:name=".activity.SelectedImage"
             android:exported="true" />
         <activity

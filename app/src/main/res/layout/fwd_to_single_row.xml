@@ -11,8 +11,10 @@
     <ImageView
         android:layout_width="18dp"
         android:layout_height="18dp"
-        android:background="@drawable/story_unread_back"
+        android:background="@drawable/bottom_back"
         android:src="@drawable/ic_baseline_close_24"
+        android:tint="#FFFFFF"
+        android:padding="2dp"
         android:id="@+id/del_fwd"/>
 
 </RelativeLayout>

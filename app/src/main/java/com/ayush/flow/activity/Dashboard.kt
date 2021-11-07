@@ -502,7 +502,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         btn1!!.setOnClickListener {
             Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_LONG).show()
             ChatViewModel(application).deleteChat(id)
-            deleteMsgs(id).execute()
+            deleteMsgs(application,id).execute()
             bottomSheetDialog.dismiss()
         }
         btn2!!.setOnClickListener {
@@ -1004,8 +1004,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
-    inner class deleteMsgs(val id:String):AsyncTask<Void,Void,Boolean>(){
+    inner class deleteMsgs(val application: Application,val id:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
+            val firebaseUser=FirebaseAuth.getInstance().currentUser!!
             MessageViewModel(application).deleteMsgWithId(firebaseUser.uid+"-"+id)
 
             val refer=FirebaseDatabase.getInstance().reference.child("Messages")

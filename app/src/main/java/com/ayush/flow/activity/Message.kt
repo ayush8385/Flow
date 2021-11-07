@@ -60,6 +60,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 import android.graphics.drawable.BitmapDrawable
+import com.ayush.flow.Services.Permissions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
@@ -215,6 +216,7 @@ class Message : BaseActivity() {
            selected.visibility=View.GONE
            send_box.visibility=View.VISIBLE
            selectedMsg.clear()
+           adapter.notifyDataSetChanged()
        }
 
        delete.setOnClickListener {
@@ -236,6 +238,20 @@ class Message : BaseActivity() {
 
        }
 
+       selectAll.setOnClickListener {
+           if(selectAll.isChecked){
+               selectedChat.clear()
+               selectedChat.addAll(chatList)
+               fwdtoAdapter.updateList(selectedChat)
+               fwdAdapter.updateList(chatList,selectedChat)
+           }
+           if(!selectAll.isChecked){
+               selectedChat.clear()
+               fwdtoAdapter.updateList(selectedChat)
+               fwdAdapter.updateList(chatList,selectedChat)
+           }
+       }
+
        forward.setOnClickListener {
 
            val toolbar:CardView=findViewById(R.id.toolbar)
@@ -252,6 +268,7 @@ class Message : BaseActivity() {
 
            searchfwdElement()
 
+
            layoutManager= LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
            fwdtorecyclerView.layoutManager=layoutManager
            fwdtoAdapter = ForwardToAdapter(this@Message,object :ForwardAdapter.OnAdapterItemClickListener{
@@ -262,7 +279,11 @@ class Message : BaseActivity() {
                override fun delChat(chatEntity: ChatEntity) {
                    selectedChat.remove(chatEntity)
                    fwdtoAdapter.updateList(selectedChat)
-                   fwdAdapter.unselectChat(chatEntity)
+                   fwdAdapter.updateList(chatList,selectedChat)
+
+                   if(selectedChat.size<chatList.size){
+                       selectAll.isChecked=false
+                   }
                }
 
            })
@@ -275,11 +296,19 @@ class Message : BaseActivity() {
                override fun addChat(chatEntity: ChatEntity) {
                    selectedChat.add(chatEntity)
                    fwdtoAdapter.updateList(selectedChat)
+
+                   if(selectedChat.size==chatList.size){
+                       selectAll.isChecked=true
+                   }
                }
 
                override fun delChat(chatEntity: ChatEntity) {
                    selectedChat.remove(chatEntity)
                    fwdtoAdapter.updateList(selectedChat)
+
+                   if(selectedChat.size<chatList.size){
+                       selectAll.isChecked=false
+                   }
                }
 
            })
@@ -289,7 +318,7 @@ class Message : BaseActivity() {
                list?.let {
                    chatList.clear()
                    chatList.addAll(list)
-                   fwdAdapter.updateList(list)
+                   fwdAdapter.updateList(chatList,selectedChat)
                }
            })
 
@@ -332,6 +361,9 @@ class Message : BaseActivity() {
 //            menuHelper.show()
 //        }
 
+       if(user_image!=""){
+           setIconImage(image,user_image).execute()
+       }
 
        image.setOnClickListener {
            openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
@@ -345,9 +377,6 @@ class Message : BaseActivity() {
            openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
        }
 
-        if(user_image!=""){
-            setIconImage(image,user_image).execute()
-        }
 
         layoutManager= LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).stackFromEnd=true
@@ -464,29 +493,33 @@ class Message : BaseActivity() {
 
 
        send_cam.setOnClickListener {
-//           if(Addprofile().checkpermission(this)){
-//               photofile = getphotofile("photo.jpg")
-//               imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
-//               val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//               intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
-//               startActivityForResult(intent,110)
-//               more_card.visibility=View.GONE
-//           }
-//           else{
-//               Addprofile().requestStoragePermission()
-//           }
+
+           if(Permissions().checkCamerapermission(this)){
+               openCamera()
+               more_card.visibility=View.GONE
+
+           }
+           else{
+               Permissions().openPermissionBottomSheet(R.drawable.camera_permission,
+                   this.resources.getString(R.string.camera_permission),this,"camera")
+           }
+
+
        }
 
        send_gall.setOnClickListener {
-//           if(Addprofile().checkpermission(this)){
-//               var intent= Intent(Intent.ACTION_GET_CONTENT)
-//               intent.type="image/*"
-//               startActivityForResult(intent,112)
-//               more_card.visibility=View.GONE
-//           }
-//           else{
-//               Addprofile().requestStoragePermission()
-//           }
+           if(Permissions().checkWritepermission(this)){
+               openGallery()
+               more_card.visibility=View.GONE
+           }
+           else{
+               Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
+           }
+
+       }
+
+       send_doc.setOnClickListener {
+          // if(Permissions())
        }
 
         Dashboard().checkStatus().execute()
@@ -505,9 +538,14 @@ class Message : BaseActivity() {
         val user_name = bottomSheetDialog.findViewById<TextView>(R.id.user_name)
         val user_about = bottomSheetDialog.findViewById<TextView>(R.id.user_about)
 
+
         val chat = bottomSheetDialog.findViewById<CircleImageView>(R.id.chatview)
         val audiocall=bottomSheetDialog.findViewById<CircleImageView>(R.id.call)
         val videocall=bottomSheetDialog.findViewById<CircleImageView>(R.id.video_call)
+
+        val clear_chat =bottomSheetDialog.findViewById<TextView>(R.id.clear_chat)
+        val block=bottomSheetDialog.findViewById<TextView>(R.id.user_block)
+        val report=bottomSheetDialog.findViewById<TextView>(R.id.user_report)
 
         profile_image!!.setImageBitmap((userimg.drawable as BitmapDrawable).bitmap)
         user_name!!.text=username
@@ -544,7 +582,7 @@ class Message : BaseActivity() {
         videocall!!.setOnClickListener {
             val userName: String = name.text.toString()
             val sinchServiceInterface=getSinchServiceInterface()
-            val callId=sinchServiceInterface!!.callUserVideo(userid).callId
+            val callId=sinchServiceInterface!!.callUserVideo(user_id).callId
             val callScreen = Intent(this, Outgoing_vdo::class.java)
             callScreen.putExtra("name",userName)
             callScreen.putExtra("CALL_ID", callId)
@@ -553,8 +591,62 @@ class Message : BaseActivity() {
             startActivity(callScreen)
         }
 
+        clear_chat?.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            AlertDialog.Builder(this)
+                .setTitle("Are you sure want to delete")
+                .setCancelable(false)
+                .setPositiveButton("Delete") {
+                        dialog: DialogInterface, _: Int ->
+                    Dashboard().deleteMsgs(application,user_id).execute()
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") {
+                        dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
+        block?.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            AlertDialog.Builder(this)
+                .setTitle("Are you sure want to block")
+                .setCancelable(false)
+                .setPositiveButton("Block") {
+                        dialog: DialogInterface, _: Int ->
+
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") {
+                        dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
         bottomSheetDialog.show()
     }
+
+    fun openGallery() {
+        var intent= Intent(Intent.ACTION_GET_CONTENT)
+        intent.type="image/*"
+        startActivityForResult(intent,112)
+    }
+
+    fun openCamera(){
+        photofile = getphotofile("chat_photo")
+        imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
+        val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
+        startActivityForResult(intent,110)
+    }
+
+    fun getphotofile(fileName: String):File{
+        val storage= getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(fileName, ".jpg", storage)
+    }
+
 
     private fun convertImageViewToBitmap(v: ImageView): Bitmap? {
         return (v.drawable as BitmapDrawable).bitmap
@@ -641,10 +733,10 @@ class Message : BaseActivity() {
         }
         if (filteredlist.isEmpty()){
             Toast.makeText(applicationContext,"No Data found", Toast.LENGTH_SHORT).show()
-            fwdAdapter.updateList(filteredlist)
+            fwdAdapter.updateList(filteredlist,selectedChat)
         }
         else{
-            fwdAdapter.updateList(filteredlist)
+            fwdAdapter.updateList(filteredlist,selectedChat)
         }
     }
 
@@ -954,12 +1046,6 @@ class Message : BaseActivity() {
         })
     }
 
-    fun getphotofile(fileName: String):File{
-        val storage= getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(fileName, ".jpg", storage)
-    }
-
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -981,7 +1067,6 @@ class Message : BaseActivity() {
             }
         }
         if(photo!=null){
-     //       image.setImageBitmap(photo)
             val name = intent.getStringExtra("name")
             val number = intent.getStringExtra("number")
             val intent = Intent(this,SelectedImage::class.java)
@@ -995,11 +1080,6 @@ class Message : BaseActivity() {
             intent.putExtra("number",number)
             intent.putExtra("user_image",user_image)
             startActivity(intent)
-    //        val path=saveToInternalStorage(photo).execute().get()
-   //         uploadImage(name.text.toString(), photo,about.text.toString()).execute()
-//            val baos= ByteArrayOutputStream()
-//            photo.compress(Bitmap.CompressFormat.JPEG,50,baos)
-//            fileBytes =baos.toByteArray()
         }
     }
 

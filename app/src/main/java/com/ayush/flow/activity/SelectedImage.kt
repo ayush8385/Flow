@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.ayush.flow.R
@@ -22,6 +23,7 @@ class SelectedImage : AppCompatActivity() {
         sendImg=findViewById(R.id.send_img_btn)
 
         var photoBitmap : Bitmap? =null
+        val type=intent.getStringExtra("type")
 
         if (intent.hasExtra("image")){
             //convert to bitmap
@@ -30,19 +32,23 @@ class SelectedImage : AppCompatActivity() {
             image.setImageBitmap(photoBitmap)
         }
 
+        if(type=="view"){
+            sendImg.visibility= View.GONE
+        }
+
         back.setOnClickListener {
             finish()
         }
 
         sendImg.setOnClickListener {
-            if(intent.getStringExtra("type")=="profile"){
+            if(type=="profile"){
                 var imagepath = Addprofile().saveToInternalStorage(photoBitmap!!).execute().get()
 
                 uploadImage(photoBitmap).execute()
                 getSharedPreferences("Shared Preference", Context.MODE_PRIVATE).edit().putString("profile", imagepath).apply()
                 finish()
             }
-            else{
+            if(type=="message"){
                 Message().sendImageMessageToUser(
                     photoBitmap!!,
                     intent.getStringExtra("userid")!!,
@@ -53,6 +59,7 @@ class SelectedImage : AppCompatActivity() {
                 ).execute()
                 finish()
             }
+
         }
     }
 }

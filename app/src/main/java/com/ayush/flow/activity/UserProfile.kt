@@ -198,7 +198,7 @@ class UserProfile : AppCompatActivity() {
         super.onResume()
     }
 
-    private fun openGallery() {
+    fun openGallery() {
         var intent= Intent(Intent.ACTION_GET_CONTENT)
         intent.type="image/*"
         startActivityForResult(intent,112)

@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.Flow" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#E1DEDE</item>
+        <item name="colorPrimary">@color/purple_700</item>
         <item name="colorPrimaryVariant">#F6F5F5</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
@@ -16,6 +16,7 @@
         <item name="buttonBarButtonStyle">@drawable/button_reg</item>
 
         <item name="searchViewStyle">@style/MySearchViewStyle</item>
+
 
 <!--        <item name="android:windowDisablePreview">true</item>-->
 <!--        <item name="android:windowIsTranslucent">true</item>-->

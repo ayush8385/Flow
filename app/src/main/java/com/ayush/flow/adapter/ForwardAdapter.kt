@@ -16,7 +16,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.ForwardViewModel
+import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ChatEntity
+import com.bumptech.glide.Glide
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
@@ -24,6 +26,7 @@ import java.util.*
 
 class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListener):RecyclerView.Adapter<ForwardAdapter.HomeViewHolder>() {
     val allChats=ArrayList<ChatEntity>()
+    val selected=ArrayList<ChatEntity>()
     lateinit var mainViewModel: ForwardViewModel
     var unselectChatEntity: ChatEntity?=null
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
@@ -50,14 +53,14 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
             holder.name.text=chat.name
         }
 
-        if(chat.image!=""){
-            loadImage(chat.image, holder).execute()
+        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
+        Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
+
+
+        if(chat in selected){
+            holder.select.visibility=View.VISIBLE
         }
         else{
-            holder.image.setImageResource(R.drawable.user)
-        }
-
-        if(chat==unselectChatEntity){
             holder.select.visibility=View.GONE
         }
 
@@ -78,25 +81,27 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
         return allChats.size
     }
 
-    fun updateList(list: List<ChatEntity>) {
+    fun updateList(list: List<ChatEntity>,selected:List<ChatEntity>) {
         allChats.clear()
         allChats.addAll(list)
+        this.selected.clear()
+        this.selected.addAll(selected)
         notifyDataSetChanged()
     }
 
-    inner class loadImage(val image:String,val holder: HomeViewHolder):
-        AsyncTask<Void, Void, Boolean>(){
-        var b: Bitmap?=null
-        override fun onPostExecute(result: Boolean?) {
-            super.onPostExecute(result)
-            holder.image.setImageBitmap(b)
-        }
-        override fun doInBackground(vararg params: Void?): Boolean {
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-            b= BitmapFactory.decodeStream(FileInputStream(f))
-            return true
-        }
-    }
+//    inner class loadImage(val image:String,val holder: HomeViewHolder):
+//        AsyncTask<Void, Void, Boolean>(){
+//        var b: Bitmap?=null
+//        override fun onPostExecute(result: Boolean?) {
+//            super.onPostExecute(result)
+//            holder.image.setImageBitmap(b)
+//        }
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+//            b= BitmapFactory.decodeStream(FileInputStream(f))
+//            return true
+//        }
+//    }
 
     interface OnAdapterItemClickListener {
         fun addChat(chatEntity: ChatEntity)
@@ -111,8 +116,8 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
         return position
     }
 
-    fun unselectChat(chatEntity: ChatEntity) {
-        unselectChatEntity=chatEntity
-        notifyDataSetChanged()
-    }
+//    fun unselectChat(chatEntity: ChatEntity) {
+//        unselectChatEntity=chatEntity
+//        notifyDataSetChanged()
+//    }
 }

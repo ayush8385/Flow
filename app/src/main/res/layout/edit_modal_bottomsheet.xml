@@ -40,7 +40,7 @@
             android:textAllCaps="false"
             android:backgroundTint="@color/black"
             android:layout_marginHorizontal="10dp"
-            android:id="@+id/btn_save"/>
+            android:id="@+id/btn_cancel"/>
         <Button
             android:layout_marginBottom="8dp"
             android:layout_marginTop="10dp"
@@ -50,6 +50,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
-            android:id="@+id/btn_cancel"/>
+            android:id="@+id/btn_save"/>
     </LinearLayout>
 </LinearLayout>
