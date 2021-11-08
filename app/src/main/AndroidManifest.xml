@@ -46,16 +46,21 @@
             android:name=".activity.ImageView"
             android:exported="true" />
         <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:name=".activity.Outgoing_vdo"
             android:exported="true" />
         <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:name=".activity.Incoming_vdo"
             android:exported="true" />
         <activity android:name=".activity.UserProfile" />
         <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:name=".activity.Outgoing"
             android:screenOrientation="portrait" />
-        <activity android:name=".activity.Calling" />
+        <activity
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:name=".activity.Calling" />
         <activity android:name=".activity.Contact" />
         <activity
             android:name=".activity.Message"

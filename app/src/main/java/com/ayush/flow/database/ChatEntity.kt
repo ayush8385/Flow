@@ -12,7 +12,8 @@ data class ChatEntity(
     @ColumnInfo(name = "last_msg") var lst_msg:String="",
     @ColumnInfo(name = "time") var time:String="",
     @ColumnInfo(name = "hide") var hide:Boolean=false,
+    @ColumnInfo(name = "unread") var unread:Int=0,
     @PrimaryKey var id:String
     ){
-    constructor():this("","","","","",false,"")
+    constructor():this("","","","","",false,0,"")
 }

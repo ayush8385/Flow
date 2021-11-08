@@ -52,6 +52,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 
 import android.os.Bundle
 import android.provider.ContactsContract
+import com.ayush.flow.Notification.MessagingService
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -501,8 +502,18 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         btn1!!.setOnClickListener {
             Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_LONG).show()
-            ChatViewModel(application).deleteChat(id)
+
+
+            val notId: Int = Regex("[\\D]").replace(id, "").toInt()
+            NotificationManagerCompat.from(applicationContext).cancel(notId)
+            MessagingService.messsageHashmap.remove(notId)
+            if(MessagingService.messsageHashmap.size==0){
+                NotificationManagerCompat.from(applicationContext).cancel(0)
+            }
             deleteMsgs(application,id).execute()
+            Handler().postDelayed({
+                ChatViewModel(application).deleteChat(id)
+            },1000)
             bottomSheetDialog.dismiss()
         }
         btn2!!.setOnClickListener {
@@ -611,6 +622,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     inner class retrieveMessage(val application:Application): AsyncTask<Void, Void, Boolean>(){
 
+
         override fun doInBackground(vararg params: Void?): Boolean {
 
             val firebaseUser=FirebaseAuth.getInstance().currentUser!!
@@ -645,12 +657,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             name=chatEntity.name
                             number=chatEntity.number
                             imagepath=chatEntity.image
+                            var unread=chatEntity.unread
                             val hide=chatEntity.hide
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),hide,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),hide,unread++,sender))
                             }
                             else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),hide,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),hide,unread++,sender))
                             }
                         }
                         else if(ContactViewModel(application).isUserExist(sender)){
@@ -659,10 +672,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=contactEntity.number
                             imagepath=contactEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,0,sender))
                             }
                             else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,0,sender))
                             }
                         }
                         else{
@@ -674,10 +687,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     number=snapshot.child("number").value.toString()
                                     //check message type
                                     if(type=="image"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,0,sender))
                                     }
                                     else{
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,0,sender))
                                     }
 
                                     //get image of sender
@@ -685,10 +698,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     if(image_url!=""){
                                         GetImageFromUrl(sender,application).execute(image_url)
                                         if(type=="image"){
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),false,sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),false,1,sender))
                                         }
                                         else{
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),false,sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),false,1,sender))
                                         }
                                     }
                                     //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))

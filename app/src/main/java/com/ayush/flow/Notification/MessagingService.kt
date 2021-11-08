@@ -222,6 +222,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                         name = chatEntity.name
                         number = chatEntity.number
                         imagepath = chatEntity.image
+                        var unread=chatEntity.unread
                         if (type == "image") {
                             ChatViewModel(application).inserChat(
                                 ChatEntity(
@@ -231,6 +232,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     "Photo",
                                     sdf.format(tm),
                                     false,
+                                    unread+1,
                                     sender
                                 )
                             )
@@ -244,6 +246,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     msg,
                                     sdf.format(tm),
                                     false,
+                                    unread+1,
                                     sender
                                 )
                             )
@@ -263,6 +266,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     "Photo",
                                     sdf.format(tm),
                                     false,
+                                    0,
                                     sender
                                 )
                             )
@@ -275,6 +279,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     msg,
                                     sdf.format(tm),
                                     false,
+                                    0,
                                     sender
                                 )
                             )
@@ -297,6 +302,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             "Photo",
                                             sdf.format(tm),
                                             false,
+                                            0,
                                             sender
                                         )
                                     )
@@ -309,6 +315,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             msg,
                                             sdf.format(tm),
                                             false,
+                                            0,
                                             sender
                                         )
                                     )

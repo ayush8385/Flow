@@ -61,6 +61,7 @@ import java.util.*
 import kotlin.collections.HashMap
 import android.graphics.drawable.BitmapDrawable
 import com.ayush.flow.Services.Permissions
+import com.ayush.flow.adapter.ChatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
@@ -211,6 +212,8 @@ class Message : BaseActivity() {
         }
         userid= intent.getStringExtra("userid")!!
         user_image=intent.getStringExtra("image")!!
+
+
 
        close.setOnClickListener {
            selected.visibility=View.GONE
@@ -550,6 +553,19 @@ class Message : BaseActivity() {
         profile_image!!.setImageBitmap((userimg.drawable as BitmapDrawable).bitmap)
         user_name!!.text=username
 
+        profile_image.setOnClickListener {
+            val intent = Intent(context, SelectedImage::class.java)
+            var fos  =  ByteArrayOutputStream()
+            ((userimg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            val byteArray = fos.toByteArray()
+            intent.putExtra("type","view")
+            intent.putExtra("image", byteArray)
+            intent.putExtra("userid","")
+            intent.putExtra("name","")
+            intent.putExtra("number","")
+            intent.putExtra("user_image","")
+            context.startActivity(intent)
+        }
 
         chat!!.setOnClickListener {
             if(isChat){
@@ -570,20 +586,21 @@ class Message : BaseActivity() {
             //
             val sinchServiceInterface=getSinchServiceInterface()
             val callId=sinchServiceInterface!!.callUser(user_id).callId
-            val callScreen = Intent(this, Outgoing::class.java)
+            val callScreen = Intent(context, Outgoing::class.java)
             callScreen.putExtra("name",userName)
             callScreen.putExtra("CALL_ID", callId)
             callScreen.putExtra("image",user_image_path)
             sendNotification(user_id, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
             startActivity(callScreen)
+            
 
         }
 
         videocall!!.setOnClickListener {
-            val userName: String = name.text.toString()
+            val userName: String = username
             val sinchServiceInterface=getSinchServiceInterface()
             val callId=sinchServiceInterface!!.callUserVideo(user_id).callId
-            val callScreen = Intent(this, Outgoing_vdo::class.java)
+            val callScreen = Intent(context, Outgoing_vdo::class.java)
             callScreen.putExtra("name",userName)
             callScreen.putExtra("CALL_ID", callId)
             callScreen.putExtra("image",user_image)
@@ -593,12 +610,13 @@ class Message : BaseActivity() {
 
         clear_chat?.setOnClickListener {
             bottomSheetDialog.dismiss()
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(context)
                 .setTitle("Are you sure want to delete")
                 .setCancelable(false)
                 .setPositiveButton("Delete") {
                         dialog: DialogInterface, _: Int ->
-                    Dashboard().deleteMsgs(application,user_id).execute()
+                    Dashboard().deleteMsgs((context as Dashboard).application,user_id).execute()
+                    ChatViewModel((context as Dashboard).application).setLastMsg("",user_id);
                     dialog.dismiss()
                 }
                 .setNegativeButton("Cancel") {
@@ -610,7 +628,7 @@ class Message : BaseActivity() {
 
         block?.setOnClickListener {
             bottomSheetDialog.dismiss()
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(context)
                 .setTitle("Are you sure want to block")
                 .setCancelable(false)
                 .setPositiveButton("Block") {
@@ -662,6 +680,7 @@ class Message : BaseActivity() {
 
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay.toLong())
+            ChatViewModel(application).setUnread(0,userid)
             val notId: Int = Regex("[\\D]").replace(userid, "").toInt()
             NotificationManagerCompat.from(applicationContext).cancel(notId)
             MessagingService.messsageHashmap.remove(notId)
@@ -889,7 +908,11 @@ class Message : BaseActivity() {
                     seen = false,
                     sent = false
                 ))
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),false,userid))
+                if(ChatViewModel(application).isUserExist(userid)){
+                    val currentChat = ChatViewModel(application).getChat(userid)
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),false,currentChat.unread,userid))
+                }
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,sdf.format(tm),false,0,userid))
             }
 
             val messageHashmap=HashMap<String,Any>()
@@ -1187,7 +1210,12 @@ class Message : BaseActivity() {
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
                     MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+userid,firebaseUser.uid,path!!,sdf.format(tm),"image",false,false,false))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),false,userid))
+                if(ChatViewModel(application).isUserExist(userid)){
+                    val currentChat = ChatViewModel(application).getChat(userid)
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),false,currentChat.unread,userid))
+                }
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",sdf.format(tm),false,0,userid))
+
             }
 
 

@@ -40,4 +40,12 @@ class ChatViewModel(application: Application):AndroidViewModel(application) {
     fun setPrivate(id:String,hide:Boolean)=viewModelScope.launch (Dispatchers.IO){
         repository.setPrivate(id,hide)
     }
+
+    fun setUnread(n:Int,userid: String)=viewModelScope.launch (Dispatchers.IO){
+        repository.setUnread(n,userid)
+    }
+
+    fun setLastMsg(s: String, userId: String)=viewModelScope.launch(Dispatchers.IO){
+        repository.setLastMsg(s,userId)
+    }
 }

@@ -28,4 +28,12 @@ class ChatRepository(private val chatDao: ChatDao) {
     fun setPrivate(id:String,hide:Boolean){
         chatDao.setPrivate(id,hide)
     }
+
+    fun setUnread(n:Int,userid: String){
+        chatDao.setUnread(n,userid)
+    }
+
+    fun setLastMsg(s: String, userId: String) {
+        chatDao.setLastMsg(s,userId)
+    }
 }

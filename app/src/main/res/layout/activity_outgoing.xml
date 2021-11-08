@@ -59,38 +59,38 @@
             android:fontFamily="@font/michroma"
             android:layout_centerHorizontal="true"
             android:textSize="9sp"/>
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="20dp"
             android:orientation="horizontal"
             android:layout_centerHorizontal="true">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_margin="30dp"
-                android:background="@drawable/story_unread_back"
+                android:layout_alignParentLeft="true"
                 android:padding="18dp"
+                android:layout_marginLeft="10dp"
                 android:id="@+id/speaker"
                 android:src="@drawable/ic_baseline_volume_up_24"/>
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_margin="30dp"
                 android:background="@drawable/callend_back"
                 android:padding="18dp"
+                android:layout_centerHorizontal="true"
                 android:id="@+id/end_btn"
                 android:src="@drawable/ic_baseline_call_end_24"/>
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_margin="30dp"
                 android:id="@+id/mic"
-                android:background="@drawable/story_unread_back"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentRight="true"
                 android:padding="18dp"
                 android:src="@drawable/ic_baseline_mic_off_24"/>
-        </LinearLayout>
+        </RelativeLayout>
     </RelativeLayout>
 
 

@@ -29,4 +29,10 @@ interface ChatDao {
     @Query("UPDATE chats SET hide = :hide WHERE id = :userid")
     fun setPrivate(userid: String, hide:Boolean)
 
+    @Query("UPDATE chats SET unread = :n WHERE id = :userid")
+    fun setUnread(n:Int,userid: String)
+
+    @Query("UPDATE chats SET last_msg=:s WHERE id=:userId")
+    fun setLastMsg(s: String, userId: String)
+
 }

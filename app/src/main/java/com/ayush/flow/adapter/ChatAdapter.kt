@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.AsyncTask
 import android.os.Environment
 import android.view.LayoutInflater
@@ -16,6 +17,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.Message
+import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -23,6 +25,7 @@ import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -59,6 +62,19 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         }
         else{
             holder.name.text=chat.name
+        }
+
+        if(chat.unread!=0){
+            holder.unread.visibility=View.VISIBLE
+            if(chat.unread>99){
+                holder.unread.text= "99+"
+            }
+            else{
+                holder.unread.text= chat.unread.toString()
+            }
+        }
+        else{
+            holder.unread.visibility=View.GONE
         }
 
         holder.message.text=chat.lst_msg
@@ -116,7 +132,17 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         }
 
         holder.image.setOnClickListener {
-            Message().openProfileBottomSheet(context,chat.name,holder.image,chat.id,chat.image,false)
+            val intent = Intent(context, SelectedImage::class.java)
+            var fos  =  ByteArrayOutputStream()
+            ((holder.image.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            val byteArray = fos.toByteArray()
+            intent.putExtra("type","view")
+            intent.putExtra("image", byteArray)
+            intent.putExtra("userid","")
+            intent.putExtra("name","")
+            intent.putExtra("number","")
+            intent.putExtra("user_image","")
+            context.startActivity(intent)
         }
 
     }
