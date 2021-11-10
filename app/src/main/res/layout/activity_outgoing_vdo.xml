@@ -32,13 +32,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Ayush"
-            android:textColor="@color/white"
+            android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:maxLines="1"
             android:layout_marginTop="3dp"
             android:textFontWeight="600"
             android:layout_marginHorizontal="20dp"
-            android:fontFamily="@font/open_sans"
+            android:fontFamily="@font/senbold"
             android:textSize="24sp"/>
 
         <TextView
@@ -48,8 +48,8 @@
             android:layout_gravity="center_horizontal"
             android:text="Ringing"
             android:layout_marginTop="6dp"
-            android:textColor="@color/white"
-            android:fontFamily="@font/michroma"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/senregular"
             android:textSize="10sp" />
     </LinearLayout>
 
@@ -61,7 +61,7 @@
         android:layout_alignParentRight="true"
         android:text="00:00"
         android:visibility="gone"
-        android:textColor="@color/white"
+        android:textColor="#FFFFFF"
         android:fontFamily="@font/open_sans"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="15sp"/>
@@ -96,7 +96,6 @@
         android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="45dp"
         android:background="@drawable/bottom_nav_back"
         android:layout_alignParentBottom="true">
         <de.hdodenhof.circleimageview.CircleImageView
@@ -113,31 +112,29 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginVertical="13dp"
+            android:layout_marginVertical="10dp"
             android:layout_below="@+id/hangupButton">
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:padding="14dp"
+                android:layout_marginLeft="14dp"
                 android:id="@+id/mute_vdo"
-                android:background="@drawable/vdo_handle"
                 android:layout_alignParentLeft="true"
                 android:src="@drawable/ic_baseline_mic_off_24"/>
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="18dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:padding="14dp"
                 android:id="@+id/off_vdo"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/vdo_handle"
                 android:src="@drawable/ic_baseline_videocam_off_24"/>
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:padding="14dp"
+                android:layout_marginRight="14dp"
                 android:id="@+id/flip_vdo"
-                android:background="@drawable/vdo_handle"
                 android:layout_alignParentRight="true"
                 android:src="@drawable/ic_baseline_flip_camera_ios_24"/>
         </RelativeLayout>

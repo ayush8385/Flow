@@ -128,10 +128,12 @@ class Outgoing_vdo : BaseActivity() {
                 offvdo.setOnClickListener {
                     if(paused){
                         call.resumeVideo()
+                        offvdo.setBackgroundResource(0)
                         paused=false
                     }
                     else{
                         call.pauseVideo()
+                        offvdo.setBackgroundResource(R.drawable.controls_back)
                         paused=true
                     }
                 }
@@ -270,10 +272,12 @@ class Outgoing_vdo : BaseActivity() {
         mute.setOnClickListener {
             if(muted){
                 sinchServiceInterface!!.unmuteCall()
+                mute.setBackgroundResource(0)
                 muted=false
             }
             else{
                 sinchServiceInterface!!.muteCall()
+                mute.setBackgroundResource(R.drawable.controls_back)
                 muted=true
             }
         }

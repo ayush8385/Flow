@@ -116,7 +116,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
 
         if(Permissions().checkContactpermission(this)){
-            micPermission()
+
         }
         else{
             Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
@@ -242,14 +242,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         retrieveMessage(application).execute()
 
         UpdateToken()
-    }
-
-    private fun micPermission() {
-        if(Permissions().checkMicpermission(this)){
-        }
-        else{
-            Permissions().openPermissionBottomSheet(R.drawable.mic_permission,this.resources.getString(R.string.mic_permission),this,"mic")
-        }
     }
 
 
@@ -881,7 +873,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Do_SOme_Operation()
                     loadContacts(application).execute()
-                    micPermission()
+
 
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)

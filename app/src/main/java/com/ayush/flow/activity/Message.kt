@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -582,30 +583,25 @@ class Message : BaseActivity() {
         }
 
         audiocall!!.setOnClickListener {
-            val userName: String = username
-            //
-            val sinchServiceInterface=getSinchServiceInterface()
-            val callId=sinchServiceInterface!!.callUser(user_id).callId
-            val callScreen = Intent(context, Outgoing::class.java)
-            callScreen.putExtra("name",userName)
-            callScreen.putExtra("CALL_ID", callId)
-            callScreen.putExtra("image",user_image_path)
-            sendNotification(user_id, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
-            startActivity(callScreen)
+            if(Permissions().checkMicpermission(context)){
+                audioCalling(username,user_id,user_image_path)
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+            }
+
             
 
         }
 
         videocall!!.setOnClickListener {
-            val userName: String = username
-            val sinchServiceInterface=getSinchServiceInterface()
-            val callId=sinchServiceInterface!!.callUserVideo(user_id).callId
-            val callScreen = Intent(context, Outgoing_vdo::class.java)
-            callScreen.putExtra("name",userName)
-            callScreen.putExtra("CALL_ID", callId)
-            callScreen.putExtra("image",user_image)
-            sendNotification(userid, firebaseUser.uid, "","", 1)
-            startActivity(callScreen)
+            if(Permissions().checkMicpermission(context)){
+                videoCalling(username,user_id,user_image_path)
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+            }
+
         }
 
         clear_chat?.setOnClickListener {
@@ -644,6 +640,31 @@ class Message : BaseActivity() {
         }
 
         bottomSheetDialog.show()
+    }
+
+    private fun videoCalling(username: String, userId: String, userImagePath: String) {
+        val userName: String = username
+        val sinchServiceInterface=getSinchServiceInterface()
+        val callId=sinchServiceInterface!!.callUserVideo(userId).callId
+        val callScreen = Intent(this, Outgoing_vdo::class.java)
+        callScreen.putExtra("name",userName)
+        callScreen.putExtra("CALL_ID", callId)
+        callScreen.putExtra("image",userImagePath)
+        sendNotification(userid, firebaseUser.uid, "","", 1)
+        startActivity(callScreen)
+    }
+
+    private fun audioCalling(username: String, userId: String, userImagePath: String) {
+        val userName: String = username
+        //
+        val sinchServiceInterface=getSinchServiceInterface()
+        val callId=sinchServiceInterface!!.callUser(userId).callId
+        val callScreen = Intent(this, Outgoing::class.java)
+        callScreen.putExtra("name",userName)
+        callScreen.putExtra("CALL_ID", callId)
+        callScreen.putExtra("image",userImagePath)
+        sendNotification(userId, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
+        startActivity(callScreen)
     }
 
     fun openGallery() {
@@ -811,6 +832,24 @@ class Message : BaseActivity() {
         })
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            104 -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Do_SOme_Operation()
+                    audioCalling(name.text.toString(),userid,user_image)
+
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+        }
+    }
+
     private fun filterr(query: String?) {
         val filteredlist:ArrayList<MessageEntity> = ArrayList()
         for(chat in allMsg){
@@ -968,9 +1007,7 @@ class Message : BaseActivity() {
                             MessageViewModel(application).updatetMessage(mid,rec,seen)
                             adapter.notifyDataSetChanged()
                             if(seen){
-                                Handler().postDelayed({
-                                    snap.child(mid).ref.parent!!.removeValue()
-                                },5000)
+                              //  snap.child(mid).ref.parent!!.removeValue()
                             }
                         }
                     }

@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:text="fdsfkhjk"
             android:maxLines="1"
-            android:fontFamily="@font/open_sans"
+            android:fontFamily="@font/senbold"
             android:paddingLeft="12dp"
             android:layout_toRightOf="@+id/caller_pic"
             android:textSize="16sp"
@@ -47,7 +47,7 @@
             android:layout_toRightOf="@+id/caller_pic"
             android:textSize="13sp"
             android:textStyle="normal"
-            android:fontFamily="@font/open_sans"
+            android:fontFamily="@font/senregular"
             android:id="@+id/call_reason"/>
         <LinearLayout
             android:layout_width="wrap_content"

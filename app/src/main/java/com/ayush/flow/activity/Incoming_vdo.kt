@@ -3,16 +3,22 @@ package com.ayush.flow.activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Permissions
 import com.ayush.flow.database.ContactViewModel
+import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -40,6 +46,27 @@ class Incoming_vdo : BaseActivity() {
         setContentView(com.ayush.flow.R.layout.activity_incoming_vdo)
         val answer: CircleImageView = findViewById<View>(com.ayush.flow.R.id.answerButton) as CircleImageView
         answer.setOnClickListener(mClickListener)
+
+        val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+        answer.startAnimation(animShake)
+
+        animShake.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                Handler().postDelayed({
+                    answer.startAnimation(animShake)
+                }, 1000)
+
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+        })
+
         val decline: CircleImageView = findViewById<View>(com.ayush.flow.R.id.declineButton) as CircleImageView
         decline.setOnClickListener(mClickListener)
 
@@ -117,32 +144,78 @@ class Incoming_vdo : BaseActivity() {
 
                 pickintent.putExtra("name",remoteUser.text)
 
-                if(cons.image!=""){
-                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
-                    val b = BitmapFactory.decodeStream(FileInputStream(f))
-                    mCallerimg.setImageBitmap(b)
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
 
-                    pickintent.putExtra("image",cons.image)
-                }
+                Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
+
+                pickintent.putExtra("image",cons.image)
             }
 
         } else {
             Log.e(TAG, "Started with invalid callId, aborting")
             finish()
         }
+
+        if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
+
+        }
+        else{
+            com.ayush.flow.Services.Permissions().requestMicPermission(this)
+        }
     }
 
     private fun answerClicked() {
-        mAudioPlayer!!.stopRingtone()
-        val call: Call = sinchServiceInterface!!.getCall(mCallId)
-        if (call != null) {
-            call.answer()
-            localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
-            pickintent.putExtra(SinchService.CALL_ID, mCallId)
-            startActivity(pickintent)
-            finish()
-        } else {
-            finish()
+        if(Permissions().checkCamerapermission(this)){
+            mAudioPlayer!!.stopRingtone()
+            val call: Call = sinchServiceInterface!!.getCall(mCallId)
+            if (call != null) {
+                call.answer()
+                localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
+                pickintent.putExtra(SinchService.CALL_ID, mCallId)
+                startActivity(pickintent)
+                finish()
+            } else {
+                finish()
+            }
+        }
+        else{
+            Permissions().requestCameraPermission(this)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            101 -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mAudioPlayer!!.stopRingtone()
+                    val call: Call = sinchServiceInterface!!.getCall(mCallId)
+                    if (call != null) {
+                        call.answer()
+                        localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
+                        pickintent.putExtra(SinchService.CALL_ID, mCallId)
+                        startActivity(pickintent)
+                        finish()
+                    } else {
+                        finish()
+                    }
+                }
+                else{
+                    mAudioPlayer!!.stopRingtone()
+                    val call: Call = sinchServiceInterface!!.getCall(mCallId)
+                    if (call != null) {
+                        call.hangup()
+                        finish()
+                    } else {
+                        finish()
+                    }
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
         }
     }
 

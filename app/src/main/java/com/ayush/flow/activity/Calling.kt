@@ -3,6 +3,7 @@ package com.ayush.flow.activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -12,7 +13,11 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.PowerManager
+import android.text.Editable
+import android.text.TextWatcher
+import android.text.method.PasswordTransformationMethod
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -35,6 +40,16 @@ import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
+import android.view.animation.CycleInterpolator
+
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+
+import android.view.animation.RotateAnimation
+import android.widget.EditText
+import android.view.View.OnTouchListener
+import com.bumptech.glide.Glide
+import java.security.Permissions
 
 
 class Calling : BaseActivity(){
@@ -48,6 +63,10 @@ class Calling : BaseActivity(){
     lateinit var backimg: ImageView
     lateinit var pickintent:Intent
     lateinit var image:String
+
+    lateinit var text1:TextView
+    lateinit var text2:TextView
+    lateinit var callMsg:EditText
     protected var proximityWakelock: PowerManager.WakeLock? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,8 +75,32 @@ class Calling : BaseActivity(){
 
         remoteUser = findViewById(com.ayush.flow.R.id.user_name)
 
+        text1=findViewById(R.id.text1)
+        text2=findViewById(R.id.text2)
+        callMsg=findViewById(R.id.call_msg)
+
         val answer = findViewById(com.ayush.flow.R.id.pick_btn) as CircleImageView
         answer.setOnClickListener(mClickListener)
+
+        val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+        answer.startAnimation(animShake)
+
+        animShake.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                Handler().postDelayed({
+                    answer.startAnimation(animShake)
+                }, 1000)
+
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+        })
 
         val decline = findViewById(com.ayush.flow.R.id.end_btn) as CircleImageView
         decline.setOnClickListener(mClickListener)
@@ -93,6 +136,8 @@ class Calling : BaseActivity(){
                 proximitySensor,
                 SensorManager.SENSOR_DELAY_NORMAL);
         }
+
+
     }
 
     var proximitySensorEventListener: SensorEventListener = object : SensorEventListener {
@@ -148,6 +193,8 @@ class Calling : BaseActivity(){
 
     override fun onServiceConnected() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
+        var username=""
+        var usernumber=""
         if (call != null) {
 
             call.addCallListener(SinchCallListener())
@@ -162,7 +209,7 @@ class Calling : BaseActivity(){
                             remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
 
                             val url=snapshot.child("profile_photo").value.toString()
-
+                            usernumber=snapshot.child("number").value.toString()
                             if(url!=""){
                                 Picasso.get().load(url).into(mCallerimg)
                                 Picasso.get().load(url).into(backimg)
@@ -183,16 +230,16 @@ class Calling : BaseActivity(){
                     pickintent.putExtra("name",remoteUser.text)
 
                     image=chat.image
+                    username=chat.name
+                    usernumber=chat.number
 
-                    if(chat.image!=""){
-                        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
-                        val b = BitmapFactory.decodeStream(FileInputStream(f))
-                        mCallerimg.setImageBitmap(b)
+                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
 
-                        backimg.setImageBitmap(b)
+                    Glide.with(this).load(f).placeholder(R.drawable.user).into(backimg)
+                    Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
 
-                        pickintent.putExtra("image",chat.image)
-                    }
+                    pickintent.putExtra("image",chat.image)
+
                 }
             }
             else{
@@ -202,22 +249,23 @@ class Calling : BaseActivity(){
                 pickintent.putExtra("name",remoteUser.text)
 
                 image=cons.image
+                username=cons.name
+                usernumber=cons.number
 
-                if(cons.image!=""){
-                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
-                    val b = BitmapFactory.decodeStream(FileInputStream(f))
-                    mCallerimg.setImageBitmap(b)
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
 
-                    backimg.setImageBitmap(b)
+                Glide.with(this).load(f).placeholder(R.drawable.user).into(backimg)
+                Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
 
-                    pickintent.putExtra("image",cons.image)
-                }
+                pickintent.putExtra("image",cons.image)
+
             }
 
             if ("answer".equals(mAction)) {
                 mAction = "";
                 answerClicked(pickintent);
-            } else if ("ignore".equals(mAction)) {
+            }
+            else if ("ignore".equals(mAction)) {
                 mAction = "";
                 declineClicked();
             }
@@ -225,6 +273,70 @@ class Calling : BaseActivity(){
         } else {
             Log.e(TAG, "Started with invalid callId, aborting")
             finish()
+        }
+
+        if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
+
+        }
+        else{
+            com.ayush.flow.Services.Permissions().requestMicPermission(this)
+        }
+
+        text1.setOnClickListener {
+            Message().sendMessageToUser(text1.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+            call.hangup()
+            finish()
+        }
+        text2.setOnClickListener {
+            Message().sendMessageToUser(text2.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+            call.hangup()
+            finish()
+        }
+
+
+        callMsg.setOnTouchListener(OnTouchListener { v, event ->
+            val DRAWABLE_LEFT = 0
+            val DRAWABLE_TOP = 1
+            val DRAWABLE_RIGHT = 2
+            val DRAWABLE_BOTTOM = 3
+            if (event.action == MotionEvent.ACTION_UP) {
+                if (event.rawX >= callMsg.getRight() - callMsg.getCompoundDrawables()
+                        .get(DRAWABLE_RIGHT).getBounds().width()
+                ) {
+                    Message().sendMessageToUser(callMsg.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+                    call.hangup()
+                    finish()
+                    return@OnTouchListener true
+                }
+            }
+            false
+        })
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            104 -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                }
+                else{
+                    mAudioPlayer!!.stopRingtone()
+                    val call: Call = sinchServiceInterface!!.getCall(mCallId)
+                    if (call != null) {
+                        call.hangup()
+                        finish()
+                    } else {
+                        finish()
+                    }
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
         }
     }
 

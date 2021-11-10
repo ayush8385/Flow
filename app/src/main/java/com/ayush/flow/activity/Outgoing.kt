@@ -73,14 +73,12 @@ class Outgoing : BaseActivity() {
         mute.setOnClickListener {
             if(!isMute){
                 sinchServiceInterface!!.muteCall()
-                mute.setBackgroundColor(0)
-                mute.setBackgroundColor(R.drawable.bottom_back)
+                mute.setBackgroundResource(R.drawable.controls_back)
                 isMute=true
             }
             else{
                 sinchServiceInterface!!.unmuteCall()
-                mute.setBackgroundColor(0)
-                mute.setBackgroundColor(R.drawable.story_unread_back)
+                mute.setBackgroundResource(0)
                 isMute=false
             }
         }
@@ -95,12 +93,12 @@ class Outgoing : BaseActivity() {
         speeaker.setOnClickListener {
             if(!isSpeaker){
                 sinchServiceInterface!!.onSpeaker()
-                speeaker.setBackgroundColor(R.drawable.bottom_back)
+                speeaker.setBackgroundResource(R.drawable.controls_back)
                 isSpeaker=true
             }
             else{
                 sinchServiceInterface!!.offSpeaker()
-                speeaker.setBackgroundColor(R.drawable.story_unread_back)
+                speeaker.setBackgroundResource(0)
                 isSpeaker=false
             }
         }
@@ -193,7 +191,10 @@ class Outgoing : BaseActivity() {
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE
             val endMsg = "Call ended: " + call.getDetails().toString()
-            Toast.makeText(this@Outgoing, endMsg, Toast.LENGTH_LONG).show()
+            //Toast.makeText(this@Outgoing, endMsg, Toast.LENGTH_LONG).show()
+            Toast.makeText(this@Outgoing,"Call Ended",Toast.LENGTH_SHORT).show()
+            sinchServiceInterface!!.offSpeaker()
+            sinchServiceInterface!!.unmuteCall()
             endCall()
         }
 

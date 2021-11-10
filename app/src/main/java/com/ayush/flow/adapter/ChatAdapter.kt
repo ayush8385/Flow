@@ -16,6 +16,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Permissions
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
@@ -115,12 +116,23 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         holder.call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.audioCall(holder.name.text.toString(),chat.id,chat.image)
-
+            if(Permissions().checkMicpermission(context)){
+                clickListener.audioCall(holder.name.text.toString(),chat.id,chat.image)
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+            }
         }
+
         holder.vdo_call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.videoCall(holder.name.text.toString(),chat.id,chat.image)
+            if(Permissions().checkMicpermission(context)){
+                clickListener.videoCall(holder.name.text.toString(),chat.id,chat.image)
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+            }
+
         }
         holder.del_chat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
@@ -177,4 +189,5 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             return true
         }
     }
+
 }

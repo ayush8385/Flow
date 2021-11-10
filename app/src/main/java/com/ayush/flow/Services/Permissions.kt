@@ -87,7 +87,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.READ_CONTACTS),
-            102
+            103
         )
     }
 
@@ -95,7 +95,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.RECORD_AUDIO),
-            102
+            104
         )
     }
 }
