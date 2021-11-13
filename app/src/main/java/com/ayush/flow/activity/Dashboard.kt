@@ -414,7 +414,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             })
         }
 
-        updateImages()
+   //     updateImages()
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)

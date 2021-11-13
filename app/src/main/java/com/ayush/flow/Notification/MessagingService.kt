@@ -192,22 +192,24 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
         val firebaseUser= FirebaseAuth.getInstance().currentUser!!
             val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey)
 
-            ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            ref.addValueEventListener(object : ValueEventListener {
 
                 @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
 
                 override fun onDataChange(snapshot: DataSnapshot) {
 
+                   // val messageEntity=snapshot.getValue(MessageEntity::class.java)!!
+
                     val user = snapshot.child("userid").value.toString()
                     val sender = snapshot.child("sender").value.toString()
                     var msg = snapshot.child("message").value.toString()
-                    val time = snapshot.child("time").value.toString()
+                    val time = snapshot.child("time").value as? Long
                     val type = snapshot.child("type").value.toString()
-                    val received = snapshot.child("received").value as Boolean
+                  //  val received:Boolean = snapshot.child("received").value as Boolean
 
                     //time set
                     val sdf = SimpleDateFormat("hh:mm a")
-                    val tm: Date = Date(time.toLong())
+                    val tm: Date = Date(time!!)
 
                     var name: String = ""
                     var number: String = ""
@@ -470,7 +472,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                     }
 
-                    if (!received) {
+                  //  if (!received) {
                         MessageViewModel(application).insertMessage(
                             MessageEntity(
                                 messageKey,
@@ -505,7 +507,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                             }
 
                         })
-                    }
+                   // }
                 }
 
                 override fun onCancelled(error: DatabaseError) {

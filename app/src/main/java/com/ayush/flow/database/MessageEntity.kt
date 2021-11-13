@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "messages")
 data class MessageEntity(
     @PrimaryKey var mid:String,
-    @ColumnInfo(name = "user_id") val userid : String,
+    @ColumnInfo(name = "user_id") val userid: String,
     @ColumnInfo(name = "sender_id") val sender: String,
-    @ColumnInfo(name = "message") val message : String,
-    @ColumnInfo(name = "time") val time : String,
+    @ColumnInfo(name = "message") val message: String,
+    @ColumnInfo(name = "time") val time: String,
     @ColumnInfo(name = "msg_type") val type: String,
     @ColumnInfo(name = "recev") val recev:Boolean,
     @ColumnInfo(name = "seen") val seen:Boolean,

@@ -25,7 +25,6 @@ import android.widget.*
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -62,8 +61,6 @@ import java.util.*
 import kotlin.collections.HashMap
 import android.graphics.drawable.BitmapDrawable
 import com.ayush.flow.Services.Permissions
-import com.ayush.flow.adapter.ChatAdapter
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
 class Message : BaseActivity() {
@@ -611,8 +608,8 @@ class Message : BaseActivity() {
                 .setCancelable(false)
                 .setPositiveButton("Delete") {
                         dialog: DialogInterface, _: Int ->
-                    Dashboard().deleteMsgs((context as Dashboard).application,user_id).execute()
-                    ChatViewModel((context as Dashboard).application).setLastMsg("",user_id);
+                    Dashboard().deleteMsgs(application,user_id).execute()
+                    ChatViewModel(application).setLastMsg("",user_id);
                     dialog.dismiss()
                 }
                 .setNegativeButton("Cancel") {
@@ -959,10 +956,11 @@ class Message : BaseActivity() {
             messageHashmap.put("userid",userid)
             messageHashmap.put("sender",firebaseUser.uid)
             messageHashmap.put("message",msg)
-            messageHashmap.put("time",System.currentTimeMillis())
-            messageHashmap.put("type","message")
             messageHashmap.put("received",false)
             messageHashmap.put("seen",false)
+            messageHashmap.put("time",System.currentTimeMillis())
+            messageHashmap.put("type","message")
+
 
             ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
 
