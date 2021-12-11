@@ -60,9 +60,9 @@ class Splash : AppCompatActivity() {
         val isLoggedIn=sharedPreferences.getBoolean("isLoggedIn",false)
 
         if(isLoggedIn){
-            if(Permissions().checkContactpermission(this)){
-                Dashboard().loadContacts(application).execute()
-            }
+//            if(Permissions().checkContactpermission(this)){
+//                Dashboard().loadContacts(application).execute()
+//            }
         }
 
      //   startShine()
@@ -74,10 +74,10 @@ class Splash : AppCompatActivity() {
 
         Handler().postDelayed({
             if(isLoggedIn){
-                Dashboard().retrieveMessage(application).execute()
+//                Dashboard().retrieveMessage(application).execute()
                 Dashboard().checkStatus().execute()
                 val username=sharedPreferences.getString("name","")
-                startService(Intent(this, BackgroundService::class.java))
+              //startService(Intent(this, BackgroundService::class.java))
                 if(username==""){
                     startActivity(Intent(this@Splash,Addprofile::class.java))
                     finishAffinity()
@@ -99,8 +99,6 @@ class Splash : AppCompatActivity() {
     }
 
     fun startShine(){
-
-
         val animation: Animation = TranslateAnimation(0F,
             (logo.width + shine.width).toFloat(), 0F, 0F
         )

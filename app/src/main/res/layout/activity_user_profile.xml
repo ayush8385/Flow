@@ -129,7 +129,7 @@
                 android:layout_centerVertical="true"
                 android:id="@+id/number"
                 android:src="@drawable/ic_baseline_call_24"
-                android:tint="@color/black"/>
+                app:tint="@color/black" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

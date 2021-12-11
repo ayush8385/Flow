@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -40,6 +41,12 @@ import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
+import android.app.PendingIntent
+
+import android.content.Intent
+
+
+
 
 
 class MessagingService : FirebaseMessagingService(),ServiceConnection {
@@ -205,11 +212,14 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     var msg = snapshot.child("message").value.toString()
                     val time = snapshot.child("time").value as? Long
                     val type = snapshot.child("type").value.toString()
-                  //  val received:Boolean = snapshot.child("received").value as Boolean
+                    val url = snapshot.child("url").value.toString()
+                    val received:Boolean = snapshot.child("received").value as Boolean
 
                     //time set
                     val sdf = SimpleDateFormat("hh:mm a")
                     val tm: Date = Date(time!!)
+
+                    val date= SimpleDateFormat("dd/MM/yy")
 
                     var name: String = ""
                     var number: String = ""
@@ -233,13 +243,17 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     "Photo",
                                     sdf.format(tm),
-                                    false,
+                                    date.format(tm),
+                                    chatEntity.hide,
                                     unread+1,
                                     sender
                                 )
                             )
                         }
-                        else {
+                        if(type=="doc"){
+                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),chatEntity.hide,unread+1,sender))
+                        }
+                        if(type=="message") {
                             ChatViewModel(application).inserChat(
                                 ChatEntity(
                                     name,
@@ -247,7 +261,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     msg,
                                     sdf.format(tm),
-                                    false,
+                                    date.format(tm),
+                                    chatEntity.hide,
                                     unread+1,
                                     sender
                                 )
@@ -267,12 +282,17 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     "Photo",
                                     sdf.format(tm),
+                                    date.format(tm),
                                     false,
                                     0,
                                     sender
                                 )
                             )
-                        } else {
+                        }
+                        if(type=="doc"){
+                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                        }
+                        if(type=="message") {
                             ChatViewModel(application).inserChat(
                                 ChatEntity(
                                     name,
@@ -280,6 +300,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     imagepath,
                                     msg,
                                     sdf.format(tm),
+                                    date.format(tm),
                                     false,
                                     0,
                                     sender
@@ -303,12 +324,17 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             imagepath,
                                             "Photo",
                                             sdf.format(tm),
+                                            date.format(tm),
                                             false,
                                             0,
                                             sender
                                         )
                                     )
-                                } else {
+                                }
+                                if(type=="doc"){
+                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                                }
+                                if(type=="message") {
                                     ChatViewModel(application).inserChat(
                                         ChatEntity(
                                             name,
@@ -316,6 +342,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                             imagepath,
                                             msg,
                                             sdf.format(tm),
+                                            date.format(tm),
                                             false,
                                             0,
                                             sender
@@ -362,7 +389,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                     if (type == "image") {
 
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),date.format(tm),type,url,false,false,false))
 
                           val photo =  GetImageFromUrl().execute(msg).get()
 
@@ -461,7 +488,9 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     sender,
                                     msg,
                                     sdf.format(tm),
+                                    date.format(tm),
                                     type,
+                                    url,
                                     false,
                                     false,
                                     false
@@ -472,7 +501,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                     }
 
-                  //  if (!received) {
+                    if (!received) {
+                     //   Log.e("Messaginf service............",url)
                         MessageViewModel(application).insertMessage(
                             MessageEntity(
                                 messageKey,
@@ -480,7 +510,9 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                 sender,
                                 msg,
                                 sdf.format(tm),
+                                date.format(tm),
                                 type,
+                                url,
                                 false,
                                 false,
                                 false
@@ -507,7 +539,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                             }
 
                         })
-                   // }
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -609,13 +641,20 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
         val defaultSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
 
+        val backToMain = Intent(context, Dashboard::class.java)
 
         val intent = Intent(context, Message::class.java)
         intent.putExtra("userid",sender)
         intent.putExtra("name",name)
         intent.putExtra("number","")
         intent.putExtra("image",imgpath)
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(context,notId, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val pendingIntent = TaskStackBuilder.create(context)
+            .addNextIntentWithParentStack(backToMain)
+            .addNextIntent(intent)
+            .getPendingIntent(notId, FLAG_UPDATE_CURRENT)
+
+      //  val pendingIntent: PendingIntent = PendingIntent.getActivity(context,notId, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         var remoteInput:androidx.core.app.RemoteInput=androidx.core.app.RemoteInput.Builder("key_text_reply").run {
             setLabel("Reply...")

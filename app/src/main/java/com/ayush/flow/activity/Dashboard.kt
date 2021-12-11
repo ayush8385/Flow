@@ -182,9 +182,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
 
 
-        Handler().postDelayed({
-            updateImages()
-        },3000)
+//        Handler().postDelayed({
+//            updateImages()
+//        },3000)
 
 
         hidden.setOnClickListener {
@@ -632,11 +632,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         var msg=snapshot.child("message").value.toString()
                         val time=snapshot.child("time").value.toString()
                         val type=snapshot.child("type").value.toString()
+                        val url=snapshot.child("url").value.toString()
                         val received=snapshot.child("received").value as Boolean
 
                         //time set
                         val sdf = SimpleDateFormat("hh:mm a")
-                        val tm: Date = Date(time.toLong())
+                        var tm: Date = Date(time.toLong())
+
+                        val date= SimpleDateFormat("dd/MM/yy")
 
                         var name:String=""
                         var number:String=""
@@ -652,10 +655,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             var unread=chatEntity.unread
                             val hide=chatEntity.hide
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),hide,unread++,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),hide,unread++,sender))
                             }
-                            else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),hide,unread++,sender))
+                            if(type=="doc"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),hide,unread++,sender))
+                            }
+                            if(type=="message"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),date.format(tm),hide,unread++,sender))
                             }
                         }
                         else if(ContactViewModel(application).isUserExist(sender)){
@@ -664,10 +670,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             number=contactEntity.number
                             imagepath=contactEntity.image
                             if(type=="image"){
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,0,sender))
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
                             }
-                            else{
-                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,0,sender))
+                            if(type=="doc"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                            }
+                            if(type=="message"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
                             }
                         }
                         else{
@@ -679,10 +688,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     number=snapshot.child("number").value.toString()
                                     //check message type
                                     if(type=="image"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),false,0,sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
                                     }
                                     else{
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),false,0,sender))
+                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
                                     }
 
                                     //get image of sender
@@ -690,10 +699,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                                     if(image_url!=""){
                                         GetImageFromUrl(sender,application).execute(image_url)
                                         if(type=="image"){
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),false,1,sender))
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),date.format(tm),false,1,sender))
                                         }
-                                        else{
-                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),false,1,sender))
+                                        if(type=="doc"){
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,1,sender))
+                                        }
+                                        if(type=="message"){
+                                            ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),date.format(tm),false,1,sender))
                                         }
                                     }
                                     //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
@@ -798,8 +810,36 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             }
                         }
 
+                        if(type=="doc"){
+//                            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Documents")
+//
+//                            val url=snapshot.child("link").value.toString()
+//
+//                            if(directory.exists()){
+//                                val pdfFile = File(directory,msg)
+//                                try {
+//                                    pdfFile.createNewFile()
+//                                } catch (e: IOException) {
+//                                    e.printStackTrace()
+//                                }
+//                                FileDownloader().downloadFile(url, pdfFile)
+//                            }
+//                            else{
+//                                directory.mkdirs()
+//                                if(directory.isDirectory){
+//                                    val pdfFile = File(directory,msg)
+//                                    try {
+//                                        pdfFile.createNewFile()
+//                                    } catch (e: IOException) {
+//                                        e.printStackTrace()
+//                                    }
+//                                    FileDownloader().downloadFile(url, pdfFile)
+//                                }
+//                            }
+                        }
+
                         if(!received){
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),type,false,false,false))
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
 
 
                            // sendNotification(sender,name,msg,imagepath,application).execute()

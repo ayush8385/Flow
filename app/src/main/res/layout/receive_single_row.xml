@@ -13,16 +13,30 @@
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_baseline_done_24"
         android:layout_centerVertical="true"/>
-    <TextView
+
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10sp"
-        android:fontFamily="@font/open_sans"
-        android:id="@+id/msg_time"
-        android:text="05::00 pm"
+        android:orientation="vertical"
         android:layout_toRightOf="@+id/msg_box"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="10dp"/>
+        android:layout_marginLeft="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="8sp"
+            android:fontFamily="@font/open_sans"
+            android:id="@+id/msg_time"
+            android:text="05::00 pm" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="8sp"
+            android:fontFamily="@font/open_sans"
+            android:id="@+id/msg_date"
+            android:text="05/12/21" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/img_msg"
@@ -76,5 +90,11 @@
         android:padding="10dp"
         android:visibility="gone"
         android:id="@+id/progressbar"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/download"/>
 
 </RelativeLayout>

@@ -76,6 +76,12 @@ class Outgoing_vdo : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_outgoing_vdo)
+
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+        )
         mAudioPlayer = AudioPlayer(this)
         mCallDuration = findViewById<View>(com.ayush.flow.R.id.callDuration) as TextView
         mCallerName = findViewById<View>(com.ayush.flow.R.id.remoteUser) as TextView

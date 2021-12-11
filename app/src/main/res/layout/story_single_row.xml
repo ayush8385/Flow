@@ -28,7 +28,6 @@
         android:maxLines="1"
         android:text=""
         android:id="@+id/story_txt"
-        android:layout_below="@+id/story_img"
         android:layout_centerHorizontal="true"
         android:textSize="13sp"
         android:fontFamily="@font/open_sans"/>

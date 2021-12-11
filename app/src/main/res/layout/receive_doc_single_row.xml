@@ -14,6 +14,7 @@
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_baseline_done_24"
         android:layout_centerVertical="true"/>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,37 +40,57 @@
 
 
     <androidx.cardview.widget.CardView
-        android:layout_width="200dp"
+        android:layout_width="250dp"
         android:layout_marginVertical="4dp"
         android:layout_marginLeft="10dp"
-        app:cardCornerRadius="15dp"
+        app:cardCornerRadius="8dp"
         android:id="@+id/box"
-        android:layout_height="200dp">
+        android:layout_height="60dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:id="@+id/msg_box"
+            android:background="?selectableItemBackgroundBorderless"
             android:layout_height="match_parent">
-            <ProgressBar
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_centerInParent="true"
-                android:padding="10dp"
-                android:id="@+id/progressbar"/>
             <ImageView
                 android:id="@+id/img_msg"
-                android:layout_width="match_parent"
-                android:scaleType="centerCrop"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/documents"
+                android:layout_centerVertical="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:id="@+id/txt_msg"
+                android:layout_marginRight="13dp"
+                android:textColor="@color/black"
+                android:layout_centerVertical="true"
+                android:fontFamily="@font/senbold"
+                android:layout_toRightOf="@+id/img_msg"
+                android:layout_toLeftOf="@+id/progressbar"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                 android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:id="@+id/download"
+
+                android:layout_marginRight="6dp"
+                android:src="@drawable/ic_baseline_downloading_24"/>
+            <ProgressBar
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:padding="10dp"
+                android:visibility="invisible"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:id="@+id/progressbar"/>
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:id="@+id/txt_msg" />
+
 
 
     <TextView
@@ -86,9 +107,4 @@
         android:text=""/>
 
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:id="@+id/download"/>
 </RelativeLayout>

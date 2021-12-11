@@ -1,6 +1,7 @@
 package com.ayush.flow.adapter
 
 
+import android.R.attr
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -27,9 +28,34 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
+import android.widget.Toast
+
+import android.content.ActivityNotFoundException
+import android.net.Uri
+import androidx.core.content.ContextCompat
+
+import androidx.core.content.ContextCompat.startActivity
+import java.io.*
+import android.R.attr.data
+import android.graphics.Canvas
+import android.graphics.Paint
+
+import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfDocument.PageInfo
+import android.R.attr.mimeType
+
+import androidx.core.content.FileProvider
+import android.R.attr.src
+import android.app.Activity
+import android.app.DownloadManager
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
+import android.util.Log
+import com.ayush.flow.activity.FileDownloader
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
+
 
 class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
@@ -47,6 +73,11 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         val select:ImageView=view.findViewById(R.id.select)
         val image_msg:ImageView=view.findViewById(R.id.img_msg)
         val progressBar:ProgressBar=view.findViewById(R.id.progressbar)
+        val date:TextView =view.findViewById(R.id.msg_date)
+
+        val download:ImageView=view.findViewById(R.id.download)
+
+
       //  val box:CardView=view.findViewById(R.id.box)
     }
 
@@ -61,6 +92,14 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         }
         if(viewType==3){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_img_single_row,parent,false)
+            return MessageViewHolder(view)
+        }
+        if(viewType==4){
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_doc_single_row,parent,false)
+            return MessageViewHolder(view)
+        }
+        if(viewType==5){
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.send_doc_single_row,parent,false)
             return MessageViewHolder(view)
         }
         else{
@@ -93,11 +132,35 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             }
 
         }
-        else{
+        if(chat.type=="doc"){
+
+            holder.message.text=chat.message
+
+            val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Documents"),chat.message)
+
+            if(pdfFile.exists()){
+                holder.download.visibility=View.GONE
+                holder.progressBar.visibility=View.GONE
+            }
+
+
+            if(chat.sender==firebaseUser!!.uid){
+                if(chat.sent){
+                    holder.seen_txt.text="sent"
+                    holder.progressBar.visibility=View.GONE
+                }
+                else{
+                    holder.seen_txt.text="sending..."
+                    holder.progressBar.visibility=View.VISIBLE
+                }
+            }
+        }
+        if(chat.type=="message"){
             holder.message.text=chat.message
             holder.seen_txt.text="sent"
         }
         holder.time.text=chat.time
+        holder.date.text=chat.date
 
         holder.select.visibility=View.GONE
 
@@ -154,7 +217,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 }
                 clickListener.updateCount()
             }
-            else if(chat.type=="image"){
+            if(chat.type=="image"){
                 val intent = Intent(context, SelectedImage::class.java)
                 var fos  =  ByteArrayOutputStream()
                 ((holder.image_msg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
@@ -166,6 +229,93 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 intent.putExtra("number","")
                 intent.putExtra("user_image","")
                 context.startActivity(intent)
+            }
+            if(chat.type=="doc"){
+
+
+
+
+                if(holder.download.visibility==View.VISIBLE){
+
+                    holder.download.visibility=View.GONE
+                    holder.progressBar.visibility=View.VISIBLE
+
+                    Handler().postDelayed({
+                        val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Documents")
+                        if (!directory.exists()) {
+                            directory.mkdirs()
+                        }
+                        val pdfFile = File(directory,chat.message)
+                        FileDownloader().downloadFile(chat.url, pdfFile)
+
+                        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+                        StrictMode.setThreadPolicy(policy)
+
+                        try {
+
+                            val url = URL(chat.url)
+                            val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
+                            urlConnection.setRequestMethod("GET")
+//            urlConnection.setDoOutput(true)
+//            urlConnection.setRequestProperty("Content-Type", "application/pdf")
+                            urlConnection.connect()
+                            val inputStream: InputStream = urlConnection.inputStream
+                            val fileOutputStream = FileOutputStream(pdfFile)
+                            val totalSize: Int = urlConnection.getContentLength()
+                            val buffer = ByteArray(1024*1024)
+                            var bufferLength = 0
+                            while (inputStream.read(buffer).also { bufferLength = it } != -1) {
+                                fileOutputStream.write(buffer, 0, bufferLength)
+                            }
+                            fileOutputStream.close()
+                            holder.progressBar.visibility=View.GONE
+
+                        } catch (e: FileNotFoundException) {
+                            e.printStackTrace()
+                            holder.download.visibility=View.VISIBLE
+                            holder.progressBar.visibility=View.GONE
+                        } catch (e: MalformedURLException) {
+                            e.printStackTrace()
+                            holder.download.visibility=View.VISIBLE
+                            holder.progressBar.visibility=View.GONE
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                            holder.download.visibility=View.VISIBLE
+                            holder.progressBar.visibility=View.GONE
+                        }
+
+                    },1000)
+
+                }
+                else if(holder.download.visibility==View.GONE && holder.progressBar.visibility==View.GONE){
+                    val builder = VmPolicy.Builder()
+                    StrictMode.setVmPolicy(builder.build())
+
+                    val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Documents"),chat.message)
+
+
+                    val path = FileProvider.getUriForFile(context,"com.ayush.flow"+".fileprovider",pdfFile)
+
+                    val pdfIntent = Intent(Intent.ACTION_VIEW)
+
+                    pdfIntent.setDataAndType(path, "application/pdf")
+                    pdfIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+                    try {
+                        context.startActivity(pdfIntent)
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(
+                            context,
+                            "No Application available to view PDF",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+
+                }
+                else{
+                    //Eat Fivestar and Do nothing
+                }
             }
         }
 
@@ -202,6 +352,12 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         }
         if(id==firebaseUser!!.uid && type=="image"){
             return 2
+        }
+        if(id!=firebaseUser!!.uid && type=="doc"){
+            return 4
+        }
+        if(id==firebaseUser!!.uid && type=="doc"){
+            return 5
         }
         if(id==firebaseUser!!.uid){
             return 1
