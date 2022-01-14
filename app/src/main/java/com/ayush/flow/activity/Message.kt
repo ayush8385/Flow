@@ -70,6 +70,8 @@ import android.provider.OpenableColumns
 
 import android.R.attr.data
 import android.database.Cursor
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -224,6 +226,19 @@ class Message : BaseActivity() {
         user_image=intent.getStringExtra("image")!!
 
 
+       if(name.text==""){
+           val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chats Images"),userid+".jpg")
+           Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+               DiskCacheStrategy.NONE)
+               .skipMemoryCache(true).into(image)
+       }
+       else{
+           val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
+           Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+               DiskCacheStrategy.NONE)
+               .skipMemoryCache(true).into(image)
+       }
+
 
        close.setOnClickListener {
            selected.visibility=View.GONE
@@ -374,9 +389,11 @@ class Message : BaseActivity() {
 //            menuHelper.show()
 //        }
 
-       if(user_image!=""){
-           setIconImage(image,user_image).execute()
-       }
+//       if(user_image!=""){
+//           //setIconImage(image,user_image).execute()
+//           val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),user_image)
+//
+//       }
 
        image.setOnClickListener {
            openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
@@ -542,7 +559,7 @@ class Message : BaseActivity() {
 
        }
 
-        Dashboard().checkStatus().execute()
+//        Dashboard().checkStatus()
         checkSeen().execute()
         searchElement()
        // deleteMessage()
@@ -588,8 +605,8 @@ class Message : BaseActivity() {
             val byteArray = fos.toByteArray()
             intent.putExtra("type","view")
             intent.putExtra("image", byteArray)
-            intent.putExtra("userid","")
-            intent.putExtra("name","")
+            intent.putExtra("userid",user_id)
+            intent.putExtra("name",username)
             intent.putExtra("number","")
             intent.putExtra("user_image","")
             context.startActivity(intent)
@@ -901,7 +918,7 @@ class Message : BaseActivity() {
 
             up.setOnClickListener {
                 if(n>0){
-                    n--;
+                    n--
                     search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
                     recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
                 }

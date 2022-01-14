@@ -31,6 +31,7 @@
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.25462962962962965" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_info_24.xml" value="0.25462962962962965" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_keyboard_arrow_down_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_keyboard_arrow_up_24.xml" value="0.2712820512820513" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_lock_24.xml" value="0.22256410256410256" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_mail_outline_24.xml" value="0.22256410256410256" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/ic_baseline_mic_off_24.xml" value="0.14097222222222222" />
@@ -104,7 +105,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

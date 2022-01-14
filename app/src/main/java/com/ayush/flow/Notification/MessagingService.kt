@@ -160,7 +160,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
     private fun createNotificationChannel(importance: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name: CharSequence = "Amar LPG"
+            val name: CharSequence = "Notification Channel 1"
             val description = "Incoming call notification"
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
@@ -196,6 +196,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
 
     fun retrieving(messageKey:String){
+
         val firebaseUser= FirebaseAuth.getInstance().currentUser!!
             val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey)
 
@@ -396,42 +397,22 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             if (Environment.isExternalStorageManager()) {
-                                val directory: File = File(
-                                    Environment.getExternalStorageDirectory().toString(),
-                                    "/Flow/Medias/Chat Images"
-                                )
-                                if (directory.exists()) {
-                                    msg = messageKey + ".jpg"
-                                    var fos: FileOutputStream =
-                                        FileOutputStream(File(directory, msg))
-                                    try {
-                                        //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    } finally {
-                                        try {
-                                            fos.close()
-                                        } catch (e: IOException) {
-                                            e.printStackTrace()
-                                        }
-                                    }
-                                } else {
+                                val directory: File = File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Images")
+                                if (!directory.exists()) {
                                     directory.mkdirs()
-                                    if (directory.isDirectory) {
-                                        msg = messageKey + ".jpg"
-                                        val fos =
-                                            FileOutputStream(File(directory, msg))
-                                        try {
-                                            //       photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        } finally {
-                                            try {
-                                                fos.close()
-                                            } catch (e: IOException) {
-                                                e.printStackTrace()
-                                            }
-                                        }
+                                }
+                                msg = messageKey + ".jpg"
+                                var fos: FileOutputStream =
+                                    FileOutputStream(File(directory, msg))
+                                try {
+                                    //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                } finally {
+                                    try {
+                                        fos.close()
+                                    } catch (e: IOException) {
+                                        e.printStackTrace()
                                     }
                                 }
                             } else {
@@ -445,64 +426,31 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                         }
                         else {
                             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                            if (directory.exists()) {
-                                msg = messageKey + ".jpg"
-                                var fos: FileOutputStream =
-                                    FileOutputStream(File(directory, msg))
-                                try {
-                                         photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                } finally {
-                                    try {
-                                        fos.close()
-                                    } catch (e: IOException) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                            else {
+                            if (!directory.exists()) {
                                 directory.mkdirs()
-                                if (directory.isDirectory) {
-                                    msg = messageKey + ".jpg"
-                                    val fos =
-                                        FileOutputStream(File(directory, msg))
-                                    try {
-                                        photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    } finally {
-                                        try {
-                                            fos.close()
-                                        } catch (e: IOException) {
-                                            e.printStackTrace()
-                                        }
-                                    }
+                            }
+                            msg = messageKey + ".jpg"
+                            var fos: FileOutputStream =
+                                FileOutputStream(File(directory, msg))
+                            try {
+                                photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                try {
+                                    fos.close()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
                                 }
                             }
 
-                            MessageViewModel(application).insertMessage(
-                                MessageEntity(
-                                    messageKey,
-                                    firebaseUser.uid + "-" + sender,
-                                    sender,
-                                    msg,
-                                    sdf.format(tm),
-                                    date.format(tm),
-                                    type,
-                                    url,
-                                    false,
-                                    false,
-                                    false
-                                )
-                            )
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid + "-" + sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
                         }
 
 
                     }
 
                     if (!received) {
-                     //   Log.e("Messaginf service............",url)
                         MessageViewModel(application).insertMessage(
                             MessageEntity(
                                 messageKey,
@@ -561,11 +509,10 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             if(type=="1"){
 
-
             }
             else{
                 sendNotif(sender,name,"",con.image,"", msg,context)
-                retrieving(messageKey)
+                //retrieving(messageKey)
             }
 
         }
@@ -587,12 +534,17 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     val img_url=snapshot.child("profile_photo").value.toString()
                     //convert img url to bitmap and save path to databse and pass to sendNotif
 
-//                    if(type=="1"){
-//                        sendCallnf(sender,"Ayush",msg,this)
-//                    }
-//                    else{
-//                        sendNotif(sender,name,image, msg,context)
-//                    }
+                    if(img_url!=""){
+                        Dashboard().GetImageFromUrl(sender,application).execute()
+                    }
+
+
+                    if(type=="1"){
+                        //sendCallnf(sender,"Ayush",msg,this)
+                    }
+                    else{
+                        sendNotif(sender,name,"","","", msg,context)
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -679,7 +631,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 userr = builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bitmap!!))).setName(reply_name).build()
             }
             else{
-                bitmap = loadImage(imgpath!!).execute().get()
+                bitmap = loadImage(sender).execute().get()
                 userr = builder.setIcon(IconCompat.createWithBitmap(getCircularBitmap(bitmap!!))).setName(name).build()
             }
         }

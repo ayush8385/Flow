@@ -15,6 +15,8 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.database.CallEntity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
@@ -27,7 +29,7 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         val name:TextView=view.findViewById(R.id.caller_name)
         val cause:TextView = view.findViewById(R.id.call_reason)
 //        val duration:TextView = view.findViewById(R.id.callDuration)
-        val call_box:CardView=view.findViewById(R.id.paren)
+        val call_box:RelativeLayout=view.findViewById(R.id.paren)
         val audioCall:CircleImageView=view.findViewById(R.id.audiocall_btn)
         val videoCall:CircleImageView=view.findViewById(R.id.vdocall_btn)
     }
@@ -45,7 +47,10 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         holder.cause.text=call.calltype
 
         if(call.image!="" && call.image!=null){
-          loadImage(call.image, holder).execute()
+            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(holder.image)
+          //loadImage(call.image, holder).execute()
         }
 
         holder.audioCall.setOnClickListener {

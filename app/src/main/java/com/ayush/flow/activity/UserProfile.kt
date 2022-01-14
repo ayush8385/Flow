@@ -244,7 +244,7 @@ class UserProfile : AppCompatActivity() {
             val byteArray = fos.toByteArray()
             intent.putExtra("type","profile")
             intent.putExtra("image", byteArray)
-            intent.putExtra("userid","")
+            intent.putExtra("userid",firebaseUser.uid)
             intent.putExtra("name","")
             intent.putExtra("number","")
             intent.putExtra("user_image","")

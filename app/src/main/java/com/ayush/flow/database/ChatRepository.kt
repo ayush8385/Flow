@@ -36,4 +36,8 @@ class ChatRepository(private val chatDao: ChatDao) {
     fun setLastMsg(s: String, userId: String) {
         chatDao.setLastMsg(s,userId)
     }
+
+    fun updateName(id: String, name: String) {
+        chatDao.updateName(id,name)
+    }
 }

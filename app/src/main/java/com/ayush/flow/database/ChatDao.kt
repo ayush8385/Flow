@@ -35,4 +35,7 @@ interface ChatDao {
     @Query("UPDATE chats SET last_msg=:s WHERE id=:userId")
     fun setLastMsg(s: String, userId: String)
 
+    @Query("UPDATE chats SET name = :name WHERE id = :id")
+    fun updateName(id: String, name: String)
+
 }

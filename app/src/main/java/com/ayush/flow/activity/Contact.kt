@@ -1,10 +1,16 @@
 package com.ayush.flow.activity
 
+import android.app.Application
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.provider.ContactsContract
 import android.view.View
@@ -17,11 +23,25 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ayush.flow.R
+import com.ayush.flow.Services.Permissions
 import com.ayush.flow.adapter.ContactAdapter
+import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.ContactEntity
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.URL
 
 class Contact : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
@@ -60,17 +80,16 @@ class Contact : AppCompatActivity() {
 
         pullToRefresh = findViewById(R.id.pulTooRefresh)
 
-        pullToRefresh.setOnClickListener {
-            Handler().postDelayed(Runnable {
-                if (pullToRefresh.isRefreshing) {
-                    pullToRefresh.isRefreshing=false
-                }
-            }, 300)
+//        pullToRefresh.setOnClickListener {
+//            Handler().postDelayed(Runnable {
+//                if (pullToRefresh.isRefreshing) {
+//                    pullToRefresh.isRefreshing=false
+//                }
+//            }, 300)
+//
+//        }
 
-        }
 
-
-        searchElement()
 
         recyclerAdapter=ContactAdapter(this@Contact)
         recyclerView.layoutManager=layoutManager
@@ -86,6 +105,9 @@ class Contact : AppCompatActivity() {
             }
 
         })
+
+
+        searchElement()
 
         add.setOnClickListener {
             con_card.visibility=View.VISIBLE
@@ -103,6 +125,9 @@ class Contact : AppCompatActivity() {
                 startActivity(addContactIntent)
                 con_card.visibility=View.GONE
                 dim.visibility=View.GONE
+//                GlobalScope.launch {
+//                    loadContacts(application)
+//                }
             }
             else{
                 Toast.makeText(applicationContext,"Enter Proper Details",Toast.LENGTH_SHORT).show()
@@ -119,6 +144,8 @@ class Contact : AppCompatActivity() {
             onBackPressed()
         }
     }
+
+
 
 
 

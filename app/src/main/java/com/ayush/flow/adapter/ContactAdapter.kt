@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ContactEntity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
@@ -43,12 +45,9 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
             holder.name.text=cons.name
             holder.number.text=cons.number
 
-            if(cons.image!=""){
-                loadImage(cons.image,holder).execute()
-            }
-            else{
-                holder.image.setImageResource(R.drawable.user)
-            }
+            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(holder.image)
 
             holder.start_chat.setOnClickListener {
                 val intent= Intent(context, Message::class.java)

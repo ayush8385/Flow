@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import com.ayush.flow.activity.Dashboard
 
 
-class CallNotificationActionReceiver : BroadcastReceiver() {
+class allNotificationActionReceiver : BroadcastReceiver() {
     var mContext: Context? = null
     override fun onReceive(context: Context, intent: Intent?) {
         mContext = context

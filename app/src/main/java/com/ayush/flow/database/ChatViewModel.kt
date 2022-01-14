@@ -37,6 +37,10 @@ class ChatViewModel(application: Application):AndroidViewModel(application) {
         repository.update(id,img)
     }
 
+    fun updateName(name:String,id: String) =viewModelScope.launch (Dispatchers.IO){
+        repository.updateName(id,name)
+    }
+
     fun setPrivate(id:String,hide:Boolean)=viewModelScope.launch (Dispatchers.IO){
         repository.setPrivate(id,hide)
     }

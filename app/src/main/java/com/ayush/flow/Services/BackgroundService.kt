@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.IBinder
 import android.widget.Toast
 import com.ayush.flow.activity.Dashboard
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class BackgroundService: Service() {
@@ -21,7 +23,9 @@ class BackgroundService: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Toast.makeText(this, "Retrieving Message", Toast.LENGTH_LONG).show()
-        Dashboard().retrieveMessage(application).execute()
+        GlobalScope.launch {
+            Dashboard().retrieveMessage(application)
+        }
         return START_STICKY
     }
 

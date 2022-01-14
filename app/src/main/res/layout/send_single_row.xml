@@ -43,14 +43,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="8sp"
+                    android:textSize="9sp"
                     android:fontFamily="@font/open_sans"
                     android:id="@+id/msg_time"
                     android:text="05::00 pm" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="8sp"
+                    android:textSize="9sp"
                     android:fontFamily="@font/open_sans"
                     android:id="@+id/msg_date"
                     android:text="05/12/21" />
