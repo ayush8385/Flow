@@ -5,11 +5,15 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.ayush.flow.R
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import java.io.File
 
 class SelectedImage : AppCompatActivity() {
     lateinit var image: TouchImageView
@@ -26,11 +30,14 @@ class SelectedImage : AppCompatActivity() {
         var photoBitmap : Bitmap? =null
         val type=intent.getStringExtra("type")
 
+        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+            DiskCacheStrategy.NONE)
+            .skipMemoryCache(true).into(image)
+
         if (intent.hasExtra("image")){
             //convert to bitmap
             val byteArray = intent.getByteArrayExtra("image")
             photoBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
-            image.setImageBitmap(photoBitmap)
         }
 
         if(type=="view"){

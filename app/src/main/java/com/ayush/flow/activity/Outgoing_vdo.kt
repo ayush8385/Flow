@@ -3,6 +3,7 @@ package com.ayush.flow.activity
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -10,6 +11,8 @@ import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.RequiresApi
 import com.ayush.flow.R
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
@@ -17,6 +20,7 @@ import com.sinch.android.rtc.calling.CallState
 import com.sinch.android.rtc.video.VideoCallListener
 import com.sinch.android.rtc.video.VideoScalingType
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
 import java.util.*
 
 
@@ -164,11 +168,10 @@ class Outgoing_vdo : BaseActivity() {
             mCallerName!!.text=intent.getStringExtra("name")
             mCallState!!.setText(call.getState().toString())
 
-//            if(intent.getStringExtra("image")!=""){
-//                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("image")!!)
-//                val b = BitmapFactory.decodeStream(FileInputStream(f))
-//                mCallerimg.setImageBitmap(b)
-//            }
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(mCallerimg)
 
             if (call.getState() === CallState.ESTABLISHED) {
                 //when the call is established, addVideoViews configures the video to  be shown

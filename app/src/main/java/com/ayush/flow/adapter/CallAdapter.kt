@@ -46,12 +46,9 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         holder.name.text=call.name
         holder.cause.text=call.calltype
 
-        if(call.image!="" && call.image!=null){
-            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(holder.image)
-          //loadImage(call.image, holder).execute()
-        }
+        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+            DiskCacheStrategy.NONE)
+            .skipMemoryCache(true).into(holder.image)
 
         holder.audioCall.setOnClickListener {
             clickListener.audioCall(call.name,call.id,call.image)

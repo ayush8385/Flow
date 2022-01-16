@@ -17,6 +17,8 @@ import com.ayush.flow.R
 import com.ayush.flow.Services.APIService
 import com.ayush.flow.database.CallEntity
 import com.ayush.flow.database.CallViewModel
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
@@ -43,7 +45,7 @@ class Outgoing : BaseActivity() {
     lateinit var speeaker:CircleImageView
     var isMute:Boolean=false
     var isSpeaker:Boolean=false
-    lateinit var image: String
+    lateinit var userid: String
     lateinit var backimg: ImageView
 
 
@@ -115,12 +117,15 @@ class Outgoing : BaseActivity() {
             mCallState.setText(call.getState().toString())
 
             if(intent.getStringExtra("image")!=""){
-                image = intent.getStringExtra("image")!!
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
-                val b = BitmapFactory.decodeStream(FileInputStream(f))
-                mCallerimg.setImageBitmap(b)
+                userid = intent.getStringExtra("userid")!!
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
+                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                    DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true).into(mCallerimg)
 
-                backimg.setImageBitmap(b)
+                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                    DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true).into(backimg)
             }
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.")
@@ -186,7 +191,7 @@ class Outgoing : BaseActivity() {
             val cause: CallEndCause = call.getDetails().getEndCause()
             Log.d(TAG, "Call ended. Reason: " + cause.toString())
 
-            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),image,cause.toString(), call.details.duration.toString(),call.remoteUserId))
+            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),userid+".jpg",cause.toString(), call.details.duration.toString(),call.remoteUserId))
 
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE

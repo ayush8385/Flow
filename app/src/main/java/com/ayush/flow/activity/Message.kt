@@ -226,18 +226,7 @@ class Message : BaseActivity() {
         user_image=intent.getStringExtra("image")!!
 
 
-       if(name.text==""){
-           val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chats Images"),userid+".jpg")
-           Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-               DiskCacheStrategy.NONE)
-               .skipMemoryCache(true).into(image)
-       }
-       else{
-           val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
-           Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-               DiskCacheStrategy.NONE)
-               .skipMemoryCache(true).into(image)
-       }
+
 
 
        close.setOnClickListener {
@@ -570,9 +559,6 @@ class Message : BaseActivity() {
         val galleryIntent = Intent()
         galleryIntent.action = Intent.ACTION_GET_CONTENT
 
-        // We will be redirected to choose pdf
-
-        // We will be redirected to choose pdf
         galleryIntent.type = "application/pdf"
         startActivityForResult(galleryIntent, 113)
     }
@@ -595,7 +581,11 @@ class Message : BaseActivity() {
         val block=bottomSheetDialog.findViewById<TextView>(R.id.user_block)
         val report=bottomSheetDialog.findViewById<TextView>(R.id.user_report)
 
-        profile_image!!.setImageBitmap((userimg.drawable as BitmapDrawable).bitmap)
+        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
+        Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+            DiskCacheStrategy.NONE)
+            .skipMemoryCache(true).into(profile_image!!)
+
         user_name!!.text=username
 
         profile_image.setOnClickListener {
@@ -693,7 +683,7 @@ class Message : BaseActivity() {
         val callScreen = Intent(this, Outgoing_vdo::class.java)
         callScreen.putExtra("name",userName)
         callScreen.putExtra("CALL_ID", callId)
-        callScreen.putExtra("image",userImagePath)
+        callScreen.putExtra("userid",userId)
         sendNotification(userid, firebaseUser.uid, "","", 1)
         startActivity(callScreen)
     }
@@ -706,7 +696,7 @@ class Message : BaseActivity() {
         val callScreen = Intent(this, Outgoing::class.java)
         callScreen.putExtra("name",userName)
         callScreen.putExtra("CALL_ID", callId)
-        callScreen.putExtra("image",userImagePath)
+        callScreen.putExtra("userid",userid)
         sendNotification(userId, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
         startActivity(callScreen)
     }
@@ -742,6 +732,11 @@ class Message : BaseActivity() {
     }
 
     override fun onResume() {
+
+        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
+        Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+            DiskCacheStrategy.NONE)
+            .skipMemoryCache(true).into(image)
 
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay.toLong())

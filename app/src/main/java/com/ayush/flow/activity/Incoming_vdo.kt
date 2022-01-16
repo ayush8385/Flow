@@ -17,8 +17,10 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
 import com.ayush.flow.Services.Permissions
+import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.ContactViewModel
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -120,35 +122,56 @@ class Incoming_vdo : BaseActivity() {
             val cons= ContactViewModel(application).getContact(call.remoteUserId)
 
             if(cons == null){
-                val ref= FirebaseDatabase.getInstance().reference.child("Users")
-                ref.addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
 
-                        val url=snapshot.child("profile_photo").value.toString()
+                var chat = ChatViewModel(application).getChat(call.remoteUserId)
+                if(chat==null){
+                    val ref=FirebaseDatabase.getInstance().reference.child("Users")
+                    ref.addValueEventListener(object :ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            remoteUser.setText(snapshot.child(call.remoteUserId).child("number").value.toString())
 
-                        if(url!=""){
-                            Picasso.get().load(url).into(mCallerimg)
+                            val url=snapshot.child(call.remoteUserId).child("profile_photo").value.toString()
+
+
+                            if(url!=""){
+                                Picasso.get().load(url).into(mCallerimg)
+
+                            }
 
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
 
-                })
+                    })
+                }
+                else{
+
+                    remoteUser.setText(chat.number)
+
+                    pickintent.putExtra("name",remoteUser.text)
+
+                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+
+                    Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                        DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true).into(mCallerimg)
+
+                    pickintent.putExtra("userid",call.remoteUserId)
+
+                }
             }
             else{
                 remoteUser.text = cons.name
 
                 pickintent.putExtra("name",remoteUser.text)
 
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.image)
+                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
 
                 Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
 
-                pickintent.putExtra("image",cons.image)
+                pickintent.putExtra("userid",call.remoteUserId)
             }
 
         } else {
