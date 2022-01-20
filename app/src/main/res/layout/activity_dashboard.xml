@@ -25,15 +25,6 @@
             android:textColor="@color/black"
             android:textStyle="bold"
             android:textSize="22sp"/>
-<!--        <androidx.appcompat.widget.SwitchCompat-->
-<!--            android:id="@+id/theme_switch"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_toLeftOf="@+id/user_img"-->
-<!--            android:layout_marginRight="30dp"-->
-<!--            android:layout_centerInParent="true"-->
-<!--            android:thumb="@drawable/thumb"-->
-<!--            app:track="@drawable/track" />-->
 
         <ImageView
             android:layout_width="36dp"
@@ -52,6 +43,7 @@
             android:elevation="10dp"
             app:civ_border_color="@color/black"
             android:id="@+id/user_img"
+            android:layout_centerVertical="true"
             android:background="?selectableItemBackgroundBorderless"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>

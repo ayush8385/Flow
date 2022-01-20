@@ -352,7 +352,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 val callScreen = Intent(this@Dashboard, Outgoing::class.java)
                 callScreen.putExtra("name",name)
                 callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("image",image)
+                callScreen.putExtra("userid",id)
                 Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
                 startActivity(callScreen)
             }
@@ -364,7 +364,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
                 callScreen.putExtra("name",name)
                 callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("image",image)
+                callScreen.putExtra("userid",id)
                 Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
                 startActivity(callScreen)
             }

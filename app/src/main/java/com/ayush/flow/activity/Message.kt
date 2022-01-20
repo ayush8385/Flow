@@ -684,7 +684,7 @@ class Message : BaseActivity() {
         callScreen.putExtra("name",userName)
         callScreen.putExtra("CALL_ID", callId)
         callScreen.putExtra("userid",userId)
-        sendNotification(userid, firebaseUser.uid, "","", 1)
+        sendNotification(userId, firebaseUser.uid, "","", 1)
         startActivity(callScreen)
     }
 
@@ -696,7 +696,7 @@ class Message : BaseActivity() {
         val callScreen = Intent(this, Outgoing::class.java)
         callScreen.putExtra("name",userName)
         callScreen.putExtra("CALL_ID", callId)
-        callScreen.putExtra("userid",userid)
+        callScreen.putExtra("userid",userId)
         sendNotification(userId, FirebaseAuth.getInstance().currentUser!!.uid, "", "", 1)
         startActivity(callScreen)
     }

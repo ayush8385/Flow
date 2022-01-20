@@ -62,11 +62,16 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
         super.onMessageReceived(remoteMessage)
 
         val data: MutableMap<*, *> = remoteMessage.data
+
+        Log.e("onmessagereceived.................","Working")
+
         if (SinchHelpers.isSinchPushPayload(data as MutableMap<String, String>?)) {
             object : ServiceConnection {
                 private var payload: Map<*, *>? = null
                 override fun onServiceConnected(name: ComponentName, service: IBinder) {
                     val context = applicationContext
+
+                    Log.e("onmessagereceived.................","SInch is payloaded")
                    val sharedPreferences = context.getSharedPreferences("call shared", MODE_PRIVATE)
                     if (payload != null) {
                         val sinchService = service as SinchServiceInterface
@@ -105,6 +110,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 }
 
                 override fun onServiceDisconnected(name: ComponentName) {}
+
                 fun relayMessageData(data: MutableMap<*, *>) {
                     payload = data
                     createNotificationChannel(NotificationManager.IMPORTANCE_HIGH)
@@ -120,15 +126,17 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
         else{
 
+            Log.e("onmessagereceived.................","SInch is not payloaded")
             notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
                      createNotificationChannel(notificationManager!!)
 
+                Log.e("onmessagereceived.................","Sending call")
                     sendCall(remoteMessage)
             }
             else{
-//                Toast.makeText(applicationContext,"Not sending Version Not Supported",Toast.LENGTH_SHORT).show()
+              //  Toast.makeText(applicationContext,"Not sending Version Not Supported",Toast.LENGTH_SHORT).show()
             }
 
             sendOreoNotif(remoteMessage.data["sender"]!!, remoteMessage.data["message"]!!,remoteMessage.data["type"].toString(),
@@ -179,10 +187,12 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             if (foregrounded()) {
                 return
             }
+            Log.e("onmessagereceived.................","App is not foregroubded")
             val intent = Intent(this, Calling::class.java)
             val callVo = NotificationCallVo()
             callVo.setData(dataHashMap)
-            intent.putExtra("parcel", callVo)
+            intent.putExtra(SinchService.CALL_ID, callVo)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         }
     }
@@ -195,306 +205,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
     }
 
 
-    fun retrieving(messageKey:String){
 
-        val firebaseUser= FirebaseAuth.getInstance().currentUser!!
-            val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey)
-
-            ref.addValueEventListener(object : ValueEventListener {
-
-                @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-
-                override fun onDataChange(snapshot: DataSnapshot) {
-
-                   // val messageEntity=snapshot.getValue(MessageEntity::class.java)!!
-
-                    val user = snapshot.child("userid").value.toString()
-                    val sender = snapshot.child("sender").value.toString()
-                    var msg = snapshot.child("message").value.toString()
-                    val time = snapshot.child("time").value as? Long
-                    val type = snapshot.child("type").value.toString()
-                    val url = snapshot.child("url").value.toString()
-                    val received:Boolean = snapshot.child("received").value as Boolean
-
-                    //time set
-                    val sdf = SimpleDateFormat("hh:mm a")
-                    val tm: Date = Date(time!!)
-
-                    val date= SimpleDateFormat("dd/MM/yy")
-
-                    var name: String = ""
-                    var number: String = ""
-                    var imagepath: String = ""
-
-
-
-
-                    if (ChatViewModel(application).isUserExist(sender)) {
-                        //get image and name from room db
-                        val chatEntity = ChatViewModel(application).getChat(sender)
-                        name = chatEntity.name
-                        number = chatEntity.number
-                        imagepath = chatEntity.image
-                        var unread=chatEntity.unread
-                        if (type == "image") {
-                            ChatViewModel(application).inserChat(
-                                ChatEntity(
-                                    name,
-                                    number,
-                                    imagepath,
-                                    "Photo",
-                                    sdf.format(tm),
-                                    date.format(tm),
-                                    chatEntity.hide,
-                                    unread+1,
-                                    sender
-                                )
-                            )
-                        }
-                        if(type=="doc"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),chatEntity.hide,unread+1,sender))
-                        }
-                        if(type=="message") {
-                            ChatViewModel(application).inserChat(
-                                ChatEntity(
-                                    name,
-                                    number,
-                                    imagepath,
-                                    msg,
-                                    sdf.format(tm),
-                                    date.format(tm),
-                                    chatEntity.hide,
-                                    unread+1,
-                                    sender
-                                )
-                            )
-                        }
-                    }
-                    else if (ContactViewModel(application).isUserExist(sender)) {
-                        val contactEntity = ContactViewModel(application).getContact(sender)
-                        name = contactEntity.name
-                        number = contactEntity.number
-                        imagepath = contactEntity.image
-                        if (type == "image") {
-                            ChatViewModel(application).inserChat(
-                                ChatEntity(
-                                    name,
-                                    number,
-                                    imagepath,
-                                    "Photo",
-                                    sdf.format(tm),
-                                    date.format(tm),
-                                    false,
-                                    0,
-                                    sender
-                                )
-                            )
-                        }
-                        if(type=="doc"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-                        }
-                        if(type=="message") {
-                            ChatViewModel(application).inserChat(
-                                ChatEntity(
-                                    name,
-                                    number,
-                                    imagepath,
-                                    msg,
-                                    sdf.format(tm),
-                                    date.format(tm),
-                                    false,
-                                    0,
-                                    sender
-                                )
-                            )
-                        }
-                    }
-                    else {
-                        //get number as a name from firebase
-                        //get image and sav it to local storage and internal path from firebase
-                        val refer = FirebaseDatabase.getInstance().reference.child("Users")
-                            .child(sender)
-                        refer.addValueEventListener(object : ValueEventListener {
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                number = snapshot.child("number").value.toString()
-                                if (type == "image") {
-                                    ChatViewModel(application).inserChat(
-                                        ChatEntity(
-                                            name,
-                                            number,
-                                            imagepath,
-                                            "Photo",
-                                            sdf.format(tm),
-                                            date.format(tm),
-                                            false,
-                                            0,
-                                            sender
-                                        )
-                                    )
-                                }
-                                if(type=="doc"){
-                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-                                }
-                                if(type=="message") {
-                                    ChatViewModel(application).inserChat(
-                                        ChatEntity(
-                                            name,
-                                            number,
-                                            imagepath,
-                                            msg,
-                                            sdf.format(tm),
-                                            date.format(tm),
-                                            false,
-                                            0,
-                                            sender
-                                        )
-                                    )
-                                }
-//                                val image_url = snapshot.child("profile_photo").value.toString()
-//                                if (image_url != "") {
-//                                    Dashboard().GetImageFromUrl(sender, application).execute(image_url)
-//                                    if (type == "image") {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                "",
-//                                                "Image",
-//                                                sdf.format(tm),
-//                                                sender
-//                                            )
-//                                        )
-//                                    } else {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                "",
-//                                                msg,
-//                                                sdf.format(tm),
-//                                                sender
-//                                            )
-//                                        )
-//                                    }
-//                                }
-                                //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
-
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
-                            }
-
-                        })
-                    }
-
-                    if (type == "image") {
-
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),date.format(tm),type,url,false,false,false))
-
-                          val photo =  GetImageFromUrl().execute(msg).get()
-
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            if (Environment.isExternalStorageManager()) {
-                                val directory: File = File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Images")
-                                if (!directory.exists()) {
-                                    directory.mkdirs()
-                                }
-                                msg = messageKey + ".jpg"
-                                var fos: FileOutputStream =
-                                    FileOutputStream(File(directory, msg))
-                                try {
-                                    //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                } finally {
-                                    try {
-                                        fos.close()
-                                    } catch (e: IOException) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            } else {
-                                //request for the permission
-                                val intent =
-                                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                val uri = Uri.fromParts("package", packageName, null)
-                                intent.data = uri
-                                startActivity(intent)
-                            }
-                        }
-                        else {
-                            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                            if (!directory.exists()) {
-                                directory.mkdirs()
-                            }
-                            msg = messageKey + ".jpg"
-                            var fos: FileOutputStream =
-                                FileOutputStream(File(directory, msg))
-                            try {
-                                photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            } finally {
-                                try {
-                                    fos.close()
-                                } catch (e: IOException) {
-                                    e.printStackTrace()
-                                }
-                            }
-
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid + "-" + sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
-                        }
-
-
-                    }
-
-                    if (!received) {
-                        MessageViewModel(application).insertMessage(
-                            MessageEntity(
-                                messageKey,
-                                firebaseUser.uid + "-" + sender,
-                                sender,
-                                msg,
-                                sdf.format(tm),
-                                date.format(tm),
-                                type,
-                                url,
-                                false,
-                                false,
-                                false
-                            )
-                        )
-
-
-
-
-                        // sendNotification(sender,name,msg,imagepath,application).execute()
-                        val refer = FirebaseDatabase.getInstance().reference.child("Messages")
-                            .child(firebaseUser.uid)
-                        refer.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                if (snapshot.child(messageKey).exists()) {
-                                    FirebaseDatabase.getInstance().reference.child("Messages")
-                                        .child(firebaseUser.uid).child(messageKey)
-                                        .child("received").setValue(true)
-                                }
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
-                            }
-
-                        })
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
-                }
-            })
-    }
 
 
     fun sendOreoNotif(sender:String, msg:String, type: String,messageKey: String, context: Context) {
@@ -512,7 +223,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             else{
                 sendNotif(sender,name,"",con.image,"", msg,context)
-                //retrieving(messageKey)
+                retrieving(messageKey)
             }
 
         }
@@ -523,6 +234,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             else{
                 sendNotif(sender,chat.name,"",chat.image,"", msg,context)
+                retrieving(messageKey)
             }
 
         }
@@ -540,6 +252,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
 
                     if(type=="1"){
+
                         //sendCallnf(sender,"Ayush",msg,this)
                     }
                     else{
@@ -645,6 +358,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             .setSmallIcon(R.drawable.flow)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setOnlyAlertOnce(true)
+            .setVibrate(longArrayOf(1000))
             .setGroup(GROUP_KEY_WORK_EMAIL)
             .setColor(R.color.white)
             .setSound(defaultSound)
@@ -699,11 +413,11 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
         var title: String? = null
     }
 
-    inner class loadImage(val image:String): AsyncTask<Void, Void, Bitmap>(){
+    inner class loadImage(val userid:String): AsyncTask<Void, Void, Bitmap>(){
 
         override fun doInBackground(vararg params: Void?): Bitmap {
             var b:Bitmap?=null
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),image)
+            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
             if(f.exists()){
                 b = BitmapFactory.decodeStream(FileInputStream(f))
             }
@@ -765,6 +479,307 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
     }
 
 
+    fun retrieving(messageKey:String){
+
+        val firebaseUser= FirebaseAuth.getInstance().currentUser!!
+        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey)
+
+        ref.addValueEventListener(object : ValueEventListener {
+
+            @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                // val messageEntity=snapshot.getValue(MessageEntity::class.java)!!
+
+                val user = snapshot.child("userid").value.toString()
+                val sender = snapshot.child("sender").value.toString()
+                var msg = snapshot.child("message").value.toString()
+                val time = snapshot.child("time").value as? Long
+                val type = snapshot.child("type").value.toString()
+                val url = snapshot.child("url").value.toString()
+                val received:Boolean = snapshot.child("received").value as Boolean
+
+                //time set
+                val sdf = SimpleDateFormat("hh:mm a")
+                val tm: Date = Date(time!!)
+
+                val date= SimpleDateFormat("dd/MM/yy")
+
+                var name: String = ""
+                var number: String = ""
+                var imagepath: String = ""
+
+
+
+
+                if (ChatViewModel(application).isUserExist(sender)) {
+                    //get image and name from room db
+                    val chatEntity = ChatViewModel(application).getChat(sender)
+                    name = chatEntity.name
+                    number = chatEntity.number
+                    imagepath = chatEntity.image
+                    var unread=chatEntity.unread
+                    if (type == "image") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                "Photo",
+                                sdf.format(tm),
+                                date.format(tm),
+                                chatEntity.hide,
+                                unread+1,
+                                sender
+                            )
+                        )
+                    }
+                    if(type=="doc"){
+                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),chatEntity.hide,unread+1,sender))
+                    }
+                    if(type=="message") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                msg,
+                                sdf.format(tm),
+                                date.format(tm),
+                                chatEntity.hide,
+                                unread+1,
+                                sender
+                            )
+                        )
+                    }
+                }
+                else if (ContactViewModel(application).isUserExist(sender)) {
+                    val contactEntity = ContactViewModel(application).getContact(sender)
+                    name = contactEntity.name
+                    number = contactEntity.number
+                    imagepath = contactEntity.image
+                    if (type == "image") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                "Photo",
+                                sdf.format(tm),
+                                date.format(tm),
+                                false,
+                                0,
+                                sender
+                            )
+                        )
+                    }
+                    if(type=="doc"){
+                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                    }
+                    if(type=="message") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                msg,
+                                sdf.format(tm),
+                                date.format(tm),
+                                false,
+                                0,
+                                sender
+                            )
+                        )
+                    }
+                }
+                else {
+                    //get number as a name from firebase
+                    //get image and sav it to local storage and internal path from firebase
+                    val refer = FirebaseDatabase.getInstance().reference.child("Users")
+                        .child(sender)
+                    refer.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            number = snapshot.child("number").value.toString()
+                            if (type == "image") {
+                                ChatViewModel(application).inserChat(
+                                    ChatEntity(
+                                        name,
+                                        number,
+                                        imagepath,
+                                        "Photo",
+                                        sdf.format(tm),
+                                        date.format(tm),
+                                        false,
+                                        0,
+                                        sender
+                                    )
+                                )
+                            }
+                            if(type=="doc"){
+                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                            }
+                            if(type=="message") {
+                                ChatViewModel(application).inserChat(
+                                    ChatEntity(
+                                        name,
+                                        number,
+                                        imagepath,
+                                        msg,
+                                        sdf.format(tm),
+                                        date.format(tm),
+                                        false,
+                                        0,
+                                        sender
+                                    )
+                                )
+                            }
+//                                val image_url = snapshot.child("profile_photo").value.toString()
+//                                if (image_url != "") {
+//                                    Dashboard().GetImageFromUrl(sender, application).execute(image_url)
+//                                    if (type == "image") {
+//                                        ChatViewModel(application).inserChat(
+//                                            ChatEntity(
+//                                                name,
+//                                                number,
+//                                                "",
+//                                                "Image",
+//                                                sdf.format(tm),
+//                                                sender
+//                                            )
+//                                        )
+//                                    } else {
+//                                        ChatViewModel(application).inserChat(
+//                                            ChatEntity(
+//                                                name,
+//                                                number,
+//                                                "",
+//                                                msg,
+//                                                sdf.format(tm),
+//                                                sender
+//                                            )
+//                                        )
+//                                    }
+//                                }
+                            //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
+
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+                }
+
+                if (type == "image") {
+
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),date.format(tm),type,url,false,false,false))
+
+                    val photo =  GetImageFromUrl().execute(msg).get()
+
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        if (Environment.isExternalStorageManager()) {
+                            val directory: File = File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Images")
+                            if (!directory.exists()) {
+                                directory.mkdirs()
+                            }
+                            msg = messageKey + ".jpg"
+                            var fos: FileOutputStream =
+                                FileOutputStream(File(directory, msg))
+                            try {
+                                //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                try {
+                                    fos.close()
+                                } catch (e: IOException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        } else {
+                            //request for the permission
+                            val intent =
+                                Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                            val uri = Uri.fromParts("package", packageName, null)
+                            intent.data = uri
+                            startActivity(intent)
+                        }
+                    }
+                    else {
+                        val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+                        if (!directory.exists()) {
+                            directory.mkdirs()
+                        }
+                        msg = messageKey + ".jpg"
+                        var fos: FileOutputStream =
+                            FileOutputStream(File(directory, msg))
+                        try {
+                            photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            try {
+                                fos.close()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
+
+                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid + "-" + sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
+                    }
+
+
+                }
+
+                if (!received) {
+                    MessageViewModel(application).insertMessage(
+                        MessageEntity(
+                            messageKey,
+                            firebaseUser.uid + "-" + sender,
+                            sender,
+                            msg,
+                            sdf.format(tm),
+                            date.format(tm),
+                            type,
+                            url,
+                            false,
+                            false,
+                            false
+                        )
+                    )
+
+
+
+
+                    // sendNotification(sender,name,msg,imagepath,application).execute()
+                    val refer = FirebaseDatabase.getInstance().reference.child("Messages")
+                        .child(firebaseUser.uid)
+                    refer.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.child(messageKey).exists()) {
+                                FirebaseDatabase.getInstance().reference.child("Messages")
+                                    .child(firebaseUser.uid).child(messageKey)
+                                    .child("received").setValue(true)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
 //    inner class sendingCall():BaseActivity(){
 //        override fun onCreate(savedInstanceState: Bundle?) {
 //            super.onCreate(savedInstanceState)
@@ -772,4 +787,5 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 //           // sendCallnf(sender,"Ayush",msg,this)
 //        }
 //    }
+
 }

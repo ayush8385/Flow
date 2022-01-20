@@ -191,7 +191,7 @@ class Outgoing : BaseActivity() {
             val cause: CallEndCause = call.getDetails().getEndCause()
             Log.d(TAG, "Call ended. Reason: " + cause.toString())
 
-            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),userid+".jpg",cause.toString(), call.details.duration.toString(),call.remoteUserId))
+            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"",cause.toString(), call.details.duration.toString(),call.remoteUserId))
 
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE

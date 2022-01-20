@@ -6,6 +6,9 @@
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -74,6 +77,7 @@
             android:name=".activity.Calling"
             android:showOnLockScreen="true"
             android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:launchMode="singleInstance"/>
         <activity android:name=".activity.Contact" />
         <activity

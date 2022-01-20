@@ -30,18 +30,26 @@ class SelectedImage : AppCompatActivity() {
         var photoBitmap : Bitmap? =null
         val type=intent.getStringExtra("type")
 
-        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(image)
-
-        if (intent.hasExtra("image")){
-            //convert to bitmap
-            val byteArray = intent.getByteArrayExtra("image")
-            photoBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+        if(type=="view"){
+            Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(image)
+            sendImg.visibility= View.GONE
+        }
+        else if(type=="msgImg"){
+            Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(image)
+            sendImg.visibility= View.GONE
         }
 
-        if(type=="view"){
-            sendImg.visibility= View.GONE
+        else{
+            if (intent.hasExtra("image")){
+                //convert to bitmap
+                val byteArray = intent.getByteArrayExtra("image")
+                photoBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+                image.setImageBitmap(photoBitmap)
+            }
         }
 
         back.setOnClickListener {

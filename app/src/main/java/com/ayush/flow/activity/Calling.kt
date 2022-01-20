@@ -9,10 +9,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
-import android.os.PowerManager
+import android.os.*
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
@@ -111,10 +108,14 @@ class Calling : BaseActivity(){
 
         pickintent = Intent(this, Outgoing::class.java)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        }
+
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                     WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or WindowManager.LayoutParams.TYPE_CHANGED
         )
 
         mAudioPlayer = AudioPlayer(this)
@@ -335,20 +336,20 @@ class Calling : BaseActivity(){
     ) {
         when (requestCode) {
             104 -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                }
-                else{
-                    mAudioPlayer!!.stopRingtone()
-                    val call: Call = sinchServiceInterface!!.getCall(mCallId)
-                    if (call != null) {
-                        call.hangup()
-                        finish()
-                    } else {
-                        finish()
-                    }
-                }
-                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                }
+//                else{
+//                    mAudioPlayer!!.stopRingtone()
+//                    val call: Call = sinchServiceInterface!!.getCall(mCallId)
+//                    if (call != null) {
+//                        call.hangup()
+//                        finish()
+//                    } else {
+//                        finish()
+//                    }
+//                }
+//                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
         }
@@ -358,9 +359,15 @@ class Calling : BaseActivity(){
         mAudioPlayer!!.stopRingtone()
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
         if (call != null) {
-            call.answer()
-
             startActivity(intent)
+
+            if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
+                call.answer()
+            }
+            else{
+                com.ayush.flow.Services.Permissions().requestMicPermission(this)
+            }
+
         } else {
             finish()
         }
