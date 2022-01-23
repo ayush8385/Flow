@@ -286,8 +286,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         contacts!!.close()
 
 
-//        Toast.makeText(applicationContext,contactMap.toString(),Toast.LENGTH_LONG).show()
-
         val ref= FirebaseDatabase.getInstance().reference.child("Users")
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -883,6 +881,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             app=appl
         }
 
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            ContactViewModel(application).updateImage(user!!,user+".jpg")
+        }
+
         override fun doInBackground(vararg params: Void?): Boolean {
             val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
             if(directory.exists()){
@@ -939,7 +942,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     val executorService: ExecutorService = Executors.newFixedThreadPool(1)
                     val task1 = java.lang.Runnable {
                         try {
-                            loadContacts(application)
+                            GlobalScope.launch {
+                                loadContacts(application)
+                            }
                         } catch (ex: InterruptedException) {
                             throw IllegalStateException(ex)
                         }

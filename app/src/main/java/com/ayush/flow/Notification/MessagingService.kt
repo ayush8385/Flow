@@ -44,9 +44,9 @@ import kotlin.collections.HashMap
 import android.app.PendingIntent
 
 import android.content.Intent
-
-
-
+import kotlinx.coroutines.delay
+import java.lang.Thread.sleep
+import java.net.URL
 
 
 class MessagingService : FirebaseMessagingService(),ServiceConnection {
@@ -223,7 +223,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             else{
                 sendNotif(sender,name,"",con.image,"", msg,context)
-                retrieving(messageKey)
+                retrieving(messageKey,context)
             }
 
         }
@@ -234,37 +234,12 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             else{
                 sendNotif(sender,chat.name,"",chat.image,"", msg,context)
-                retrieving(messageKey)
+                retrieving(messageKey,context)
             }
 
         }
         else{
-            val ref= FirebaseDatabase.getInstance().reference.child("Users").child(sender)
-            ref.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val name = snapshot.child("number").value.toString()
-                    val img_url=snapshot.child("profile_photo").value.toString()
-                    //convert img url to bitmap and save path to databse and pass to sendNotif
-
-                    if(img_url!=""){
-                        Dashboard().GetImageFromUrl(sender,application).execute()
-                    }
-
-
-                    if(type=="1"){
-
-                        //sendCallnf(sender,"Ayush",msg,this)
-                    }
-                    else{
-                        sendNotif(sender,name,"","","", msg,context)
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
-                }
-
-            })
+            retrieving(messageKey,context)
         }
 
         //retrieving(messageKey)
@@ -479,7 +454,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
     }
 
 
-    fun retrieving(messageKey:String){
+    fun retrieving(messageKey:String,context: Context){
 
         val firebaseUser= FirebaseAuth.getInstance().currentUser!!
         val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey)
@@ -498,7 +473,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 val time = snapshot.child("time").value as? Long
                 val type = snapshot.child("type").value.toString()
                 val url = snapshot.child("url").value.toString()
-                val received:Boolean = snapshot.child("received").value as Boolean
+                val received=snapshot.child("received").value as Boolean
+                val seen=snapshot.child("seen").value as Boolean
 
                 //time set
                 val sdf = SimpleDateFormat("hh:mm a")
@@ -513,7 +489,46 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
 
 
-                if (ChatViewModel(application).isUserExist(sender)) {
+                if (ContactViewModel(application).isUserExist(sender)) {
+                    val contactEntity = ContactViewModel(application).getContact(sender)
+                    name = contactEntity.name
+                    number = contactEntity.number
+                    imagepath = contactEntity.image
+                    if (type == "image") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                "Photo",
+                                sdf.format(tm),
+                                date.format(tm),
+                                false,
+                                0,
+                                sender
+                            )
+                        )
+                    }
+                    if(type=="doc"){
+                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+                    }
+                    if(type=="message") {
+                        ChatViewModel(application).inserChat(
+                            ChatEntity(
+                                name,
+                                number,
+                                imagepath,
+                                msg,
+                                sdf.format(tm),
+                                date.format(tm),
+                                false,
+                                0,
+                                sender
+                            )
+                        )
+                    }
+                }
+                else if (ChatViewModel(application).isUserExist(sender)) {
                     //get image and name from room db
                     val chatEntity = ChatViewModel(application).getChat(sender)
                     name = chatEntity.name
@@ -549,45 +564,6 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                 date.format(tm),
                                 chatEntity.hide,
                                 unread+1,
-                                sender
-                            )
-                        )
-                    }
-                }
-                else if (ContactViewModel(application).isUserExist(sender)) {
-                    val contactEntity = ContactViewModel(application).getContact(sender)
-                    name = contactEntity.name
-                    number = contactEntity.number
-                    imagepath = contactEntity.image
-                    if (type == "image") {
-                        ChatViewModel(application).inserChat(
-                            ChatEntity(
-                                name,
-                                number,
-                                imagepath,
-                                "Photo",
-                                sdf.format(tm),
-                                date.format(tm),
-                                false,
-                                0,
-                                sender
-                            )
-                        )
-                    }
-                    if(type=="doc"){
-                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-                    }
-                    if(type=="message") {
-                        ChatViewModel(application).inserChat(
-                            ChatEntity(
-                                name,
-                                number,
-                                imagepath,
-                                msg,
-                                sdf.format(tm),
-                                date.format(tm),
-                                false,
-                                0,
                                 sender
                             )
                         )
@@ -634,34 +610,42 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     )
                                 )
                             }
-//                                val image_url = snapshot.child("profile_photo").value.toString()
-//                                if (image_url != "") {
-//                                    Dashboard().GetImageFromUrl(sender, application).execute(image_url)
-//                                    if (type == "image") {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                "",
-//                                                "Image",
-//                                                sdf.format(tm),
-//                                                sender
-//                                            )
-//                                        )
-//                                    } else {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                "",
-//                                                msg,
-//                                                sdf.format(tm),
-//                                                sender
-//                                            )
-//                                        )
-//                                    }
-//                                }
-                            //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
+                                val image_url = snapshot.child("profile_photo").value.toString()
+                                if (image_url != "") {
+                                    GetImageFromUrl(sender, application,msg,number,context).execute(image_url)
+                                    if (type == "image") {
+                                        ChatViewModel(application).inserChat(
+                                            ChatEntity(
+                                                name,
+                                                number,
+                                                sender+".jpg",
+                                                "Image",
+                                                sdf.format(tm),
+                                                date.format(tm),
+                                                false,0,
+                                                sender
+                                            )
+                                        )
+                                    } else {
+                                        ChatViewModel(application).inserChat(
+                                            ChatEntity(
+                                                name,
+                                                number,
+                                                sender+".jpg",
+                                                msg,
+                                                sdf.format(tm),
+                                                date.format(tm),
+                                                false,0,
+                                                sender
+                                            )
+                                        )
+                                    }
+                                }
+                                else{
+                                    sendNotif(sender,name,"","","", msg,context)
+                                }
+
+//                                 ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
 
                         }
 
@@ -778,6 +762,99 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 TODO("Not yet implemented")
             }
         })
+    }
+
+    inner class GetImageFromUrl(val userid: String,val appl:Application,val msg:String,val name: String,val context: Context) : AsyncTask<String?, Void?, Bitmap>() {
+        var bmp:Bitmap?=null
+
+        override fun onPostExecute(result: Bitmap?) {
+            super.onPostExecute(result)
+            saveToInternalStorage(bmp!!,userid,msg,name,context,appl).execute()
+        }
+
+        override fun doInBackground(vararg url: String?): Bitmap {
+            val stringUrl = url[0]
+            val options = BitmapFactory.Options()
+            options.inSampleSize = 1
+            while (options.inSampleSize <= 32) {
+                val inputStream = URL(stringUrl).openStream()
+                try {
+                    bmp= BitmapFactory.decodeStream(inputStream, null, options)
+                    inputStream.close()
+                    break
+                } catch (outOfMemoryError: OutOfMemoryError) {
+                }
+                options.inSampleSize++
+            }
+
+            return bmp!!
+        }
+    }
+
+
+    inner class saveToInternalStorage:AsyncTask<Void,Void,Boolean>{
+
+        var path:String?=null
+        var user:String?=null
+        var bitmapImage:Bitmap?=null
+        var app:Application?=null
+        var msg:String?=null
+        var name:String?=null
+        var context:Context
+
+        constructor(bitmapImage: Bitmap, user: String,msg:String,name:String,context:Context,appl: Application) : super() {
+            this.user=user
+            this.bitmapImage=bitmapImage
+            app=appl
+            this.msg=msg
+            this.name=name
+            this.context=context
+        }
+
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            ContactViewModel(application).updateImage(user!!,user+".jpg")
+            sendNotif(user!!,name,"",user+".jpg","", msg,context)
+        }
+
+        override fun doInBackground(vararg params: Void?): Boolean {
+            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
+            if(directory.exists()){
+                path=user+".jpg"
+                var fos: FileOutputStream = FileOutputStream(File(directory, path))
+                try {
+                    bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    try {
+                        fos.close()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            else{
+                directory.mkdirs()
+                if (directory.isDirectory) {
+                    path=user+".jpg"
+                    val fos = FileOutputStream(File(directory, path))
+                    try {
+                        bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        try {
+                            fos.close()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+            return true
+        }
+
     }
 
 //    inner class sendingCall():BaseActivity(){

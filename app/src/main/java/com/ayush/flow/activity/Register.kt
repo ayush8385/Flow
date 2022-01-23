@@ -23,6 +23,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.lang.Exception
 
 class Register : AppCompatActivity() {
     lateinit var welc: TextView
@@ -240,39 +241,43 @@ class Register : AppCompatActivity() {
             sign_in.visibility=View.GONE
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener{ text->
-                    if(text.isSuccessful){
-                        val userId=FirebaseAuth.getInstance().currentUser!!.uid
-                        val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(userId)
+                    try {
+                        if(text.isSuccessful){
+                            val userId=FirebaseAuth.getInstance().currentUser!!.uid
+                            val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(userId)
 
-                        val userHashmap=HashMap<String, Any>()
-                        userHashmap["uid"]=userId
-                        userHashmap["email"]=email
-                        userHashmap["number"]=num
-                        userHashmap["username"]=""
-                        userHashmap["password"]=pass
-                        userHashmap["about"]="I'm with the Flow"
-                        userHashmap["profile_photo"]=""
+                            val userHashmap=HashMap<String, Any>()
+                            userHashmap["uid"]=userId
+                            userHashmap["email"]=email
+                            userHashmap["number"]=num
+                            userHashmap["username"]=""
+                            userHashmap["password"]=pass
+                            userHashmap["about"]="I'm with the Flow"
+                            userHashmap["profile_photo"]=""
 
-                        refuser.updateChildren(userHashmap)
-                            .addOnCompleteListener { text->
-                                if(text.isSuccessful){
-                                    val intent=Intent(this@Register, Addprofile::class.java)
-                                    startActivity(intent)
-                                    finishAffinity()
-                                    savePreferences(userHashmap)
+                            refuser.updateChildren(userHashmap)
+                                .addOnCompleteListener { text->
+                                    if(text.isSuccessful){
+                                        val intent=Intent(this@Register, Addprofile::class.java)
+                                        startActivity(intent)
+                                        finishAffinity()
+                                        savePreferences(userHashmap)
+                                    }
+                                    else{
+                                        Toast.makeText(this, "Unexpected Error", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
-                                else{
-                                    Toast.makeText(this, "Unexpected Error", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                    }
-                    else{
-                        register.revertAnimation {
-                            register.text="Register"
-                            register.setBackgroundResource(R.drawable.getstartedbtn_back)
                         }
-                        sign_in.visibility=View.VISIBLE
-                        Toast.makeText(applicationContext, "Error in registering", Toast.LENGTH_SHORT).show()
+                        else{
+                            register.revertAnimation {
+                                register.text="Register"
+                                register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                            }
+                            sign_in.visibility=View.VISIBLE
+                            Toast.makeText(applicationContext, "Error in registering", Toast.LENGTH_SHORT).show()
+                        }
+                    }catch (e:Exception){
+                        Toast.makeText(applicationContext,e.toString(),Toast.LENGTH_LONG).show()
                     }
                 }
         }
