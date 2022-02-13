@@ -1,5 +1,5 @@
   
-<h1 align="center"> Flow Android App <img align="center" src="https://github.com/ayush8385/Flow/blob/master/app/src/main/res/drawable-v24/flow.png" alt="animated" width = 7%/></h1>
+<h1 align="center"><img align="center" src="https://github.com/ayush8385/Flow/blob/master/app/src/main/res/drawable-v24/flow.png" alt="animated" width = 7%/> Flow Android App</h1>
 
 # ✨ Features
 
