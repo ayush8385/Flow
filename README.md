@@ -47,7 +47,7 @@ Some of the features of Flow app are:
 
 # 📚 Major Libraries Used
 
-- Firebase Suite - For Auth, Database and Storage
+- Firebase - For Auth, Database, Storage and Notification
 - Room - For Local Database
 - MVVM - For Live Data from Database and better experience
 - Sinch SDK - For Audio and Video Call Integration
