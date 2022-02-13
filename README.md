@@ -1,6 +1,14 @@
   
 <h1 align="center"><img align="center" src="https://github.com/ayush8385/Flow/blob/master/app/src/main/res/drawable-v24/flow.png" alt="animated" width = 7%/> Flow Android App</h1>
 
+# ✨ Screenshots
+
+<p align="left">
+  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/splash.png" alt="animated" width = 37%/>
+  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/welcome1.png" alt="animated"
+  width = 37% />
+</p>
+
 # ✨ Features
 
 Some of the features of Munche app are:
@@ -29,8 +37,7 @@ Some of the features of Munche app are:
 `Ayush Mishra`
 **Connect with me on**
 </br>
+</br>
 [![Github](https://img.shields.io/badge/-Github-000?style=flat&logo=Github&logoColor=white)](https://github.com/ayush8385)
 [![Linkedin](https://img.shields.io/badge/-LinkedIn-blue?style=flat&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/ayush8385/)
 [![Gmail](https://img.shields.io/badge/-Gmail-c14438?style=flat&logo=Gmail&logoColor=white)](mailto:am838578@gmail.com)
- 
-```
