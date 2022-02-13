@@ -4,24 +4,45 @@
 # ✨ Screenshots
 
 <p align="left">
-  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/login.png" alt="Splash Scree" width = 37%/>
-  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/welcome1.png" alt="Welcome Screen"
-  width = 37% />
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/welcome1.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/getstart.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/register.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/permission.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/newpro.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/chatview.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/contacts.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/message.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/moreopt.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/user.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/searchmsg.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/addcon.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/swipe.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/audio_in.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/audio_out.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/video_in.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/video_out.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/call_view.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/profile.png" alt="Splash Scree" height = "400" width = "200"/>
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/dark_mode.png" alt="Splash Scree" height = "400" width = "200"/>
+  
 </p>
 
 # ✨ Features
 
-Some of the features of Munche app are:
+Some of the features of Flow app are:
 
 - Authenticate User using Email and Password.
-- Browse different restaurants and menu items.
-- Place order for different items from the menu and see them in a cart.
-- Set your delivery location on the app accurately.
-- Payment options include : <a href="https://www.npci.org.in/what-we-do/upi/product-overview">UPI</a> (Unified Payment Interface), <a href="https://developer.paytm.com/docs/v1/android-sdk/">Paytm</a> and COD.
-- See the route and distance from the restaurant's location to yours.
-- See and write reviews for different restaurants.
-- See all your orders in the orders page.
-- Search available restaurants.
+- Set Profile Image from Gallery/Camera
+- Contacts will sync in Bakcground smoothly
+- Online/Offline Status of the user
+- Search you chats/contacts/messages
+- Audio and Video Calls
+- Instant notification for Messages and calls
+- Hide your chat in Private Section with Passcode
+- Add New Contacts within the App
+- Change to Dark Mode in one click with Awesome animation
+- Message sent status(sending/sent/Delivered/seen)
+- Send Medias and Documents in a click
 - and more...
 
 # 📚 Major Libraries Used
@@ -32,6 +53,7 @@ Some of the features of Munche app are:
 - Sinch SDK - For Audio and Video Call Integration
 - Retrofit - Api Service For FCM
 - Glide - For Image Loading.
+- Used HashMap Data Structure
 
 # 👨 Made By
 `Ayush Mishra`
