@@ -4,8 +4,8 @@
 # ✨ Screenshots
 
 <p align="left">
-  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/splash.png" alt="animated" width = 37%/>
-  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/welcome1.png" alt="animated"
+  <img src="https://github.com/ayush8385/Flow/blob/master/screenshots/login.png" alt="Splash Scree" width = 37%/>
+  <img src="https://github.com/ayush8385/Flow/tree/master/screenshots/welcome1.png" alt="Welcome Screen"
   width = 37% />
 </p>
 
