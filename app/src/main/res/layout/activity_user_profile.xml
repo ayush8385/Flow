@@ -19,15 +19,16 @@
         android:id="@+id/back"/>
 
     <RelativeLayout
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="60dp"
         android:id="@+id/user">
         <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="125dp"
-            android:layout_height="125dp"
+            android:layout_width="155dp"
+            android:layout_height="155dp"
             android:src="@drawable/user"
+            android:layout_centerHorizontal="true"
             android:id="@+id/user_img" />
 
 
@@ -36,13 +37,13 @@
             android:layout_height="50dp"
             android:id="@+id/edt_img"
             android:clickable="true"
+            android:layout_alignParentRight="true"
             android:backgroundTint="@color/lightdark"
             android:focusable="true"
             android:elevation="10dp"
+            android:layout_marginRight="15dp"
             app:fabSize="auto"
-            android:src="@drawable/ic_baseline_edit_24"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"/>
+            android:src="@drawable/ic_baseline_edit_24"/>
 
     </RelativeLayout>
 
@@ -50,7 +51,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/user"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:layout_marginHorizontal="30dp"
         android:orientation="vertical">
         <RelativeLayout

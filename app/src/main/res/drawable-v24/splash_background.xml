@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@color/back"/>
+    <item
+        android:width="150dp"
+        android:height="150dp"
+        android:drawable="@drawable/flow"
+        android:gravity="center"
+        >
+    </item>
+
+<!--    <item-->
+<!--        android:gravity="center_horizontal"-->
+<!--        android:bottom="40dp"-->
+<!--        android:drawable="@drawable/splash_back"-->
+<!--        >-->
+<!--    </item>-->
+</layer-list>

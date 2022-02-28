@@ -658,7 +658,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                 if (type == "image") {
 
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),date.format(tm),type,url,false,false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,messageKey+".jpg",sdf.format(tm),date.format(tm),type,url,false,false,false))
 
                     val photo =  GetImageFromUrl().execute(msg).get()
 
@@ -673,7 +673,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                             var fos: FileOutputStream =
                                 FileOutputStream(File(directory, msg))
                             try {
-                                //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                      photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {

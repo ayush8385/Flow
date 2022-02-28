@@ -32,6 +32,7 @@
             android:id="@+id/mode"
             android:layout_toLeftOf="@+id/user_img"
             android:layout_marginRight="30dp"
+            android:background="?selectableItemBackgroundBorderless"
             android:layout_centerInParent="true"/>
 
         <de.hdodenhof.circleimageview.CircleImageView

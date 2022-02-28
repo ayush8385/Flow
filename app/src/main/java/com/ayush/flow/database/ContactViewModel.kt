@@ -21,6 +21,10 @@ class ContactViewModel(application: Application):AndroidViewModel(application) {
         return repository.isUserExist(userid)
     }
 
+    fun isContactExist(num:String):Boolean{
+        return repository.isNumberExist(num)
+    }
+
     fun inserContact(contactEntity: ContactEntity)=viewModelScope.launch (Dispatchers.IO){
         repository.insert(contactEntity)
     }
@@ -35,5 +39,9 @@ class ContactViewModel(application: Application):AndroidViewModel(application) {
 
     fun updateDetails(userid: String, name: String?, phoneNum: String) {
         repository.updateDetails(userid,name,phoneNum)
+    }
+
+    fun getContactByNum(num: String): ContactEntity {
+        return repository.getContactbyNum(num)
     }
 }

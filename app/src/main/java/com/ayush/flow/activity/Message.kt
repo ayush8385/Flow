@@ -70,8 +70,12 @@ import android.provider.OpenableColumns
 
 import android.R.attr.data
 import android.database.Cursor
+import android.graphics.Matrix
+import android.media.Image
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -100,6 +104,7 @@ class Message : BaseActivity() {
     var user_image:String=""
     var number:String=""
     var photo:Bitmap?=null
+    var rotatedBitmap:Bitmap?=null
     lateinit var status:TextView
     lateinit var firebaseUser: FirebaseUser
     lateinit var adapter: MessageAdapter
@@ -136,6 +141,11 @@ class Message : BaseActivity() {
     lateinit var details:LinearLayout
     lateinit var sharedPreferences:SharedPreferences
     lateinit var profile:ImageView
+
+    lateinit var sendImgLayout:RelativeLayout
+    lateinit var sendImg:TouchImageView
+    lateinit var backNow:ImageView
+    lateinit var sendImgBtn:ImageView
 
 
    // lateinit var option:ImageView
@@ -192,6 +202,12 @@ class Message : BaseActivity() {
        delete=findViewById(R.id.delete)
        forward=findViewById(R.id.forward)
 
+
+       sendImgLayout=findViewById(R.id.send_img_now)
+       sendImg=findViewById(R.id.send_select_img)
+       backNow=findViewById(R.id.back_now)
+       sendImgBtn=findViewById(R.id.sendimg_btn)
+
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
@@ -227,6 +243,9 @@ class Message : BaseActivity() {
 
 
 
+       GlobalScope.launch{
+           checkStatus()
+       }
 
 
        close.setOnClickListener {
@@ -548,12 +567,58 @@ class Message : BaseActivity() {
 
        }
 
+
+       sendImgBtn.setOnClickListener {
+           if(photo!=null){
+               Message().sendImageMessageToUser(
+                   rotatedBitmap!!,
+                   intent.getStringExtra("userid")!!,
+                   intent.getStringExtra("name")!!,
+                   intent.getStringExtra("number")!!,
+                   intent.getStringExtra("image")!!,
+                   application
+               ).execute()
+           }
+           sendImg.setImageResource(R.drawable.user)
+           sendImgLayout.visibility=View.GONE
+       }
+
+       backNow.setOnClickListener {
+           sendImg.setImageResource(R.drawable.user)
+           sendImgLayout.visibility=View.GONE
+       }
+
 //        Dashboard().checkStatus()
         checkSeen().execute()
         searchElement()
        // deleteMessage()
 
     }
+
+    fun checkStatus(){
+        var firebaseUser=FirebaseAuth.getInstance().currentUser!!
+        val connectionReference= FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid)
+        val lastConnected= FirebaseDatabase.getInstance().reference.child("lastConnected")
+        val infoConnected= FirebaseDatabase.getInstance().getReference(".info/connected")
+
+        infoConnected.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val connected:Boolean=snapshot.value as Boolean
+
+                if(connected){
+                    val con=connectionReference.child("status")
+                    con.setValue("online")
+                    con.onDisconnect().setValue("")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+
 
     private fun openDocuments() {
         val galleryIntent = Intent()
@@ -726,8 +791,14 @@ class Message : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-//        startActivity(Intent(this,Dashboard::class.java))
+
+        if(sendImgLayout.visibility==View.VISIBLE){
+            sendImgLayout.visibility=View.GONE
+            sendImg.setImageResource(R.drawable.user)
+        }
+        else{
+            super.onBackPressed()
+        }
 //        finishAffinity()
     }
 
@@ -1163,9 +1234,9 @@ class Message : BaseActivity() {
             }
         }
         if(requestCode==112 && resultCode== Activity.RESULT_OK){
-            val filepath=data!!.data
+            imageuri=data!!.data
             try {
-                photo=MediaStore.Images.Media.getBitmap(contentResolver,filepath)
+                photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
             } catch (e: IOException) {
                 e.printStackTrace();
             }
@@ -1175,19 +1246,41 @@ class Message : BaseActivity() {
              sendDocumentMessage(docpath,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
         }
         if(photo!=null){
-            val name = intent.getStringExtra("name")
-            val number = intent.getStringExtra("number")
-            val intent = Intent(this,SelectedImage::class.java)
-            var fos  =  ByteArrayOutputStream()
-            photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-            val byteArray = fos.toByteArray()
-            intent.putExtra("type","message")
-            intent.putExtra("image", byteArray )
-            intent.putExtra("userid",userid)
-            intent.putExtra("name",name)
-            intent.putExtra("number",number)
-            intent.putExtra("user_image",user_image)
-            startActivity(intent)
+
+            val rotationMatrix = Matrix()
+            if (photo?.getWidth()!! >= photo!!.getHeight() ) {
+                rotationMatrix.setRotate(90F)
+            } else {
+                rotationMatrix.setRotate(0F)
+            }
+
+            rotatedBitmap = Bitmap.createBitmap(
+                photo!!,
+                0,
+                0,
+                photo!!.getWidth(),
+                photo!!.getHeight(),
+                rotationMatrix,
+                true
+            )
+
+            sendImg.setImageBitmap(rotatedBitmap)
+            sendImgLayout.visibility=View.VISIBLE
+//
+//            val name = intent.getStringExtra("name")
+//            val number = intent.getStringExtra("number")
+//            val intent = Intent(this,SelectedImage::class.java)
+//            var fos  =  ByteArrayOutputStream()
+//            photo!!.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//            val byteArray = fos.toByteArray()
+//            intent.putExtra("type","message")
+////            intent.putExtra("image", )
+//            intent.setData(imageuri)
+//            intent.putExtra("userid",userid)
+//            intent.putExtra("name",name)
+//            intent.putExtra("number",number)
+//            intent.putExtra("user_image",user_image)
+//            startActivity(intent)
         }
     }
 

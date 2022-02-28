@@ -101,7 +101,9 @@ class Contact : AppCompatActivity() {
                 sortCon.clear()
                 sortCon.addAll(list)
 
-                recyclerAdapter.updateList(sortCon)
+                val sortedCon = sortCon.sortedWith(compareBy({!it.isUser},{it.name}))
+
+                recyclerAdapter.updateList(sortedCon)
             }
 
         })

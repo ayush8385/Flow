@@ -89,7 +89,8 @@
         <activity android:name=".activity.Register" />
         <activity android:name=".activity.BaseActivity" />
         <activity android:name=".activity.Slider" />
-        <activity android:name=".activity.Splash">
+        <activity android:name=".activity.Splash"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

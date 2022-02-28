@@ -17,6 +17,7 @@ import android.view.animation.Animation
 import android.view.animation.TranslateAnimation
 import android.widget.CompoundButton
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -49,9 +50,9 @@ class Splash : AppCompatActivity() {
     var runnable: Runnable? = null
     var delay = 800
 
-    lateinit var logo: ImageView
-    lateinit var shine: ImageView
-    lateinit var mode:ImageView
+//    lateinit var logo: ImageView
+//    lateinit var shine: ImageView
+//    lateinit var mode:ImageView
     lateinit var theme:SwitchCompat
     var isLoggedIn by Delegates.notNull<Boolean>()
 
@@ -65,9 +66,8 @@ class Splash : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        setContentView(R.layout.activity_splash)
+//        requestWindowFeature(Window.FEATURE_NO_TITLE)
+//        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
         FirebaseApp.initializeApp(this)
         firebaseuser= FirebaseAuth.getInstance().currentUser
@@ -79,10 +79,10 @@ class Splash : AppCompatActivity() {
             retrieveMessage(application).execute()
         }
         else{
-            Handler().postDelayed({
+//            Handler().postDelayed({
                 startActivity(Intent(this,Slider::class.java))
                 finishAffinity()
-            },1500)
+//            },1000)
         }
 
 
@@ -91,17 +91,6 @@ class Splash : AppCompatActivity() {
 
 
     }
-
-//    fun loadCons()  = runBlocking{
-//        setContentView(R.layout.activity_splash)
-//        val contacts = GlobalScope.launch {
-//            loadContacts(application)
-//        }
-//
-//        contacts.join()
-//
-//        callDashboard()
-//    }
 
     private fun callDashboard() {
         GlobalScope.launch{
@@ -263,7 +252,7 @@ class Splash : AppCompatActivity() {
                         val seen=snapshot.child("seen").value as Boolean
 
                         //time set
-                        if(seen){
+                        if(seen || received){
                             continue
                         }
 
@@ -351,12 +340,14 @@ class Splash : AppCompatActivity() {
 
                         if(type=="image"){
 
-                            //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
+                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid + "-" + sender,sender,messageKey+".jpg",sdf.format(tm),date.format(tm),type,url,false,false,false))
+//                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
                             val photo =  GetImageFromUrl().execute(msg).get()
 
                             if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                                 if (Environment.isExternalStorageManager()) {
+                                    Toast.makeText(applicationContext,"Hello",Toast.LENGTH_SHORT).show()
                                     val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
                                     if(!directory.exists()){
                                         directory.mkdirs()
@@ -365,7 +356,7 @@ class Splash : AppCompatActivity() {
                                     var fos: FileOutputStream =
                                         FileOutputStream(File(directory, msg))
                                     try {
-                                        //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+                                              photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     } finally {
@@ -385,7 +376,7 @@ class Splash : AppCompatActivity() {
                             }
                             else{
                                 val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                                if(directory.exists()){
+                                if(!directory.exists()){
                                     directory.mkdirs()
                                 }
                                 msg=messageKey+".jpg"
@@ -402,28 +393,27 @@ class Splash : AppCompatActivity() {
                                         e.printStackTrace()
                                     }
                                 }
+                                MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid + "-" + sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
                             }
                         }
 
-                        if(!received){
-                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
+                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
 
 
-                            // sendNotification(sender,name,msg,imagepath,application).execute()
-                            val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
-                            refer.addListenerForSingleValueEvent(object :ValueEventListener{
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    if(snapshot.child(messageKey).exists()){
-                                        FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey).child("received").setValue(true)
-                                    }
+                        // sendNotification(sender,name,msg,imagepath,application).execute()
+                        val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+                        refer.addListenerForSingleValueEvent(object :ValueEventListener{
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if(snapshot.child(messageKey).exists()){
+                                    FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey).child("received").setValue(true)
                                 }
+                            }
 
-                                override fun onCancelled(error: DatabaseError) {
-                                    TODO("Not yet implemented")
-                                }
+                            override fun onCancelled(error: DatabaseError) {
+                                TODO("Not yet implemented")
+                            }
 
-                            })
-                        }
+                        })
                     }
                 }
 

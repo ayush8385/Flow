@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -44,12 +45,12 @@ class SelectedImage : AppCompatActivity() {
         }
 
         else{
-            if (intent.hasExtra("image")){
+          //  if (intent.hasExtra("image")){
                 //convert to bitmap
-                val byteArray = intent.getByteArrayExtra("image")
-                photoBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+               // val byteArray = intent.getByteArrayExtra("image")
+                photoBitmap = MediaStore.Images.Media.getBitmap(contentResolver,intent.data)
                 image.setImageBitmap(photoBitmap)
-            }
+           // }
         }
 
         back.setOnClickListener {

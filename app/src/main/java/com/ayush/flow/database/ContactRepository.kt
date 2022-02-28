@@ -25,6 +25,14 @@ class ContactRepository(private val contactDao: ContactDao) {
         contactDao.updateDetails(userid,name,phoneNum)
     }
 
+    fun isNumberExist(num: String): Boolean {
+        return contactDao.isNumExist(num)
+    }
+
+    fun getContactbyNum(num: String): ContactEntity {
+        return contactDao.getContactbyNum(num)
+    }
+
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

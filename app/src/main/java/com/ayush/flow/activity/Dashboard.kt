@@ -54,6 +54,7 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
 import com.ayush.flow.Notification.MessagingService
+import com.ayush.flow.Services.ConnectionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.coroutines.*
@@ -120,28 +121,21 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
 
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
+
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
         hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
 
 
-        if(Permissions().checkContactpermission(this)){
-            GlobalScope.launch {
-                loadContacts(application)
+        if(ConnectionManager().checkconnectivity(this)){
+            if(Permissions().checkContactpermission(this)){
+                GlobalScope.launch {
+                    loadContacts(application)
+                }
             }
-//            val executorService: ExecutorService = Executors.newFixedThreadPool(1)
-//            val task1 = java.lang.Runnable {
-//                try {
-//                    Toast.makeText(applicationContext,"Hellooo",Toast.LENGTH_LONG).show()
-//                    //loadContacts(application)
-//                } catch (ex: InterruptedException) {
-//                    throw IllegalStateException(ex)
-//                }
-//            }
-//            executorService.submit(task1)
-        }
-        else{
-            Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+            }
         }
 
 
@@ -280,7 +274,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             }
 
             if (phoneNumber.length==10){
-                contactMap.put(phoneNumber,name)
+                ContactViewModel(applicat).inserContact(ContactEntity(name,phoneNumber,"",false,""))
+//                contactMap.put(phoneNumber,name)
             }
         }
         contacts!!.close()
@@ -294,15 +289,19 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     val userid=snapshot.child("uid").value.toString()
                     val url=snapshot.child("profile_photo").value.toString()
 
-                    if(userid!=firebaseUser.uid && contactMap.containsKey(num)){
-                        ContactViewModel(applicat).inserContact(ContactEntity(contactMap.getValue(num),num,userid+".jpg",userid))
+                    if(userid!=firebaseUser.uid && ContactViewModel(application).isContactExist(num)/*contactMap.containsKey(num)*/){
+                        val usercon = ContactViewModel(application).getContactByNum(num)
+
+                        ContactViewModel(applicat).inserContact(ContactEntity(usercon.name,usercon.number,userid+".jpg",true,userid))
+
                         if(url!=""){
                             GetImageFromUrl(userid,applicat).execute(url)
                         }
                         if(ChatViewModel(application).isUserExist(userid)){
-                            ChatViewModel(application).updateName(contactMap.getValue(num),userid)
+                            ChatViewModel(application).updateName(usercon.name,userid)
                         }
                     }
+
                 }
             }
             override fun onCancelled(error: DatabaseError) {

@@ -1,6 +1,7 @@
 package com.ayush.flow.adapter
 
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -10,6 +11,7 @@ import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +33,7 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
         val name:TextView=view.findViewById(R.id.profile_name)
         val number:TextView=view.findViewById(R.id.profile_abt)
         val start_chat:RelativeLayout=view.findViewById(R.id.paren)
+        val invite:Button= view.findViewById(R.id.invite_btn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
@@ -45,17 +48,53 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
             holder.name.text=cons.name
             holder.number.text=cons.number
 
+            if(cons.isUser){
+                holder.invite.visibility=View.GONE
+            }
+            else{
+                holder.invite.visibility=View.VISIBLE
+            }
+
             Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
                 DiskCacheStrategy.NONE)
                 .skipMemoryCache(true).into(holder.image)
 
             holder.start_chat.setOnClickListener {
-                val intent= Intent(context, Message::class.java)
-                intent.putExtra("name",cons.name)
-                intent.putExtra("number",cons.number)
-                intent.putExtra("userid",cons.id)
-                intent.putExtra("image",cons.image)
-                context.startActivity(intent)
+                if(cons.isUser){
+                    val intent= Intent(context, Message::class.java)
+                    intent.putExtra("name",cons.name)
+                    intent.putExtra("number",cons.number)
+                    intent.putExtra("userid",cons.id)
+                    intent.putExtra("image",cons.image)
+                    context.startActivity(intent)
+                }
+                else{
+                    try {
+                        val shareIntent = Intent(Intent.ACTION_SEND)
+                        shareIntent.type = "text/plain"
+                        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Flow")
+                        var shareMessage = "\nLet me recommend you this Chat application\n\n"
+                        shareMessage = """${shareMessage}https://play.google.com/store/apps/details?id=com.ayush.flow""".trimIndent()
+                        shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage)
+                        context.startActivity(Intent.createChooser(shareIntent, "choose one"))
+                    } catch (e: Exception) {
+                        //e.toString();
+                    }
+                }
+            }
+
+            holder.invite.setOnClickListener {
+                try {
+                    val shareIntent = Intent(Intent.ACTION_SEND)
+                    shareIntent.type = "text/plain"
+                    shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Flow")
+                    var shareMessage = "\nLet me recommend you this Chat application\n\n"
+                    shareMessage = """${shareMessage}https://play.google.com/store/apps/details?id=com.ayush.flow""".trimIndent()
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage)
+                    context.startActivity(Intent.createChooser(shareIntent, "choose one"))
+                } catch (e: Exception) {
+                    //e.toString();
+                }
             }
         }
     }

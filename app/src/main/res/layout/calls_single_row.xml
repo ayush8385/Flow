@@ -5,7 +5,7 @@
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/paren"
-        android:paddingHorizontal="16dp"
+        android:paddingLeft="16dp"
         android:paddingVertical="10dp">
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="45dp"
@@ -14,52 +14,61 @@
             android:layout_centerVertical="true"
             android:src="@drawable/user"
             android:scaleType="centerCrop"/>
-        <TextView
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="fdsfkhjk"
-            android:maxLines="1"
-            android:fontFamily="@font/senbold"
-            android:paddingLeft="12dp"
             android:layout_toRightOf="@+id/caller_pic"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:id="@+id/caller_name"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="300dp"
-            android:text=""
-            android:maxLines="1"
             android:paddingLeft="12dp"
-            android:layout_marginTop="4dp"
-            android:layout_below="@+id/caller_name"
-            android:layout_toRightOf="@+id/caller_pic"
-            android:textSize="13sp"
-            android:textStyle="normal"
-            android:fontFamily="@font/senregular"
-            android:id="@+id/call_reason"/>
+            android:layout_centerVertical="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:fontFamily="@font/senbold"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:id="@+id/caller_name"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="300dp"
+                android:text=""
+                android:maxLines="1"
+                android:layout_marginTop="4dp"
+                android:layout_below="@+id/caller_name"
+                android:textSize="13sp"
+                android:textStyle="normal"
+                android:fontFamily="@font/senregular"
+                android:id="@+id/call_reason"/>
+        </RelativeLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="20dp"
+            android:background="@drawable/invite_back"
+            android:paddingHorizontal="20dp"
+            android:layout_marginRight="-10dp"
+            android:paddingVertical="3dp"
             android:layout_height="wrap_content">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:background="@drawable/call_back"
                 android:scaleType="centerCrop"
                 android:id="@+id/audiocall_btn"
-                android:layout_marginRight="18dp"
+                android:layout_marginRight="10dp"
                 android:padding="7dp"
-                android:src="@drawable/ic_baseline_call_24"/>
+                android:src="@drawable/call"/>
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="#615A5959"
+                android:layout_marginVertical="2dp"
+                android:layout_marginRight="10dp"/>
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:padding="7dp"
-                android:background="@drawable/callend_back"
                 android:scaleType="centerCrop"
                 android:id="@+id/vdocall_btn"
                 android:layout_alignParentRight="true"

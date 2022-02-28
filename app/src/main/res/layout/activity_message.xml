@@ -32,8 +32,8 @@
                 android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
                 android:id="@+id/back"/>
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:src="@drawable/user"
                 android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
@@ -382,6 +382,42 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#8A000000" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:visibility="gone"
+        android:id="@+id/send_img_now"
+        android:translationZ="60dp">
+        <com.ayush.flow.activity.TouchImageView
+            android:id="@+id/send_select_img"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/user"
+            />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="10dp"
+            android:background="@drawable/chat_back"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
+            android:id="@+id/back_now"/>
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="25dp"
+            android:layout_marginBottom="50dp"
+            android:src="@drawable/send"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:id="@+id/sendimg_btn"/>
+    </RelativeLayout>
 
 
 </RelativeLayout>

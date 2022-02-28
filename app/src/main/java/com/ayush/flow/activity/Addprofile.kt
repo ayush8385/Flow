@@ -329,14 +329,19 @@ class GetImageFromUrl() : AsyncTask<String?, Void?, Bitmap>() {
     var bmp:Bitmap?=null
     override fun doInBackground(vararg url: String?): Bitmap {
         val stringUrl = url[0]
-        bmp= null
-        val inputStream: InputStream
-        try {
-            inputStream = URL(stringUrl).openStream()
-            bmp = BitmapFactory.decodeStream(inputStream)
-        } catch (e: IOException) {
-            e.printStackTrace()
+        val options = BitmapFactory.Options()
+        options.inSampleSize = 1
+        while (options.inSampleSize <= 32) {
+            val inputStream = URL(stringUrl).openStream()
+            try {
+                bmp= BitmapFactory.decodeStream(inputStream, null, options)
+                inputStream.close()
+                break
+            } catch (outOfMemoryError: OutOfMemoryError) {
+            }
+            options.inSampleSize++
         }
+
         return bmp!!
     }
 }

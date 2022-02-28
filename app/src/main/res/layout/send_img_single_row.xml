@@ -79,6 +79,7 @@
                         android:background="@drawable/bottom_nav_back"
                         android:layout_alignParentBottom="true"
                         android:layout_alignParentRight="true"
+                        android:indeterminateTint="#F7FFFFFF"
                         android:padding="10dp"
                         android:id="@+id/progressbar"/>
                 </RelativeLayout>
