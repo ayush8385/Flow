@@ -51,6 +51,8 @@ import android.app.DownloadManager
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.util.Log
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.Services.ImageHolder
 import com.ayush.flow.activity.FileDownloader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -115,7 +117,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
         if(chat.type=="image"){
 
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),chat.message)
+            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.mid+".jpg")
             Glide.with(context).load(f).into(holder.image_msg)
 
 
@@ -159,8 +161,8 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             holder.message.text=chat.message
             holder.seen_txt.text="sent"
         }
-        holder.time.text=chat.time
-        holder.date.text=chat.date
+//        holder.time.text=chat.time
+//        holder.date.text=chat.date
 
         holder.select.visibility=View.GONE
 
@@ -201,9 +203,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 //            }
         }
 
-//        holder.msg_box.setOnClickListener {
-//
-//        }
 
         holder.msg_box.setOnClickListener {
             if(selectedMsg.size!=0){
@@ -217,23 +216,21 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 }
                 clickListener.updateCount()
             }
-            if(chat.type=="image"){
+            else if(chat.type=="image"){
                 val intent = Intent(context, SelectedImage::class.java)
-                var fos  =  ByteArrayOutputStream()
-                ((holder.image_msg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
-                val byteArray = fos.toByteArray()
+//                var fos  =  ByteArrayOutputStream()
+//                ((holder.image_msg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//                val byteArray = fos.toByteArray()
+//                ImageHolder.imageDraw=holder.image_msg.drawable
                 intent.putExtra("type","msgImg")
-                intent.putExtra("image", byteArray)
+//                intent.putExtra("image", byteArray)
                 intent.putExtra("userid",chat.mid)
-                intent.putExtra("name","")
-                intent.putExtra("number","")
-                intent.putExtra("user_image","")
+//                intent.putExtra("name","")
+//                intent.putExtra("number","")
+//                intent.putExtra("user_image","")
                 context.startActivity(intent)
             }
-            if(chat.type=="doc"){
-
-
-
+            else if(chat.type=="doc"){
 
                 if(holder.download.visibility==View.VISIBLE){
 
@@ -284,7 +281,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                             holder.progressBar.visibility=View.GONE
                         }
 
-                    },1000)
+                    },400)
 
                 }
                 else if(holder.download.visibility==View.GONE && holder.progressBar.visibility==View.GONE){
@@ -312,9 +309,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     }
 
 
-                }
-                else{
-                    //Eat Fivestar and Do nothing
                 }
             }
         }

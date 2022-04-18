@@ -21,17 +21,18 @@
             android:layout_centerVertical="true"
             android:src="@drawable/user"
             android:scaleType="centerCrop"/>
+
         <TextView
+            android:id="@+id/profile_name"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="fdsfkhjk"
-            android:maxLines="1"
-            android:fontFamily="@font/senbold"
-            android:paddingLeft="12dp"
             android:layout_toRightOf="@+id/profile_pic"
-            android:textSize="16sp"
+            android:fontFamily="@font/senbold"
+            android:maxLines="1"
+            android:paddingLeft="12dp"
+            android:text="fdsfkhjk"
             android:textColor="@color/black"
-            android:id="@+id/profile_name"/>
+            android:textSize="16sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

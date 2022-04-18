@@ -5,15 +5,16 @@
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/paren"
-        android:paddingLeft="16dp"
-        android:paddingVertical="10dp">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:id="@+id/caller_pic"
-            android:layout_centerVertical="true"
-            android:src="@drawable/user"
-            android:scaleType="centerCrop"/>
+        android:paddingLeft="16dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/caller_pic"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"
+        android:background="@drawable/circle_shadow"
+        android:scaleType="centerCrop"
+        android:src="@drawable/user" />
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -49,7 +50,6 @@
             android:background="@drawable/invite_back"
             android:paddingHorizontal="20dp"
             android:layout_marginRight="-10dp"
-            android:paddingVertical="3dp"
             android:layout_height="wrap_content">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="40dp"

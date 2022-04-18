@@ -42,6 +42,14 @@
     <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/rounded_transparent_bottomsheet</item>
     </style>
+
+    <style name="RoundedBottomSheetTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomRoundBottomSheet</item>
+    </style>
+
+    <style name="CustomRoundBottomSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/shape_rounded_dialog</item>
+    </style>
     
     <style name="SplashTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>
@@ -61,5 +69,10 @@
 
         <item name="searchViewStyle">@style/MySearchViewStyle</item>
 
+    </style>
+    <style name="CustomAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:layout_marginStart">5dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
     </style>
 </resources>

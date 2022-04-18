@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.method.PasswordTransformationMethod
+import android.util.Patterns
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
@@ -18,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import br.com.simplepass.loadingbutton.customViews.CircularProgressButton
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.Services.SharedPreferenceUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -57,7 +60,8 @@ class Register : AppCompatActivity() {
         sign_up=findViewById(R.id.signup)
         back=findViewById(R.id.back)
         help=findViewById(R.id.help)
-        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
+
+        SharedPreferenceUtils.init(applicationContext)
 
         back.setOnClickListener {
             onBackPressed()
@@ -97,7 +101,7 @@ class Register : AppCompatActivity() {
             val DRAWABLE_BOTTOM = 3
             if (event.action == MotionEvent.ACTION_UP) {
                 if (event.rawX >= pass.getRight() - pass.getCompoundDrawables().get(DRAWABLE_RIGHT)
-                        .getBounds().width()
+                        .getBounds().width()-60
                 ) {
                     if (pass.transformationMethod != null) {
                         pass.transformationMethod = null
@@ -110,7 +114,7 @@ class Register : AppCompatActivity() {
                             R.drawable.ic_baseline_lock_24,0,
                             R.drawable.lock,0)
                     }
-                    return@OnTouchListener true
+                    return@OnTouchListener false
                 }
             }
             false
@@ -123,7 +127,7 @@ class Register : AppCompatActivity() {
             val DRAWABLE_BOTTOM = 3
             if (event.action == MotionEvent.ACTION_UP) {
                 if (event.rawX >= cnf_pass.getRight() - cnf_pass.getCompoundDrawables().get(DRAWABLE_RIGHT)
-                        .getBounds().width()
+                        .getBounds().width()-60
                 ) {
                     if (cnf_pass.transformationMethod != null) {
                         cnf_pass.transformationMethod = null
@@ -136,7 +140,7 @@ class Register : AppCompatActivity() {
                             R.drawable.ic_baseline_lock_24,0,
                             R.drawable.lock,0)
                     }
-                    return@OnTouchListener true
+                    return@OnTouchListener false
                 }
             }
             false
@@ -219,16 +223,19 @@ class Register : AppCompatActivity() {
 
     private fun registerUser() {
 
-        val email:String=email.text.toString()
-        val num:String=numb.text.toString()
-        val pass:String=pass.text.toString()
-        val cnf:String=cnf_pass.text.toString()
+        val email:String=email.text.trim().toString()
+        val num:String=numb.text.trim().toString()
+        val pass:String=pass.text.trim().toString()
+        val cnf:String=cnf_pass.text.trim().toString()
 
-        if(email==""){
+        if(email==""|| !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
             Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
         }
         else if(pass==""){
             Toast.makeText(applicationContext, "Please Enter Strong Password", Toast.LENGTH_SHORT).show()
+        }
+        else if(pass.length<=4){
+            Toast.makeText(applicationContext, "Password is too short", Toast.LENGTH_SHORT).show()
         }
         else if(pass != cnf){
             Toast.makeText(applicationContext, "Password doesn't match", Toast.LENGTH_SHORT).show()
@@ -243,11 +250,10 @@ class Register : AppCompatActivity() {
                 .addOnCompleteListener{ text->
                     try {
                         if(text.isSuccessful){
-                            val userId=FirebaseAuth.getInstance().currentUser!!.uid
-                            val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(userId)
+                            val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID)
 
                             val userHashmap=HashMap<String, Any>()
-                            userHashmap["uid"]=userId
+                            userHashmap["uid"]=Constants.MY_USERID
                             userHashmap["email"]=email
                             userHashmap["number"]=num
                             userHashmap["username"]=""
@@ -258,10 +264,10 @@ class Register : AppCompatActivity() {
                             refuser.updateChildren(userHashmap)
                                 .addOnCompleteListener { text->
                                     if(text.isSuccessful){
+                                        savePreferences(userHashmap)
                                         val intent=Intent(this@Register, Addprofile::class.java)
                                         startActivity(intent)
                                         finishAffinity()
-                                        savePreferences(userHashmap)
                                     }
                                     else{
                                         Toast.makeText(this, "Unexpected Error", Toast.LENGTH_SHORT).show()
@@ -284,25 +290,25 @@ class Register : AppCompatActivity() {
     }
 
     fun savePreferences(data: HashMap<String,Any>) {
-        sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
-        sharedPreferences.edit().putString("uid", data["uid"].toString()).apply()
-        sharedPreferences.edit().putString("email", data["email"].toString()).apply()
-        sharedPreferences.edit().putString("number", data["number"].toString()).apply()
-        sharedPreferences.edit().putString("password", data["password"].toString()).apply()
-        sharedPreferences.edit().putString("about",data["about"].toString()).apply()
-        sharedPreferences.edit().putString("username",data["username"].toString()).apply()
-        sharedPreferences.edit().putString("profile",data["profile_photo"].toString()).apply()
+        SharedPreferenceUtils.setBooleanPreference(SharedPreferenceUtils.IS_LOGGED,true)
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_USERID, data["uid"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.EMAIL, data["email"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.NUMBER, data["number"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.PASSWORD, data["password"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.ABOUT,data["about"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,data["username"].toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_PROFILE_URL,data["profile_photo"].toString())
     }
 
     private fun loginUser() {
         val pass:String=pass.text.toString()
         val email:String=email.text.toString()
-        sign_up.visibility=View.GONE
-        forgot.visibility=View.INVISIBLE
-        if(email=="" || pass==""){
+        if(email=="" || !Patterns.EMAIL_ADDRESS.matcher(email).matches() || pass==""){
             Toast.makeText(applicationContext, "Enter Proper Details", Toast.LENGTH_SHORT).show()
         }
         else{
+            sign_up.visibility=View.GONE
+            forgot.visibility=View.INVISIBLE
             register.startAnimation()
 
             FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
@@ -322,10 +328,10 @@ class Register : AppCompatActivity() {
                                 userHashmap["about"]=snapshot.child("about").value.toString()
                                 userHashmap["profile_photo"]=snapshot.child("profile_photo").value.toString()
 
+                                savePreferences(userHashmap)
                                 val intent=Intent(this@Register, Addprofile::class.java)
                                 startActivity(intent)
                                 finishAffinity()
-                                savePreferences(userHashmap)
                             }
 
                             override fun onCancelled(error: DatabaseError) {
@@ -351,7 +357,7 @@ class Register : AppCompatActivity() {
 
     private fun resetPass() {
         val email:String=email.text.toString()
-        if(email==""){
+        if(email=="" || !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
             Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
         }
         else{

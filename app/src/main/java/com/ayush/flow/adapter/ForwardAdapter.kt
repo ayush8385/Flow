@@ -1,9 +1,6 @@
 package com.ayush.flow.adapter
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
@@ -15,13 +12,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
 import com.ayush.flow.activity.ForwardViewModel
-import com.ayush.flow.activity.Message
 import com.ayush.flow.database.ChatEntity
 import com.bumptech.glide.Glide
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
-import java.io.FileInputStream
 import java.util.*
 
 class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListener):RecyclerView.Adapter<ForwardAdapter.HomeViewHolder>() {
@@ -33,7 +29,7 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)
         val select:ImageView=view.findViewById(R.id.selected_chat)
-        val chat_box:RelativeLayout=view.findViewById(R.id.paren)
+        val fwdItem:RelativeLayout=view.findViewById(R.id.paren_fwd)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
@@ -53,19 +49,19 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
             holder.name.text=chat.name
         }
 
-        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
-        Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
+        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
+        if(f.exists()){
+            Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
+        }
 
 
+        holder.select.visibility=View.GONE
         if(chat in selected){
             holder.select.visibility=View.VISIBLE
         }
-        else{
-            holder.select.visibility=View.GONE
-        }
 
-        holder.chat_box.setOnClickListener {
-            if(holder.select.visibility==View.GONE){
+        holder.fwdItem.setOnClickListener {
+            if(chat !in selected){
                 listener.addChat(allChats[holder.adapterPosition])
                 holder.select.visibility=View.VISIBLE
             }
@@ -77,6 +73,8 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
 
     }
 
+
+
     override fun getItemCount(): Int {
         return allChats.size
     }
@@ -84,6 +82,12 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
     fun updateList(list: List<ChatEntity>,selected:List<ChatEntity>) {
         allChats.clear()
         allChats.addAll(list)
+        this.selected.clear()
+        this.selected.addAll(selected)
+        notifyDataSetChanged()
+    }
+
+    fun updateSelected(selected:List<ChatEntity>) {
         this.selected.clear()
         this.selected.addAll(selected)
         notifyDataSetChanged()

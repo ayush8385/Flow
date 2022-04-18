@@ -8,15 +8,17 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.os.AsyncTask
 import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.Services.ImageHolder
 import com.ayush.flow.Services.Permissions
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
@@ -25,7 +27,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
-import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -82,40 +83,39 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         }
 
 
-        val currentTimestamp: Date = Date(System.currentTimeMillis())
-
-        val wholeDateFormat= SimpleDateFormat("dd/MM/yy")
-
-        val dateFormat = SimpleDateFormat("dd")
-        val monthFormat = SimpleDateFormat("MM")
-        val yearFormat = SimpleDateFormat("yy")
-
-        val deliveryDate = chat.date
-        val d = wholeDateFormat.parse(deliveryDate)
-
-        val formatDate = dateFormat.format(d).toInt()
-        val formatMonth = monthFormat.format(d).toInt()
-        val formatYear = yearFormat.format(d).toInt()
-
-        val currentDate = dateFormat.format(currentTimestamp).toInt()
-        val currentMonth = monthFormat.format(currentTimestamp).toInt()
-        val currentYear = yearFormat.format(currentTimestamp).toInt()
-
-      //  Log.e("dsjnsddwsref...........................",chat.number+"  ....."+chat.date+"........."+currentDate.toString()+"......"+formatDate.toString())
-
-        if(formatDate-currentDate==0 && formatMonth-currentMonth==0 && formatYear-currentYear==0){
-            holder.time.text=chat.time
-        }
-        else if(abs(formatDate-currentDate)==1 && formatMonth-currentMonth==0 && formatYear-currentYear==0){
-            holder.time.text="Yesterday"
-        }
-        else{
-            holder.time.text=chat.date
-        }
+//        val currentTimestamp: Date = Date(System.currentTimeMillis())
+//
+//        val wholeDateFormat= SimpleDateFormat("dd/MM/yy")
+//
+//        val dateFormat = SimpleDateFormat("dd")
+//        val monthFormat = SimpleDateFormat("MM")
+//        val yearFormat = SimpleDateFormat("yy")
+//
+//        val deliveryDate = chat.date
+//        val d = wholeDateFormat.parse(deliveryDate)
+//
+//        val formatDate = dateFormat.format(d).toInt()
+//        val formatMonth = monthFormat.format(d).toInt()
+//        val formatYear = yearFormat.format(d).toInt()
+//
+//        val currentDate = dateFormat.format(currentTimestamp).toInt()
+//        val currentMonth = monthFormat.format(currentTimestamp).toInt()
+//        val currentYear = yearFormat.format(currentTimestamp).toInt()
+//
+//
+//        if(formatDate-currentDate==0 && formatMonth-currentMonth==0 && formatYear-currentYear==0){
+//            holder.time.text=chat.time
+//        }
+//        else if(abs(formatDate-currentDate)==1 && formatMonth-currentMonth==0 && formatYear-currentYear==0){
+//            holder.time.text="Yesterday"
+//        }
+//        else{
+//            holder.time.text=chat.date
+//        }
 
         holder.message.text=chat.lst_msg
 
-        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
             DiskCacheStrategy.NONE)
             .skipMemoryCache(true).into(holder.image)
 
@@ -173,11 +173,12 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         holder.image.setOnClickListener {
             val intent = Intent(context, SelectedImage::class.java)
-            var fos  =  ByteArrayOutputStream()
-            ((holder.image.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            val byteArray = fos.toByteArray()
+//            var fos  =  ByteArrayOutputStream()
+//            ((holder.image.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//            val byteArray = fos.toByteArray()
+//            ImageHolder.imageDraw=holder.image.drawable
             intent.putExtra("type","view")
-            intent.putExtra("image", byteArray)
+//            intent.putExtra("image", byteArray)
             intent.putExtra("userid",chat.id)
             intent.putExtra("name",chat.name)
             intent.putExtra("number",chat.number)

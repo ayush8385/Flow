@@ -134,7 +134,7 @@
         android:id="@+id/skip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:padding="20dp"
         android:text="Skip"
         android:textColor="#D5323131"
         android:layout_alignParentBottom="true"/>

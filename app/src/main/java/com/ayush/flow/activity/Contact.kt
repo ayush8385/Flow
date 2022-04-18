@@ -1,18 +1,13 @@
 package com.ayush.flow.activity
 
-import android.app.Application
+import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.provider.ContactsContract
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -23,25 +18,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ayush.flow.R
+import com.ayush.flow.Services.ConnectionManager
 import com.ayush.flow.Services.Permissions
 import com.ayush.flow.adapter.ContactAdapter
-import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.ContactEntity
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.net.URL
 
 class Contact : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
@@ -50,15 +35,10 @@ class Contact : AppCompatActivity() {
     lateinit var back: ImageView
     lateinit var title:TextView
     lateinit var add: ImageView
-    lateinit var con_card:CardView
     lateinit var search: androidx.appcompat.widget.SearchView
     val sortCon = arrayListOf<ContactEntity>()
-    lateinit var cancel:Button
-    lateinit var save:Button
     lateinit var dim:View
-    lateinit var name_con:EditText
     lateinit var pullToRefresh:SwipeRefreshLayout
-    lateinit var  num_con:EditText
     lateinit var firebaseUser: FirebaseUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,24 +50,26 @@ class Contact : AppCompatActivity() {
         back=findViewById(R.id.back)
         title=findViewById(R.id.title)
         add=findViewById(R.id.add_con)
-        name_con=findViewById(R.id.name)
-        num_con=findViewById(R.id.number)
-        con_card=findViewById(R.id.contact_card)
-        save=findViewById(R.id.save)
-        cancel=findViewById(R.id.cancel)
         dim=findViewById(R.id.dim)
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
-        pullToRefresh = findViewById(R.id.pulTooRefresh)
+        pullToRefresh = findViewById(R.id.pullToRefresh)
 
-//        pullToRefresh.setOnClickListener {
-//            Handler().postDelayed(Runnable {
-//                if (pullToRefresh.isRefreshing) {
-//                    pullToRefresh.isRefreshing=false
-//                }
-//            }, 300)
-//
-//        }
+        pullToRefresh.setOnRefreshListener {
+            if(ConnectionManager().checkconnectivity(this)){
+                if(Permissions().checkContactpermission(this)){
+                    GlobalScope.launch {
+                        Dashboard().loadContacts(application)
+                    }
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+                }
+            }
+            Handler().postDelayed({
+                pullToRefresh.isRefreshing=false
+            },2000)
+        }
 
 
 
@@ -112,34 +94,39 @@ class Contact : AppCompatActivity() {
         searchElement()
 
         add.setOnClickListener {
-            con_card.visibility=View.VISIBLE
-            dim.visibility=View.VISIBLE
-        }
+            val contactBoxView = LayoutInflater.from(this).inflate(R.layout.add_contact_box, null,false)
+            val contactBoxBuilder = AlertDialog.Builder(this,R.style.CustomAlertDialog)
+            contactBoxBuilder.setView(contactBoxView)
+            contactBoxBuilder.setCancelable(false)
+            val instance = contactBoxBuilder.show()
 
-        save.setOnClickListener {
-            val name=name_con.text.toString()
-            val phone=num_con.text.toString()
-            if (name!= "" || phone != "null") {
-                val addContactIntent = Intent(Intent.ACTION_INSERT)
-                addContactIntent.type = ContactsContract.Contacts.CONTENT_TYPE
-                addContactIntent.putExtra(ContactsContract.Intents.Insert.NAME, name)
-                addContactIntent.putExtra(ContactsContract.Intents.Insert.PHONE, phone)
-                startActivity(addContactIntent)
-                con_card.visibility=View.GONE
-                dim.visibility=View.GONE
+            val addname:TextView = contactBoxView.findViewById(R.id.name)
+            val addnum:TextView = contactBoxView.findViewById(R.id.number)
+            val cancel:Button = contactBoxView.findViewById(R.id.cancel)
+            val save:Button=contactBoxView.findViewById(R.id.save)
+
+            save.setOnClickListener {
+                val name= addname.text.toString()
+                val phone=addnum.text.toString()
+                if (name!= "" || phone != "null") {
+                    val addContactIntent = Intent(Intent.ACTION_INSERT)
+                    addContactIntent.type = ContactsContract.Contacts.CONTENT_TYPE
+                    addContactIntent.putExtra(ContactsContract.Intents.Insert.NAME, name)
+                    addContactIntent.putExtra(ContactsContract.Intents.Insert.PHONE, phone)
+                    startActivity(addContactIntent)
+                    instance.dismiss()
 //                GlobalScope.launch {
 //                    loadContacts(application)
 //                }
-            }
-            else{
-                Toast.makeText(applicationContext,"Enter Proper Details",Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    Toast.makeText(applicationContext,"Enter Proper Details",Toast.LENGTH_SHORT).show()
+                }
             }
 
-        }
-
-        cancel.setOnClickListener {
-            con_card.visibility=View.GONE
-            dim.visibility=View.GONE
+            cancel.setOnClickListener {
+                instance.dismiss()
+            }
         }
 
         back.setOnClickListener {
@@ -213,7 +200,8 @@ class Contact : AppCompatActivity() {
             recyclerAdapter.updateList(filteredlist)
         }
         else{
-            recyclerAdapter.updateList(filteredlist)
+            val sortedCon =filteredlist.sortedWith(compareBy({!it.isUser},{it.name}))
+            recyclerAdapter.updateList(sortedCon)
         }
     }
 

@@ -1,67 +1,70 @@
 package com.ayush.flow.activity
 
-import android.app.*
-import android.content.*
+import android.app.AlertDialog
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.graphics.*
 import android.net.Uri
 import android.os.*
+import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.view.animation.LayoutAnimationController
+import android.view.WindowManager
+import android.view.animation.*
+import android.view.inputmethod.InputMethodManager
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.app.*
+import androidx.cardview.widget.CardView
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.alimuzaffar.lib.pin.PinEntryEditText
+import com.ayush.flow.Notification.MessagingService
 import com.ayush.flow.Notification.Token
 import com.ayush.flow.R
+import com.ayush.flow.Services.*
+import com.ayush.flow.Services.SharedPreferenceUtils.init
 import com.ayush.flow.adapter.CallAdapter
 import com.ayush.flow.adapter.ChatAdapter
 import com.ayush.flow.adapter.StoryAdapter
 import com.ayush.flow.database.*
 import com.ayush.flow.model.Chats
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.gms.common.util.SharedPreferencesUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.iid.FirebaseInstanceId
 import com.sinch.android.rtc.SinchError
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.*
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import android.view.animation.LinearInterpolator
-
-import android.view.animation.Animation
-
-import android.view.animation.RotateAnimation
-import android.widget.*
-import androidx.lifecycle.ViewModelProviders
-import com.ayush.flow.Services.Permissions
-
-import com.google.android.material.bottomsheet.BottomSheetDialog
-
-import android.os.Bundle
-import android.provider.ContactsContract
-import android.util.Log
-import com.ayush.flow.Notification.MessagingService
-import com.ayush.flow.Services.ConnectionManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import kotlinx.coroutines.*
-import java.lang.IllegalStateException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -87,7 +90,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     lateinit var search: androidx.appcompat.widget.SearchView
     lateinit var profile:CircleImageView
     var controller:LayoutAnimationController?=null
-    lateinit var sharedPreferences: SharedPreferences
     var previousMenuItem: MenuItem?=null
     lateinit var contact: ImageView
     lateinit var firebaseUser: FirebaseUser
@@ -95,11 +97,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     lateinit var hiddenViewModel: HiddenViewModel
 
     lateinit var theme: SwitchCompat
+    lateinit var vibrator: Vibrator
 
     override fun onServiceConnected() {
         sinchServiceInterface!!.setStartListener(this)
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -120,12 +124,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         story_box=findViewById(R.id.story_box)
 
 
-        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
-
-        firebaseUser= FirebaseAuth.getInstance().currentUser!!
-
-        hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
-
+        SharedPreferenceUtils.init(applicationContext)
+        hiddenViewModel= ViewModelProvider(this).get(HiddenViewModel::class.java)
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         if(ConnectionManager().checkconnectivity(this)){
             if(Permissions().checkContactpermission(this)){
@@ -139,9 +140,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
 
 
+        openChatHome(SharedPreferenceUtils.getIntPreference(SharedPreferenceUtils.IS_PRIVATE,0))
 
         GlobalScope.launch(Dispatchers.Main) {
-            openChatHome(intent.getIntExtra("private",0))
             searchElement()
             UpdateToken()
         }
@@ -167,8 +168,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         add_text.text="Me"
                         chat_text.text="Chats"
 
-
-                       openChatHome(0)
+                        openChatHome(0)
 
                         it.isCheckable=true
                         it.isChecked=true
@@ -193,8 +193,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             }
             return@setOnNavigationItemSelectedListener true
         }
+        //sharedPreferences.edit().putString("passcode","").apply()
 
-        if(sharedPreferences.getBoolean("nightMode",false)){
+        if(SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)){
             mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.moon))
         }
         else{
@@ -203,20 +204,18 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
 
         hidden.setOnClickListener {
-            val intent = Intent(this,Passcode::class.java)
-            intent.putExtra("n",2)
-            startActivity(intent)
+//            val intent = Intent(this,Passcode::class.java)
+//            intent.putExtra("n",2)
+//            startActivity(intent)
+            showPasscodeBox("",2)
+
         }
 
         hidden_close.setOnClickListener {
-            story_box.visibility=View.VISIBLE
-            story_text.visibility=View.VISIBLE
-            hidden.visibility=View.VISIBLE
-
-            chat_text.text="Chats"
-            hidden_close.visibility=View.GONE
-
+            SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,0)
             openChatHome(0)
+//            Toast.makeText(applicationContext,"hide 222",Toast.LENGTH_SHORT).show()
+//            openChatHome(0)
         }
 
 
@@ -234,16 +233,16 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             mode.startAnimation(rotate)
 
             Handler().postDelayed({
-                if(sharedPreferences.getBoolean("nightMode",false)){
+                if(SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)){
                     // mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.sun))
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                    sharedPreferences.edit().putBoolean("nightMode",false).apply()
+                    SharedPreferenceUtils.setBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)
 
                 }
                 else{
                     //  mode.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.moon))
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                    sharedPreferences.edit().putBoolean("nightMode",true).apply()
+                    SharedPreferenceUtils.setBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,true)
 
                 }
             },600)
@@ -256,12 +255,100 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
+    private fun showPasscodeBox(id:String,n:Int) {
+        val passBoxView = LayoutInflater.from(this).inflate(R.layout.pass_verify, null,false)
+        val passBoxBuilder = AlertDialog.Builder(this,R.style.CustomAlertDialog)
+        passBoxBuilder.setView(passBoxView)
+        passBoxBuilder.setCancelable(false)
+        val instance = passBoxBuilder.show()
+
+        val passCard:CardView = passBoxView.findViewById(R.id.pass_card)
+        val title:TextView = passBoxView.findViewById(R.id.title)
+        val cancel:Button = passBoxView.findViewById(R.id.cancel)
+
+        var passcode = SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.HIDE_PASS,"")
+        if(passcode==""){
+            title.text="Set Passcode"
+        }
+
+        val pinEntry:PinEntryEditText = passBoxView.findViewById(R.id.txt_pin_entry)
+        pinEntry.requestFocus()
+
+        pinEntry.postDelayed(Runnable { // TODO Auto-generated method stub
+            val keyboard = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            keyboard.showSoftInput(pinEntry, 0)
+        }, 100)
+
+        pinEntry.setOnPinEnteredListener { str ->
+
+            if(passcode==""){
+                passcode=str.toString()
+                title.text="Confirm Password"
+                pinEntry.setText(null)
+            }
+            else{
+                if(title.text=="Confirm Password"){
+                    if(passcode==str.toString()) {
+                        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.HIDE_PASS,str.toString())
+                        SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,1)
+                        openChatHome(1)
+                        instance.dismiss()
+                        //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+                    }
+                    else{
+                        val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+                        passCard.startAnimation(animShake)
+                        startVibrationforPassBox()
+                        Toast.makeText(this,"Wrong Passcode",Toast.LENGTH_SHORT).show()
+                        pinEntry.setText(null)
+                    }
+
+                }
+                else if(passcode==str.toString()){
+                    if(n==0){
+                        ChatViewModel(application).setPrivate(id,false)
+                    }
+                    else if(n==1){
+                        ChatViewModel(application).setPrivate(id,true)
+                    }
+                    else{
+//                        hiddenViewModel.setText("1")
+                        SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,1)
+                        openChatHome(1)
+                    }
+                    instance.dismiss()
+                    //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+                }
+                else{
+                    val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+                    passCard.startAnimation(animShake)
+                    startVibrationforPassBox()
+                    Toast.makeText(this,"Wrong Passcode",Toast.LENGTH_SHORT).show()
+                    pinEntry.setText(null)
+                }
+            }
+        }
+
+        cancel.setOnClickListener {
+            instance.dismiss()
+        }
+    }
+
+    private fun startVibrationforPassBox() {
+        var vibrationEffect1 : VibrationEffect
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            vibrationEffect1 = VibrationEffect.createOneShot(500, VibrationEffect.EFFECT_DOUBLE_CLICK);
+            vibrator.cancel();
+            vibrator.vibrate(vibrationEffect1);
+        }
+
+    }
+
     fun loadContacts(applicat: Application){
-        var firebaseUser=FirebaseAuth.getInstance().currentUser!!
         val contentResolver = applicat.contentResolver
         val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
-        var contactMap:HashMap<String,String> = HashMap<String,String>()
+ //       var contactMap:HashMap<String,String> = HashMap<String,String>()
 
         while (contacts?.moveToNext() == true) {
             val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
@@ -287,18 +374,23 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 for(snapshot in snapshot.children){
                     val num=snapshot.child("number").value.toString()
                     val userid=snapshot.child("uid").value.toString()
-                    val url=snapshot.child("profile_photo").value.toString()
+                    val profile_url=snapshot.child("profile_photo").value.toString()
 
-                    if(userid!=firebaseUser.uid && ContactViewModel(application).isContactExist(num)/*contactMap.containsKey(num)*/){
-                        val usercon = ContactViewModel(application).getContactByNum(num)
+                    if(userid!=Constants.MY_USERID && ContactViewModel(applicat).isContactExist(num)/*contactMap.containsKey(num)*/){
+                        val usercon = ContactViewModel(applicat).getContactByNum(num)
 
-                        ContactViewModel(applicat).inserContact(ContactEntity(usercon.name,usercon.number,userid+".jpg",true,userid))
+                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
+                        ContactViewModel(applicat).inserContact(consEntity)
 
-                        if(url!=""){
-                            GetImageFromUrl(userid,applicat).execute(url)
+                        if(profile_url!=""){
+                            ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
+//                            val bmp = ImageHandling.GetImageFromUrl().execute(profile_url).get()
+//                            val selectedPtah = getRealPathFromURI(getImageUri(this@Dashboard,bmp!!))
+                           // ImageCompression(this@Dashboard).execute(selectedPtah)
+                            //ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
                         }
-                        if(ChatViewModel(application).isUserExist(userid)){
-                            ChatViewModel(application).updateName(usercon.name,userid)
+                        if(ChatViewModel(applicat).isUserExist(userid)){
+                            ChatViewModel(applicat).updateName(usercon.name,userid)
                         }
                     }
 
@@ -312,6 +404,25 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri {
+        val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
+        return Uri.parse(path)
+    }
+
+    fun getRealPathFromURI(contentURI: Uri): String {
+        val cursor: Cursor? = this.contentResolver.query(contentURI, null, null, null, null)
+        if (cursor == null) {
+            return contentURI.getPath()!!
+        } else {
+            cursor.moveToFirst()
+            val idx: Int = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
+            return cursor.getString(idx)
+        }
+    }
+
+
     inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
         override fun onPostExecute(result: Boolean?) {
             chatAdapter.notifyDataSetChanged()
@@ -324,7 +435,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             val image_url=snapshot.child("profile_photo").value.toString()
                             if(image_url!=""){
-                                GetImageFromUrl(chat.id,application).execute(image_url)
+                                ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,chat.id+".jpg").execute(image_url)
+//                                GetImageFromUrl(chat.id,application).execute(image_url)
                             }
                         }
 
@@ -446,6 +558,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         chatsRecyclerView.scheduleLayoutAnimation()
 
         if(i==0){
+            story_box.visibility=View.VISIBLE
+            story_text.visibility=View.VISIBLE
+            hidden.visibility=View.VISIBLE
+
+            chat_text.text="Chats"
+            hidden_close.visibility=View.GONE
+
+            navigationView.visibility=View.VISIBLE
             ChatViewModel(application).allChats.observe(this, Observer { list->
                 list?.let {
                     chatList.clear()
@@ -454,12 +574,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             chatList.add(j)
                         }
                     }
-
+                    chatList.sortBy { it.time }
                     chatAdapter.updateList(chatList)
                 }
             })
         }
         else{
+            navigationView.visibility=View.GONE
             story_box.visibility=View.GONE
             story_text.visibility=View.GONE
             hidden.visibility=View.GONE
@@ -475,13 +596,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                             chatList.add(j)
                         }
                     }
-
+                    chatList.sortBy { it.time }
                     chatAdapter.updateList(chatList)
                 }
             })
         }
 
-        updateImages()
+        updateUnsavedImage().execute()
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -490,11 +611,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.adapter=adapter2
 //        storyRecyclerView.layoutAnimation=controller
 //        storyRecyclerView.scheduleLayoutAnimation()
-    }
-
-    private fun updateImages() {
-        updateUnsavedImage().execute()
-
     }
 
     private fun showHideBottomSheetDialog(id: String,name:String) {
@@ -524,18 +640,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
 
         btn1!!.setOnClickListener {
-
-
-
-            val intent = Intent(this,Passcode::class.java)
-            intent.putExtra("id",id)
+//            val intent = Intent(this,Passcode::class.java)
+//            intent.putExtra("id",id)
             if(!hideChat.hide){
-                intent.putExtra("n",1)
+                showPasscodeBox(id,1)
             }
             else{
-                intent.putExtra("n",0)
+                showPasscodeBox(id,0)
             }
-            startActivity(intent)
             bottomSheetDialog.dismiss()
         }
         btn2!!.setOnClickListener {
@@ -647,191 +759,191 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        }
 //    }
 
-    suspend fun retrieveMessage(application:Application){
-        val firebaseUser=FirebaseAuth.getInstance().currentUser!!
-        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
-
-        ref.addValueEventListener(object : ValueEventListener {
-            @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for(snapshot in snapshot.children){
-
-                    val messageKey=snapshot.child("mid").value.toString()
-                    val user=snapshot.child("userid").value.toString()
-                    val sender=snapshot.child("sender").value.toString()
-                    var msg=snapshot.child("message").value.toString()
-                    val time=snapshot.child("time").value.toString()
-                    val type=snapshot.child("type").value.toString()
-                    val url=snapshot.child("url").value.toString()
-                    val received=snapshot.child("received").value as Boolean
-
-                    //time set
-                    var tm: Date = Date(time.toLong())
-
-                    val sdf = SimpleDateFormat("hh:mm a")
-                    val date= SimpleDateFormat("dd/MM/yy")
-
-                    var name:String=""
-                    var number:String=""
-                    var imagepath:String=""
-
-
-                    if(ContactViewModel(application).isUserExist(sender)){
-                        val contactEntity=ContactViewModel(application).getContact(sender)
-                        name=contactEntity.name
-                        number=contactEntity.number
-                        imagepath=contactEntity.image
-                        if(type=="image"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
-                        }
-                        if(type=="doc"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-                        }
-                        if(type=="message"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
-                        }
-                    }
-                    else if(ChatViewModel(application).isUserExist(sender)){
-                        //get image and name from room db
-                        val chatEntity=ChatViewModel(application).getChat(sender)
-                        name=chatEntity.name
-                        number=chatEntity.number
-                        imagepath=chatEntity.image
-                        var unread=chatEntity.unread
-                        val hide=chatEntity.hide
-                        if(type=="image"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),hide,unread++,sender))
-                        }
-                        if(type=="doc"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),hide,unread++,sender))
-                        }
-                        if(type=="message"){
-                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),date.format(tm),hide,unread++,sender))
-                        }
-                    }
-                    else{
-                        //get number as a name from firebase
-                        //get image and sav it to local storage and internal path from firebase
-                        val refer=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
-                        refer.addValueEventListener(object :ValueEventListener{
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                number=snapshot.child("number").value.toString()
-                                //check message type
-                                if(type=="image"){
-                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
-                                }
-                                else{
-                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
-                                }
-
-                                //get image of sender
-                                val image_url=snapshot.child("profile_photo").value.toString()
-                                if(image_url!=""){
-                                    GetImageFromUrl(sender,application).execute(image_url)
-                                    if(type=="image"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),date.format(tm),false,1,sender))
-                                    }
-                                    if(type=="doc"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,1,sender))
-                                    }
-                                    if(type=="message"){
-                                        ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),date.format(tm),false,1,sender))
-                                    }
-                                }
-                                //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
-
-                            }
-                            override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
-                            }
-
-                        })
-                    }
-
-                    if(type=="image"){
-
-                        //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
-
-                        val photo =  GetImageFromUrl().execute(msg).get()
-
-                        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
-                            if (Environment.isExternalStorageManager()) {
-                                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                                if(!directory.exists()){
-                                    directory.mkdirs()
-                                }
-                                msg=messageKey+".jpg"
-                                var fos: FileOutputStream =
-                                    FileOutputStream(File(directory, msg))
-                                try {
-                                    //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                } finally {
-                                    try {
-                                        fos.close()
-                                    } catch (e: IOException) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            } else {
-                                //request for the permission
-                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                val uri = Uri.fromParts("package", packageName, null)
-                                intent.data = uri
-                                startActivity(intent)
-                            }
-                        }
-                        else{
-                            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
-                            if(directory.exists()){
-                                directory.mkdirs()
-                            }
-                            msg=messageKey+".jpg"
-                            var fos: FileOutputStream =
-                                FileOutputStream(File(directory,msg))
-                            try {
-                                photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            } finally {
-                                try {
-                                    fos.close()
-                                } catch (e: IOException) {
-                                    e.printStackTrace()
-                                }
-                            }
-                        }
-                    }
-
-                    if(!received){
-                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
-
-
-                        // sendNotification(sender,name,msg,imagepath,application).execute()
-                        val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
-                        refer.addListenerForSingleValueEvent(object :ValueEventListener{
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                if(snapshot.child(messageKey).exists()){
-                                    FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey).child("received").setValue(true)
-                                }
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                TODO("Not yet implemented")
-                            }
-
-                        })
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        })
-    }
+//    suspend fun retrieveMessage(application:Application){
+//        val firebaseUser=FirebaseAuth.getInstance().currentUser!!
+//        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+//
+//        ref.addValueEventListener(object : ValueEventListener {
+//            @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+//
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for(snapshot in snapshot.children){
+//
+//                    val messageKey=snapshot.child("mid").value.toString()
+//                    val user=snapshot.child("userid").value.toString()
+//                    val sender=snapshot.child("sender").value.toString()
+//                    var msg=snapshot.child("message").value.toString()
+//                    val time=snapshot.child("time").value.toString()
+//                    val type=snapshot.child("type").value.toString()
+//                    val url=snapshot.child("url").value.toString()
+//                    val received=snapshot.child("received").value as Boolean
+//
+//                    //time set
+//                    var tm: Date = Date(time.toLong())
+//
+//                    val sdf = SimpleDateFormat("hh:mm a")
+//                    val date= SimpleDateFormat("dd/MM/yy")
+//
+//                    var name:String=""
+//                    var number:String=""
+//                    var imagepath:String=""
+//
+//
+//                    if(ContactViewModel(application).isUserExist(sender)){
+//                        val contactEntity=ContactViewModel(application).getContact(sender)
+//                        name=contactEntity.name
+//                        number=contactEntity.number
+//                        imagepath=contactEntity.image
+//                        if(type=="image"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
+//                        }
+//                        if(type=="doc"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
+//                        }
+//                        if(type=="message"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
+//                        }
+//                    }
+//                    else if(ChatViewModel(application).isUserExist(sender)){
+//                        //get image and name from room db
+//                        val chatEntity=ChatViewModel(application).getChat(sender)
+//                        name=chatEntity.name
+//                        number=chatEntity.number
+//                        imagepath=chatEntity.image
+//                        var unread=chatEntity.unread
+//                        val hide=chatEntity.hide
+//                        if(type=="image"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),hide,unread++,sender))
+//                        }
+//                        if(type=="doc"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),hide,unread++,sender))
+//                        }
+//                        if(type=="message"){
+//                            ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sdf.format(tm),date.format(tm),hide,unread++,sender))
+//                        }
+//                    }
+//                    else{
+//                        //get number as a name from firebase
+//                        //get image and sav it to local storage and internal path from firebase
+//                        val refer=FirebaseDatabase.getInstance().reference.child("Users").child(sender)
+//                        refer.addValueEventListener(object :ValueEventListener{
+//                            override fun onDataChange(snapshot: DataSnapshot) {
+//                                number=snapshot.child("number").value.toString()
+//                                //check message type
+//                                if(type=="image"){
+//                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo", sdf.format(tm),date.format(tm),false,0,sender))
+//                                }
+//                                else{
+//                                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, sdf.format(tm),date.format(tm),false,0,sender))
+//                                }
+//
+//                                //get image of sender
+//                                val image_url=snapshot.child("profile_photo").value.toString()
+//                                if(image_url!=""){
+//                                    GetImageFromUrl(sender,application).execute(image_url)
+//                                    if(type=="image"){
+//                                        ChatViewModel(application).inserChat(ChatEntity(name,number,"","Photo", sdf.format(tm),date.format(tm),false,1,sender))
+//                                    }
+//                                    if(type=="doc"){
+//                                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,1,sender))
+//                                    }
+//                                    if(type=="message"){
+//                                        ChatViewModel(application).inserChat(ChatEntity(name,number,"",msg, sdf.format(tm),date.format(tm),false,1,sender))
+//                                    }
+//                                }
+//                                //     ContactViewModel(application).inserContact(ContactEntity(name,number,"",sender))
+//
+//                            }
+//                            override fun onCancelled(error: DatabaseError) {
+//                                TODO("Not yet implemented")
+//                            }
+//
+//                        })
+//                    }
+//
+//                    if(type=="image"){
+//
+//                        //    MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
+//
+//                        val photo =  GetImageFromUrl().execute(msg).get()
+//
+//                        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+//                            if (Environment.isExternalStorageManager()) {
+//                                val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+//                                if(!directory.exists()){
+//                                    directory.mkdirs()
+//                                }
+//                                msg=messageKey+".jpg"
+//                                var fos: FileOutputStream =
+//                                    FileOutputStream(File(directory, msg))
+//                                try {
+//                                    //      photo.compress(Bitmap.CompressFormat.JPEG, 25, fos)
+//                                } catch (e: Exception) {
+//                                    e.printStackTrace()
+//                                } finally {
+//                                    try {
+//                                        fos.close()
+//                                    } catch (e: IOException) {
+//                                        e.printStackTrace()
+//                                    }
+//                                }
+//                            } else {
+//                                //request for the permission
+//                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+//                                val uri = Uri.fromParts("package", packageName, null)
+//                                intent.data = uri
+//                                startActivity(intent)
+//                            }
+//                        }
+//                        else{
+//                            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Images")
+//                            if(directory.exists()){
+//                                directory.mkdirs()
+//                            }
+//                            msg=messageKey+".jpg"
+//                            var fos: FileOutputStream =
+//                                FileOutputStream(File(directory,msg))
+//                            try {
+//                                photo.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+//                            } catch (e: Exception) {
+//                                e.printStackTrace()
+//                            } finally {
+//                                try {
+//                                    fos.close()
+//                                } catch (e: IOException) {
+//                                    e.printStackTrace()
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    if(!received){
+//                        MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,msg,sdf.format(tm),date.format(tm),type,url,false,false,false))
+//
+//
+//                        // sendNotification(sender,name,msg,imagepath,application).execute()
+//                        val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+//                        refer.addListenerForSingleValueEvent(object :ValueEventListener{
+//                            override fun onDataChange(snapshot: DataSnapshot) {
+//                                if(snapshot.child(messageKey).exists()){
+//                                    FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(messageKey).child("received").setValue(true)
+//                                }
+//                            }
+//
+//                            override fun onCancelled(error: DatabaseError) {
+//                                TODO("Not yet implemented")
+//                            }
+//
+//                        })
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//        })
+//    }
 
     companion object{
         const val CHANNEL_ID="com.ayush.flow"
@@ -866,64 +978,64 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
 
-
-    inner class saveToInternalStorage:AsyncTask<Void,Void,Boolean>{
-
-        var path:String?=null
-        var user:String?=null
-        var bitmapImage:Bitmap?=null
-        var app:Application?=null
-
-        constructor(bitmapImage: Bitmap, user: String,appl: Application) : super() {
-            this.user=user
-            this.bitmapImage=bitmapImage
-            app=appl
-        }
-
-        override fun onPostExecute(result: Boolean?) {
-            super.onPostExecute(result)
-            ContactViewModel(application).updateImage(user!!,user+".jpg")
-        }
-
-        override fun doInBackground(vararg params: Void?): Boolean {
-            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
-            if(directory.exists()){
-                path=user+".jpg"
-                var fos: FileOutputStream = FileOutputStream(File(directory, path))
-                try {
-                    bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    try {
-                        fos.close()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-            else{
-                directory.mkdirs()
-                if (directory.isDirectory) {
-                    path=user+".jpg"
-                    val fos = FileOutputStream(File(directory, path))
-                    try {
-                        bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    } finally {
-                        try {
-                            fos.close()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            }
-            return true
-        }
-
-    }
+//
+//    inner class saveToInternalStorage:AsyncTask<Void,Void,Boolean>{
+//
+//        var path:String?=null
+//        var user:String?=null
+//        var bitmapImage:Bitmap?=null
+//        var appl:Application?=null
+//
+//        constructor(bitmapImage: Bitmap, user: String,appl: Application) : super() {
+//            this.user=user
+//            this.bitmapImage=bitmapImage
+//            this.appl=appl
+//        }
+//
+//        override fun onPostExecute(result: Boolean?) {
+//            super.onPostExecute(result)
+//            ContactViewModel(appl!!).updateImage(user!!,user+".jpg")
+//        }
+//
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Contacts Images")
+//            if(directory.exists()){
+//                path=user+".jpg"
+//                var fos: FileOutputStream = FileOutputStream(File(directory, path))
+//                try {
+//                    bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                } finally {
+//                    try {
+//                        fos.close()
+//                    } catch (e: IOException) {
+//                        e.printStackTrace()
+//                    }
+//                }
+//            }
+//            else{
+//                directory.mkdirs()
+//                if (directory.isDirectory) {
+//                    path=user+".jpg"
+//                    val fos = FileOutputStream(File(directory, path))
+//                    try {
+//                        bitmapImage!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    } finally {
+//                        try {
+//                            fos.close()
+//                        } catch (e: IOException) {
+//                            e.printStackTrace()
+//                        }
+//                    }
+//                }
+//            }
+//            return true
+//        }
+//
+//    }
 
 
 
@@ -961,14 +1073,14 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     inner class deleteMsgs(val application: Application,val id:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
-            val firebaseUser=FirebaseAuth.getInstance().currentUser!!
-            MessageViewModel(application).deleteMsgWithId(firebaseUser.uid+"-"+id)
+            val myuserId=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")
+            MessageViewModel(application).deleteMsgWithId(myuserId+"-"+id)
 
             val refer=FirebaseDatabase.getInstance().reference.child("Messages")
             refer.addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if(snapshot.hasChild(firebaseUser.uid)){
-                        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
+                    if(snapshot.hasChild(myuserId!!)){
+                        val ref = FirebaseDatabase.getInstance().reference.child("Messages").child(myuserId)
 
                         ref.addListenerForSingleValueEvent(object :ValueEventListener{
                             override fun onDataChange(snapShot: DataSnapshot) {
@@ -999,57 +1111,42 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     }
 
 
-    inner class GetImageFromUrl(val userid: String,val appl:Application) : AsyncTask<String?, Void?, Bitmap>() {
-        var bmp:Bitmap?=null
-
-        override fun onPostExecute(result: Bitmap?) {
-            super.onPostExecute(result)
-            saveToInternalStorage(bmp!!,userid,appl).execute()
-        }
-
-        override fun doInBackground(vararg url: String?): Bitmap {
-            val stringUrl = url[0]
-            val options = BitmapFactory.Options()
-            options.inSampleSize = 1
-            while (options.inSampleSize <= 32) {
-                val inputStream = URL(stringUrl).openStream()
-                try {
-                    bmp= BitmapFactory.decodeStream(inputStream, null, options)
-                    inputStream.close()
-                    break
-                } catch (outOfMemoryError: OutOfMemoryError) {
-                }
-                options.inSampleSize++
-            }
-
-         return bmp!!
-        }
-    }
+//    inner class GetImageFromUrl(val userid: String,val appl:Application) : AsyncTask<String?, Void?, Bitmap>() {
+//        var bmp:Bitmap?=null
+//
+//        override fun onPostExecute(result: Bitmap?) {
+//            super.onPostExecute(result)
+//            saveToInternalStorage(bmp!!,userid,appl).execute()
+//        }
+//
+//        override fun doInBackground(vararg url: String?): Bitmap {
+//            val stringUrl = url[0]
+//            val options = BitmapFactory.Options()
+//            options.inSampleSize = 1
+//            while (options.inSampleSize <= 32) {
+//                val inputStream = URL(stringUrl).openStream()
+//                try {
+//                    bmp= BitmapFactory.decodeStream(inputStream, null, options)
+//                    inputStream.close()
+//                    break
+//                } catch (outOfMemoryError: OutOfMemoryError) {
+//                }
+//                options.inSampleSize++
+//            }
+//
+//         return bmp!!
+//        }
+//    }
 
     override fun onResume() {
         super.onResume()
-        hiddenViewModel.getText().observe(this,Observer{it->
-            if(it=="0"){
-
-            }
-            else{
-                story_box.visibility=View.GONE
-                story_text.visibility=View.GONE
-                hidden.visibility=View.GONE
-
-                chat_text.text="Private Chats"
-                hidden_close.visibility=View.VISIBLE
-
-                openChatHome(1)
-            }
-        })
         try {
-            val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),firebaseUser.uid+".jpg")
-//            val b = BitmapFactory.decodeStream(FileInputStream(f))
-//            profile.setImageBitmap(b)
-            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(profile)
+            val f = File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")
+            val b = BitmapFactory.decodeStream(FileInputStream(f))
+            profile.setImageBitmap(b)
+//            Glide.with(this).load(f).diskCacheStrategy(
+//                DiskCacheStrategy.RESOURCE)
+//                .skipMemoryCache(true).into(profile)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }
@@ -1067,7 +1164,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         val refreshToken = FirebaseInstanceId.getInstance().token
         val token = Token(refreshToken!!)
         FirebaseDatabase.getInstance().getReference("Token").child(
-            FirebaseAuth.getInstance().currentUser!!.uid
+            SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")!!
         ).setValue(token)
     }
 

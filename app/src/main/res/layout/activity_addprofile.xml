@@ -21,6 +21,7 @@
             android:layout_height="150dp"
             android:layout_centerHorizontal="true"
             android:src="@drawable/user"
+            android:background="@drawable/circle_shadow"
             app:civ_circle_background_color="@color/white"
             app:civ_border_width="2dp"
             android:elevation="20dp"
@@ -64,12 +65,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="10dp"
-            app:cardElevation="40dp"
+            app:cardElevation="12dp"
             android:id="@+id/name"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="30dp"
             android:layout_marginHorizontal="40dp"
             android:layout_below="@+id/cams"
+            android:background="?attr/selectableItemBackground"
             app:cardBackgroundColor="@color/white">
 
             <EditText
@@ -92,7 +94,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="10dp"
             android:layout_centerHorizontal="true"
-            app:cardElevation="40dp"
+            app:cardElevation="12dp"
             android:id="@+id/status"
             android:layout_marginHorizontal="40dp"
             android:layout_marginTop="30dp"

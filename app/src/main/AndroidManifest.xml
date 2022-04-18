@@ -6,6 +6,8 @@
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
@@ -35,7 +37,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.Flow"
         android:requestLegacyExternalStorage="true"
-        android:usesCleartextTraffic="true">
+       >
         <activity
             android:name=".activity.LoadingCons">
 

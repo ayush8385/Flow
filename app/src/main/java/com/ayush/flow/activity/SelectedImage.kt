@@ -8,18 +8,25 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.Services.ImageHandling
+import com.ayush.flow.Services.ImageHolder
+import com.ayush.flow.Services.SharedPreferenceUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import java.io.File
 
 class SelectedImage : AppCompatActivity() {
-    lateinit var image: TouchImageView
+    lateinit var image:TouchImageView
     lateinit var back: ImageView
     lateinit var sendImg: ImageView
+    lateinit var userId:String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_view)
@@ -30,27 +37,33 @@ class SelectedImage : AppCompatActivity() {
 
         var photoBitmap : Bitmap? =null
         val type=intent.getStringExtra("type")
+        userId=intent.getStringExtra("userid")!!
 
-        if(type=="view"){
-            Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(image)
+        if(type=="view" || type=="msgImg"){
+            if(userId==Constants.MY_USERID){
+                Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),userId+".jpg")).placeholder(android.R.color.transparent).diskCacheStrategy(
+                    DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true).into(image)
+            }
+            else{
+                Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),userId+".jpg")).placeholder(android.R.color.transparent).diskCacheStrategy(
+                    DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true).into(image)
+            }
+//            image.setImageDrawable(ImageHolder.imageDraw)
+//                Log.e("imagepath",ImageHolder.imagePath.toString())
+//            Glide.with(this).load(ImageHolder.imagePath).placeholder(R.drawable.user).diskCacheStrategy(
+//                DiskCacheStrategy.NONE)
+//                .skipMemoryCache(true).into(image)
             sendImg.visibility= View.GONE
         }
-        else if(type=="msgImg"){
-            Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Chat Images"),intent.getStringExtra("userid")!!+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(image)
-            sendImg.visibility= View.GONE
-        }
-
         else{
-          //  if (intent.hasExtra("image")){
-                //convert to bitmap
-               // val byteArray = intent.getByteArrayExtra("image")
-                photoBitmap = MediaStore.Images.Media.getBitmap(contentResolver,intent.data)
-                image.setImageBitmap(photoBitmap)
-           // }
+//            if (intent.hasExtra("image")){
+//                val byteArray = intent.getByteArrayExtra("image")
+//                photoBitmap = MediaStore.Images.Media.getBitmap(contentResolver,)
+//                image.setImageBitmap(photoBitmap)
+//            }
+            image.setImageBitmap(ImageHolder.imageBitmap)
         }
 
         back.setOnClickListener {
@@ -59,10 +72,11 @@ class SelectedImage : AppCompatActivity() {
 
         sendImg.setOnClickListener {
             if(type=="profile"){
-                var imagepath = Addprofile().saveToInternalStorage(photoBitmap!!).execute().get()
+                ImageHandling.saveToInternalStorage(photoBitmap!!,Constants.PROFILE_PHOTO_LOCATION,SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")
+               // var imagepath = Addprofile().saveToInternalStorage(photoBitmap!!).execute().get()
 
                 uploadImage(photoBitmap).execute()
-                getSharedPreferences("Shared Preference", Context.MODE_PRIVATE).edit().putString("profile", imagepath).apply()
+//                getSharedPreferences("Shared Preference", Context.MODE_PRIVATE).edit().putString("profile", imagepath).apply()
                 finish()
             }
             if(type=="message"){
@@ -78,5 +92,10 @@ class SelectedImage : AppCompatActivity() {
             }
 
         }
+    }
+
+    override fun onDestroy() {
+        ImageHolder.imageDraw=null
+        super.onDestroy()
     }
 }

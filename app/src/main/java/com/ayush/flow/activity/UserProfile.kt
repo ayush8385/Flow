@@ -7,10 +7,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.Image
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.view.View
 import android.widget.*
@@ -19,7 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import com.ayush.flow.R
-import com.ayush.flow.Services.Permissions
+import com.ayush.flow.Services.*
 import com.ayush.flow.database.ChatViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -54,6 +56,10 @@ class UserProfile : AppCompatActivity() {
     lateinit var edt_about: ImageView
     lateinit var firebaseUser: FirebaseUser
     lateinit var back:ImageView
+    lateinit var updateImgLayout:RelativeLayout
+    lateinit var backImg:ImageView
+    lateinit var updtImg:TouchImageView
+    lateinit var updtImgbtn:ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_profile)
@@ -72,16 +78,19 @@ class UserProfile : AppCompatActivity() {
         edt_about=findViewById(R.id.edt_abt)
         image_card=findViewById(R.id.img_card)
         parent=findViewById(R.id.user_parent)
+        updateImgLayout=findViewById(R.id.update_img_now)
+        backImg=findViewById(R.id.back_now)
+        updtImg=findViewById(R.id.update_select_img)
+        updtImgbtn=findViewById(R.id.updimg_btn)
         firebaseUser=FirebaseAuth.getInstance().currentUser!!
         back=findViewById(R.id.back)
 
-        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 
+        name.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,"")
+        about.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.ABOUT,"I'm with the Flow")
+        number.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.NUMBER,"")
 
-
-        name.text=sharedPreferences.getString("name","")
-        about.text=sharedPreferences.getString("about","")
-        number.text=sharedPreferences.getString("number","")
+        settings.visibility=View.GONE
 
 
         edt_img.setOnClickListener {
@@ -182,8 +191,43 @@ class UserProfile : AppCompatActivity() {
             bottomSheetDialog.show()
         }
 
+        image.setOnClickListener {
+          //  ImageHolder.imageDraw=image.drawable
+            val intent = Intent(this,SelectedImage::class.java)
+            intent.putExtra("type","view")
+            intent.putExtra("userid",Constants.MY_USERID)
+            startActivity(intent)
+        }
+
+        signout.visibility=View.GONE
         signout.setOnClickListener {
             signoutUser()
+        }
+
+        backImg.setOnClickListener {
+            updtImg.setImageResource(android.R.color.transparent)
+            photo=null
+            updateImgLayout.visibility=View.GONE
+        }
+
+        updtImgbtn.setOnClickListener {
+            if(photo!=null){
+                ImageHandling.saveToInternalStorage(photo!!,Constants.PROFILE_PHOTO_LOCATION,Constants.MY_USERID+".jpg").execute()
+                uploadImage(photo!!).execute()
+                image.setImageBitmap(photo)
+            }
+            updtImg.setImageResource(android.R.color.transparent)
+            updateImgLayout.visibility=View.GONE
+        }
+    }
+
+    override fun onBackPressed() {
+        if(updateImgLayout.visibility==View.VISIBLE){
+            updateImgLayout.visibility=View.GONE
+            updtImg.setImageResource(android.R.color.transparent)
+        }
+        else{
+            super.onBackPressed()
         }
     }
 
@@ -192,7 +236,7 @@ class UserProfile : AppCompatActivity() {
     }
 
     override fun onResume() {
-        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))).placeholder(R.drawable.user).diskCacheStrategy(
+        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
             DiskCacheStrategy.NONE)
             .skipMemoryCache(true).into(image)
         super.onResume()
@@ -206,6 +250,7 @@ class UserProfile : AppCompatActivity() {
 
     fun openCamera(){
         photofile = getphotofile("profile_photo")
+        imagepath=photofile.absolutePath
         imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
         val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
@@ -217,39 +262,77 @@ class UserProfile : AppCompatActivity() {
         return File.createTempFile(fileName, ".jpg", storage)
     }
 
+    inner class getRealPathFromURI(val context: Context,val uri: Uri?):AsyncTask<Void,Void,String>() {
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            photo = ImageCompression(context).execute(result).get()
+            updtImg.setImageBitmap(photo)
+        }
+        override fun doInBackground(vararg p0: Void?): String {
+            var filePath = ""
+            val wholeID = DocumentsContract.getDocumentId(uri)
+
+            // Split at colon, use second item in the array
+            val id = wholeID.split(":".toRegex()).toTypedArray()[1]
+            val column = arrayOf(MediaStore.Images.Media.DATA)
+
+            // where id is equal to
+            val sel = MediaStore.Images.Media._ID + "=?"
+            val cursor = context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                column, sel, arrayOf(id), null
+            )
+            val columnIndex = cursor!!.getColumnIndex(column[0])
+            if (cursor.moveToFirst()) {
+                filePath = cursor.getString(columnIndex)
+            }
+            cursor.close()
+            return filePath
+        }
+
+
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if(requestCode==110 && resultCode== Activity.RESULT_OK){
             if(imageuri!=null){
                 try {
-                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                    updateImgLayout.visibility=View.VISIBLE
+                    photo = ImageCompression(this).execute(imagepath).get()
+                    updtImg.setImageBitmap(photo)
                 } catch (e: IOException) {
                     e.printStackTrace();
                 }
             }
         }
         else if(requestCode==112 && resultCode== Activity.RESULT_OK){
-            val filepath=data!!.data
+            imageuri=data!!.data
             try {
-                photo=MediaStore.Images.Media.getBitmap(contentResolver,filepath)
+                if(imageuri!=null){
+                    updateImgLayout.visibility=View.VISIBLE
+                    getRealPathFromURI(this,imageuri!!).execute()
+                }
             } catch (e: IOException) {
                 e.printStackTrace();
             }
         }
-        if(photo!=null){
-            val intent = Intent(this,SelectedImage::class.java)
-            var fos  =  ByteArrayOutputStream()
-            photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-            val byteArray = fos.toByteArray()
-            intent.putExtra("type","profile")
-            intent.putExtra("image", byteArray)
-            intent.putExtra("userid",firebaseUser.uid)
-            intent.putExtra("name","")
-            intent.putExtra("number","")
-            intent.putExtra("user_image","")
-            startActivity(intent)
-        }
+//        if(photo!=null){
+//            val intent = Intent(this,SelectedImage::class.java)
+////            var fos  =  ByteArrayOutputStream()
+////            photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+////            val byteArray = fos.toByteArray()
+//            ImageHolder.imageBitmap=photo
+//            intent.putExtra("type","profile")
+//        //    intent.putExtra("image", byteArray)
+//            intent.putExtra("userid",firebaseUser.uid)
+//            intent.putExtra("name","")
+//            intent.putExtra("number","")
+//            intent.putExtra("user_image","")
+//            startActivity(intent)
+//        }
     }
 
 

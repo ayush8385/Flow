@@ -210,6 +210,57 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <RelativeLayout
+        android:id="@+id/update_img_now"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5000000"
+        android:visibility="gone"
+        android:translationZ="60dp">
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateTint="#F7FFFFFF"
+            android:padding="10dp" />
+
+        <com.ayush.flow.activity.TouchImageView
+            android:id="@+id/update_select_img"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:scaleType="fitCenter"/>
+
+
+
+        <ImageView
+            android:id="@+id/back_now"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/chat_back"
+            android:backgroundTint="@color/black"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="10dp"
+            android:tint="@color/white"
+            android:src="@drawable/ic_baseline_arrow_back_ios_new_24" />
+
+        <ImageView
+            android:id="@+id/updimg_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="25dp"
+            android:layout_marginBottom="50dp"
+            android:src="@drawable/send" />
+    </RelativeLayout>
+
 
 
 

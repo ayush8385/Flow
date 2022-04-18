@@ -6,14 +6,13 @@
     android:id="@+id/swipelayout"
     app:dragEdge="right"
     app:flingVelocity="100"
-    android:layout_marginBottom="6dp"
+    android:layout_marginBottom="3dp"
     android:background="?selectableItemBackground"
     app:mode="same_level">
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:background="@drawable/invite_back"
         android:orientation="horizontal">
         <ImageView
             android:layout_width="55dp"
@@ -55,15 +54,16 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
         android:id="@+id/paren"
-        android:background="?selectableItemBackground"
-        android:paddingVertical="5dp">
+        android:background="?selectableItemBackground">
+
         <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="57dp"
-            android:layout_height="57dp"
             android:id="@+id/profile_pic"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
             android:layout_centerVertical="true"
-            android:src="@drawable/user"
-            android:scaleType="centerCrop"/>
+            android:background="@drawable/circle_shadow"
+            android:scaleType="centerCrop"
+            android:src="@drawable/user" />
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

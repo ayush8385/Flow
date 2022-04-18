@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="10dp"
         android:id="@+id/toolbar"
-
         android:layout_marginHorizontal="2dp"
         app:cardElevation="60dp">
         <RelativeLayout
@@ -31,14 +30,16 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
                 android:id="@+id/back"/>
+
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/user_pic"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:src="@drawable/user"
-                android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/circle_shadow"
                 android:layout_toRightOf="@+id/back"
-                android:id="@+id/user_pic"/>
+                android:src="@drawable/user" />
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -131,41 +132,45 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/white">
+
             <RelativeLayout
+                android:id="@+id/send_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="8dp"
-                android:id="@+id/send_box"
-                android:paddingHorizontal="6dp">
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="8dp">
+
                 <ImageView
+                    android:id="@+id/more"
                     android:layout_width="39dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-                    android:id="@+id/more"
-                    android:layout_alignParentLeft="true"/>
+                    android:layout_alignParentLeft="true"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
+
                 <EditText
+                    android:id="@+id/send_text"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
-                    android:hint="Send a message..."
-                    android:textColor="@color/black"
-                    android:id="@+id/send_text"
-                    android:paddingVertical="5dp"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/senregular"
-                    android:cursorVisible="false"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:layout_toLeftOf="@+id/send_btn"
+                    android:layout_toRightOf="@+id/more"
+                    android:background="@drawable/chat_back"
+                    android:cursorVisible="false"
+                    android:fontFamily="@font/senregular"
+                    android:hint="Send a message..."
                     android:paddingHorizontal="12dp"
 
-                    android:background="@drawable/chat_back"
-                    android:layout_toRightOf="@+id/more"
-                    android:layout_toLeftOf="@+id/send_btn"/>
+                    android:paddingVertical="5dp"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+
                 <ImageView
+                    android:id="@+id/send_btn"
                     android:layout_width="39dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/send"
-                    android:id="@+id/send_btn"
-                    android:layout_alignParentRight="true"/>
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/send" />
             </RelativeLayout>
 
             <LinearLayout
@@ -251,8 +256,6 @@
         android:id="@+id/selected"
         app:cardCornerRadius="10dp"
         android:visibility="gone"
-        android:backgroundTint="#00000000"
-        android:layout_marginHorizontal="5dp"
         android:layout_alignParentBottom="true">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -278,8 +281,8 @@
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_baseline_delete_sweep_24"/>
             <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:id="@+id/forward"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="20dp"
@@ -291,132 +294,147 @@
                 android:layout_height="32dp"
                 android:id="@+id/close"
                 android:layout_centerVertical="true"
-                android:layout_marginRight="20dp"
+                android:layout_marginRight="5dp"
                 android:src="@drawable/ic_baseline_close_24"
                 android:layout_alignParentRight="true"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="500dp"
-        app:cardCornerRadius="20dp"
-        android:id="@+id/fwd_card"
-        android:visibility="gone"
-        android:layout_marginBottom="-20dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginHorizontal="30dp">
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:layout_height="match_parent">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Forward to..."
-                android:textSize="19sp"
-                android:fontFamily="@font/open_sans"
-                android:textColor="@color/black"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="20dp"
-                android:id="@+id/fwd_txt"/>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/close_fwd"
-                android:src="@drawable/ic_baseline_close_24"
-                android:layout_alignParentRight="true"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="20dp"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="15dp"
-                tools:listitem="@layout/fwd_to_single_row"
-                android:layout_below="@+id/fwd_txt"
-                android:id="@+id/forwarded_to"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                android:orientation="horizontal"/>
-            <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/forwarded_to"
-                android:layout_marginTop="5dp"
-                android:layout_marginLeft="10dp"
-                android:id="@+id/selectAll"
-                android:text="Select All"/>
-            <androidx.appcompat.widget.SearchView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/searchview_fwd"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="5dp"
-                app:queryBackground="@android:color/transparent"
-                android:layout_below="@+id/forwarded_to"
-                android:layout_alignParentRight="true"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:clipToPadding="false"
-                android:id="@+id/forwardrecycler"
-                android:layout_below="@+id/searchview_fwd"
-                tools:listitem="@layout/fwd_single_row"/>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:rotation="40"
-                android:id="@+id/fwd_btn"
-                android:layout_margin="20dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:elevation="10dp"
-                android:background="@drawable/fwd_back"
-                android:src="@drawable/fwd_send" />
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="500dp"-->
+<!--        app:cardCornerRadius="20dp"-->
+<!--        android:id="@+id/fwd_card"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_marginBottom="-20dp"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_marginHorizontal="30dp">-->
+<!--        <RelativeLayout-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_marginBottom="20dp"-->
+<!--            android:layout_height="match_parent">-->
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Forward to..."-->
+<!--                android:textSize="19sp"-->
+<!--                android:fontFamily="@font/open_sans"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:paddingVertical="10dp"-->
+<!--                android:paddingHorizontal="20dp"-->
+<!--                android:id="@+id/fwd_txt"/>-->
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:id="@+id/close_fwd"-->
+<!--                android:src="@drawable/ic_baseline_close_24"-->
+<!--                android:layout_alignParentRight="true"-->
+<!--                android:paddingVertical="10dp"-->
+<!--                android:paddingHorizontal="20dp"/>-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingLeft="15dp"-->
+<!--                tools:listitem="@layout/fwd_to_single_row"-->
+<!--                android:layout_below="@+id/fwd_txt"-->
+<!--                android:id="@+id/forwarded_to"-->
+<!--                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--                android:orientation="horizontal"/>-->
+<!--            <CheckBox-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@+id/forwarded_to"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                android:layout_marginLeft="10dp"-->
+<!--                android:id="@+id/selectAll"-->
+<!--                android:text="Select All"/>-->
+<!--            <androidx.appcompat.widget.SearchView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:id="@+id/searchview_fwd"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                android:layout_marginRight="5dp"-->
+<!--                app:queryBackground="@android:color/transparent"-->
+<!--                android:layout_below="@+id/forwarded_to"-->
+<!--                android:layout_alignParentRight="true"/>-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="4dp"-->
+<!--                android:clipToPadding="false"-->
+<!--                android:id="@+id/forwardrecycler"-->
+<!--                android:layout_below="@+id/searchview_fwd"-->
+<!--                tools:listitem="@layout/fwd_single_row"/>-->
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:padding="10dp"-->
+<!--                android:rotation="40"-->
+<!--                android:id="@+id/fwd_btn"-->
+<!--                android:layout_margin="20dp"-->
+<!--                android:layout_alignParentBottom="true"-->
+<!--                android:layout_alignParentRight="true"-->
+<!--                android:elevation="10dp"-->
+<!--                android:background="@drawable/fwd_back"-->
+<!--                android:src="@drawable/fwd_send" />-->
+<!--        </RelativeLayout>-->
+<!--    </androidx.cardview.widget.CardView>-->
     <View
         android:id="@+id/dim"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#8A000000" />
+
     <RelativeLayout
+        android:id="@+id/send_img_now"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
+        android:background="#F5000000"
         android:visibility="gone"
-        android:id="@+id/send_img_now"
         android:translationZ="60dp">
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateTint="#F7FFFFFF"
+            android:padding="10dp" />
+
         <com.ayush.flow.activity.TouchImageView
             android:id="@+id/send_select_img"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/user"
-            />
+            android:scaleType="fitCenter"/>
+
+
 
         <ImageView
+            android:id="@+id/back_now"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="10dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/chat_back"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
-            android:id="@+id/back_now"/>
+            android:backgroundTint="@color/black"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="10dp"
+            android:tint="@color/white"
+            android:src="@drawable/ic_baseline_arrow_back_ios_new_24" />
 
         <ImageView
+            android:id="@+id/sendimg_btn"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
             android:layout_marginRight="25dp"
             android:layout_marginBottom="50dp"
-            android:src="@drawable/send"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:id="@+id/sendimg_btn"/>
+            android:src="@drawable/send" />
     </RelativeLayout>
 
 

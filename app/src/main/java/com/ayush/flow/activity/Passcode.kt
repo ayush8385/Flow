@@ -16,11 +16,13 @@ import com.hanks.passcodeview.PasscodeView
 class Passcode : AppCompatActivity() {
     lateinit var passcodeView: PasscodeView
     lateinit var sharedPreferences: SharedPreferences
+    lateinit var hiddenViewModel: HiddenViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_passcode)
 
         passcodeView=findViewById(R.id.passcode_view)
+        hiddenViewModel=ViewModelProviders.of(this).get(HiddenViewModel::class.java)
 
         val n=intent.getIntExtra("n",0)
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
@@ -61,7 +63,7 @@ class Passcode : AppCompatActivity() {
                 .setLocalPasscode(sharedPreferences.getString("passcode",""))
                 .setListener(object :PasscodeView.PasscodeViewListener{
                     override fun onFail() {
-                        Toast.makeText(applicationContext,"Wrong",Toast.LENGTH_LONG).show()
+                        Toast.makeText(applicationContext,"Wrong Passcode",Toast.LENGTH_LONG).show()
                     }
 
                     override fun onSuccess(number: String?) {
@@ -74,10 +76,12 @@ class Passcode : AppCompatActivity() {
                             finish()
                         }
                         else{
-                            val intent = Intent(this@Passcode,Dashboard::class.java)
-                            intent.putExtra("private",1)
-                            startActivity(intent)
-                            finishAffinity()
+//                            val intent = Intent(this@Passcode,Dashboard::class.java)
+//                            intent.putExtra("private",1)
+                            hiddenViewModel.setText("1")
+//                            startActivity(intent)
+//                            finishAffinity()
+                            finish()
                         }
 
                     }

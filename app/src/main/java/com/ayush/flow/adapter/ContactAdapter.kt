@@ -16,7 +16,10 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.Services.ImageHolder
 import com.ayush.flow.activity.Message
+import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ContactEntity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -55,7 +58,7 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
                 holder.invite.visibility=View.VISIBLE
             }
 
-            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
                 DiskCacheStrategy.NONE)
                 .skipMemoryCache(true).into(holder.image)
 
@@ -95,6 +98,14 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
                 } catch (e: Exception) {
                     //e.toString();
                 }
+            }
+
+            holder.image.setOnClickListener {
+//                ImageHolder.imageDraw=holder.image.drawable
+                val intent = Intent(context,SelectedImage::class.java)
+                intent.putExtra("type","view")
+                intent.putExtra("userid",cons.id)
+                context.startActivity(intent)
             }
         }
     }

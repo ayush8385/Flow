@@ -73,15 +73,16 @@
                         android:scaleType="centerCrop"
                         android:layout_height="match_parent"
                         android:layout_alignParentTop="true" />
+
                     <ProgressBar
+                        android:id="@+id/progressbar"
                         android:layout_width="55dp"
                         android:layout_height="55dp"
-                        android:background="@drawable/bottom_nav_back"
-                        android:layout_alignParentBottom="true"
                         android:layout_alignParentRight="true"
+                        android:layout_alignParentBottom="true"
+                        android:background="@drawable/bottom_nav_back"
                         android:indeterminateTint="#F7FFFFFF"
-                        android:padding="10dp"
-                        android:id="@+id/progressbar"/>
+                        android:padding="10dp" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 

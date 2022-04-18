@@ -15,37 +15,34 @@
         android:id="@+id/title_detail"
         android:paddingHorizontal="20dp"
         android:layout_marginBottom="10dp">
+
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:fontFamily="@font/michroma"
             android:text="Messages"
-            android:id="@+id/title"
-            android:layout_centerVertical="true"
             android:textColor="@color/black"
-            android:textStyle="bold"
-            android:textSize="22sp"/>
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <ImageView
+            android:id="@+id/mode"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:id="@+id/mode"
-            android:layout_toLeftOf="@+id/user_img"
+            android:layout_centerInParent="true"
             android:layout_marginRight="30dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:layout_centerInParent="true"/>
+            android:layout_toLeftOf="@+id/user_img"
+            android:background="?selectableItemBackgroundBorderless" />
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/user"
-            app:civ_border_width="1.2dp"
-            app:civ_circle_background_color="@color/black"
-            android:elevation="10dp"
-            app:civ_border_color="@color/black"
             android:id="@+id/user_img"
             android:layout_centerVertical="true"
-            android:background="?selectableItemBackgroundBorderless"
+            android:background="@drawable/circle_shadow"
             android:layout_alignParentRight="true"/>
     </RelativeLayout>
 
@@ -90,43 +87,48 @@
         android:layout_marginLeft="20dp"
         android:textSize="18sp"
         android:fontFamily="@font/senregular"/>
+
     <LinearLayout
+        android:id="@+id/story_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/stories"
         android:layout_marginVertical="5dp"
-        android:orientation="horizontal"
-        android:id="@+id/story_box"
-        android:layout_below="@id/stories">
+        android:orientation="horizontal">
+
         <RelativeLayout
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="16dp"
-            android:layout_height="wrap_content">
+            android:layout_marginRight="16dp">
+
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/story_img"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
-                android:id="@+id/story_img"
-                android:padding="10dp"
                 android:background="@drawable/bottom_back"
-                android:src="@drawable/ic_baseline_add_24"/>
+                android:padding="10dp"
+                android:src="@drawable/ic_baseline_add_24" />
+
             <TextView
+                android:id="@+id/story_txt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Me"
-                android:id="@+id/story_txt"
                 android:layout_below="@+id/story_img"
                 android:layout_centerHorizontal="true"
-                android:textSize="13sp"
+                android:fontFamily="@font/senregular"
+                android:text="Me"
                 android:textColor="@color/black"
-                android:fontFamily="@font/senregular"/>
+                android:textSize="13sp" />
         </RelativeLayout>
+
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/storyrecycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/story_single_row"
-            android:id="@+id/storyrecycler"/>
+            tools:listitem="@layout/story_single_row" />
     </LinearLayout>
     <TextView
         android:layout_width="wrap_content"
@@ -167,8 +169,7 @@
         android:layout_below="@+id/chats"
         android:layout_marginTop="5dp"
         android:clipToPadding="false"
-        android:paddingBottom="60dp"
-        tools:listitem="@layout/chats_single_row" />
+        android:paddingBottom="60dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"

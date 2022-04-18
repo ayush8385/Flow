@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
 import com.ayush.flow.database.ChatEntity
 import com.bumptech.glide.Glide
 import de.hdodenhof.circleimageview.CircleImageView
@@ -33,7 +34,7 @@ class ForwardToAdapter(val context: Context,val listener:ForwardAdapter.OnAdapte
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         var chat=allChats[position]
 
-        val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),chat.image)
+        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
         Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
 
         holder.delete.setOnClickListener {

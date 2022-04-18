@@ -2,17 +2,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/paren"
-    android:background="?selectableItemBackground"
-    android:layout_marginBottom="2dp"
-    android:orientation="horizontal">
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp">
+    android:id="@+id/paren_fwd"
+    android:paddingVertical="6dp"
+    android:background="?attr/selectableItemBackground"
+    android:paddingHorizontal="16dp">
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="45dp"
             android:layout_height="45dp"
@@ -22,7 +15,7 @@
             android:scaleType="centerCrop"/>
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="fdsfkhjk"
             android:maxLines="1"
             android:fontFamily="@font/open_sans"
@@ -42,7 +35,6 @@
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
             android:id="@+id/selected_chat"/>
-    </RelativeLayout>
     <!--    <View-->
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="0.5dp"-->
