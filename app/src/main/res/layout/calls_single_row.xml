@@ -1,55 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/paren"
-        android:paddingLeft="16dp">
+        android:layout_marginTop="4dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/caller_pic"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_centerVertical="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
         android:background="@drawable/circle_shadow"
         android:scaleType="centerCrop"
         android:src="@drawable/user" />
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/caller_pic"
-            android:paddingLeft="12dp"
-            android:layout_centerVertical="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:fontFamily="@font/senbold"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:id="@+id/caller_name"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxWidth="300dp"
-                android:text=""
-                android:maxLines="1"
-                android:layout_marginTop="4dp"
-                android:layout_below="@+id/caller_name"
-                android:textSize="13sp"
-                android:textStyle="normal"
-                android:fontFamily="@font/senregular"
-                android:id="@+id/call_reason"/>
-        </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text=""
+        android:fontFamily="@font/senbold"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="12dp"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="@id/caller_pic"
+        app:layout_constraintBottom_toTopOf="@+id/call_time"
+        app:layout_constraintStart_toEndOf="@id/caller_pic"
+        android:id="@+id/caller_name"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="300dp"
+        android:text=""
+        android:drawablePadding="6dp"
+        android:maxLines="1"
+        android:textSize="13sp"
+        android:layout_marginStart="8dp"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toBottomOf="@id/caller_pic"
+        app:layout_constraintTop_toBottomOf="@id/caller_name"
+        app:layout_constraintStart_toEndOf="@id/caller_pic"
+        android:fontFamily="@font/senregular"
+        android:id="@+id/call_time"/>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
+            app:layout_constraintTop_toTopOf="@id/caller_pic"
+            app:layout_constraintBottom_toBottomOf="@id/caller_pic"
             android:background="@drawable/invite_back"
             android:paddingHorizontal="20dp"
-            android:layout_marginRight="-10dp"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_height="wrap_content">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="40dp"
@@ -74,4 +83,4 @@
                 android:layout_alignParentRight="true"
                 android:src="@drawable/video_call"/>
         </LinearLayout>
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>

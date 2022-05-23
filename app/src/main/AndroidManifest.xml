@@ -99,14 +99,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <service android:name=".activity.LoadContacts"
+            android:exported="false"/>
         <service
             android:name=".activity.SinchService"
             android:enabled="true" />
         <service
             android:name=".Services.BackgroundService"
-            android:enabled="true"
-            android:exported="true" />
+            android:enabled="true"/>
         <service
             android:name=".Notification.MessagingService"
             android:enabled="true"

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ import com.ayush.flow.database.ContactEntity
 import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -58,9 +60,7 @@ class Contact : AppCompatActivity() {
         pullToRefresh.setOnRefreshListener {
             if(ConnectionManager().checkconnectivity(this)){
                 if(Permissions().checkContactpermission(this)){
-                    GlobalScope.launch {
-                        Dashboard().loadContacts(application)
-                    }
+                    startService(Intent(this, LoadContacts::class.java))
                 }
                 else{
                     Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
@@ -68,7 +68,7 @@ class Contact : AppCompatActivity() {
             }
             Handler().postDelayed({
                 pullToRefresh.isRefreshing=false
-            },2000)
+            },4000)
         }
 
 
@@ -83,9 +83,9 @@ class Contact : AppCompatActivity() {
                 sortCon.clear()
                 sortCon.addAll(list)
 
-                val sortedCon = sortCon.sortedWith(compareBy({!it.isUser},{it.name}))
+//                val sortedCon = sortCon.sortedWith(compareBy({!it.isUser},{it.name}))
 
-                recyclerAdapter.updateList(sortedCon)
+                recyclerAdapter.updateList(sortCon)
             }
 
         })

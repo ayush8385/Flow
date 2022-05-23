@@ -30,15 +30,16 @@
         android:paddingVertical="10dp"
         android:paddingHorizontal="20dp"
         android:layout_marginTop="5dp" />
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/forwarded_to"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="15dp"
-        tools:listitem="@layout/fwd_to_single_row"
         android:layout_below="@+id/fwd_txt"
-        android:id="@+id/forwarded_to"
+        android:orientation="horizontal"
+        android:paddingLeft="15dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        android:orientation="horizontal"/>
+        tools:listitem="@layout/fwd_to_single_row" />
 
     <CheckBox
         android:id="@+id/selectAll"

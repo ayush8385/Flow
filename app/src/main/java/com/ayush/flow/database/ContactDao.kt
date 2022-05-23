@@ -16,7 +16,7 @@ interface ContactDao {
 //    @Update
 //    fun updateContact(id:String)
 
-    @Query("SELECT * FROM contacts")
+    @Query("SELECT * FROM contacts ORDER BY isUser DESC,contact_name")
     fun getAllContacts():LiveData<List<ContactEntity>>
 
     @Query("SELECT EXISTS(SELECT * FROM contacts WHERE contact_id= :id)")

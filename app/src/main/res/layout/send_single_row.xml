@@ -72,20 +72,25 @@
                 android:background="@drawable/send_back"
                 android:layout_marginRight="10dp"
                 android:id="@+id/msg_box"
+                android:longClickable="true"
                 android:layout_alignParentRight="true"
                 android:layout_height="wrap_content">
+
                 <TextView
+                    android:id="@+id/txt_msg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxWidth="260dp"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/senregular"
-                    android:id="@+id/txt_msg"
-                    android:text="Ayus"
+                    android:autoLink="all"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:textColor="@color/black"
+                    android:fontFamily="@font/senregular"
+                    android:linksClickable="false"
+                    android:maxWidth="260dp"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="10dp"/>
+                    android:paddingVertical="10dp"
+                    android:text="Ayus"
+                    android:textColor="@color/black"
+                    android:textColorLink="@android:color/holo_blue_light"
+                    android:textSize="16sp" />
             </RelativeLayout>
 
 

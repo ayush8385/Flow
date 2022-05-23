@@ -66,7 +66,6 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
         val data: MutableMap<*, *> = remoteMessage.data
 
-        Log.e("onmessagereceived.................","Working")
 
         if (SinchHelpers.isSinchPushPayload(data as MutableMap<String, String>?)) {
             object : ServiceConnection {
@@ -74,7 +73,6 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 override fun onServiceConnected(name: ComponentName, service: IBinder) {
                     val context = applicationContext
 
-                    Log.e("onmessagereceived.................","SInch is payloaded")
                    val sharedPreferences = context.getSharedPreferences("call shared", MODE_PRIVATE)
                     if (payload != null) {
                         val sinchService = service as SinchServiceInterface
@@ -168,7 +166,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
     private fun createNotificationChannel(importance: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name: CharSequence = "Notification Channel 1"
+            val name: CharSequence = "Flow Notification Channel"
             val description = "Incoming call notification"
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
@@ -222,18 +220,24 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
             }
             else{
                 sendNotif(sender,name,"",con.image,"", msg,context)
-                retrieving(messageKey,context)
+                if(!foregrounded()){
+                    RetrieveMessage(application).execute()
+//                    retrieving(messageKey,context)
+                }
             }
 
         }
         else if(ContactViewModel(application).isUserExist(sender)){
             val chat= ContactViewModel(application).getContact(sender)
             if(type=="1"){
-               // sendCallnf(sender,"Ayush",msg,this)
+//                sendCallnf(sender,"Ayush",msg,this)
             }
             else{
                 sendNotif(sender,chat.name,"",chat.image,"", msg,context)
-                retrieving(messageKey,context)
+                if(!foregrounded()){
+                    RetrieveMessage(application).execute()
+//                    retrieving(messageKey,context)
+                }
             }
 
         }
@@ -242,7 +246,10 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                 // sendCallnf(sender,"Ayush",msg,this)
             }
             else{
-                retrieving(messageKey,context)
+                if(!foregrounded()){
+                    RetrieveMessage(application).execute()
+//                    retrieving(messageKey,context)
+                }
             }
         }
 
@@ -503,6 +510,8 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     name = contactEntity.name
                     number = contactEntity.number
                     imagepath = contactEntity.image
+                    val chatEntity= ChatViewModel(application).getChat(sender)
+                    unread=chatEntity.unread+1
 //                    if (type == "image") {
 //                        ChatViewModel(application).inserChat(
 //                            ChatEntity(
@@ -543,7 +552,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     name = chatEntity.name
                     number = chatEntity.number
                     imagepath = chatEntity.image
-                    unread=chatEntity.unread
+                    unread=chatEntity.unread+1
                     hide=chatEntity.hide
 //                    if (type == "image") {
 //                        ChatViewModel(application).inserChat(
@@ -671,14 +680,14 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                 if (type == "image") {
 
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo",time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo",sender+".jpg",time.toLong(),hide,unread,sender))
 
 //                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
                     if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                         if (Environment.isExternalStorageManager()) {
 //                                ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg").execute(msg_url)
-                            val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,url,false,false,false)
+                            val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",url,false,false,false)
                             RetrieveMessage(application).saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg",msg).execute(url)
                         } else {
                             //request for the permission
@@ -689,7 +698,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                         }
                     }
                     else{
-                        val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,url,false,false,false)
+                        val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",url,false,false,false)
                         RetrieveMessage(application).saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg",msg).execute(url)
                     }
 
@@ -754,13 +763,13 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                 }
                 if(type=="doc"){
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document", time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sender, time.toLong(),hide,unread,sender))
                 }
                 if(type=="message"){
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg, time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,"", time.toLong(),hide,unread,sender))
                 }
 
-                MessageViewModel(application).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,url,false,false,false))
+                MessageViewModel(application).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",url,true,false,false))
 
 
 //                if (!received) {

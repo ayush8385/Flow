@@ -156,7 +156,6 @@
                     android:layout_toLeftOf="@+id/send_btn"
                     android:layout_toRightOf="@+id/more"
                     android:background="@drawable/chat_back"
-                    android:cursorVisible="false"
                     android:fontFamily="@font/senregular"
                     android:hint="Send a message..."
                     android:paddingHorizontal="12dp"
@@ -407,8 +406,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selected_img_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/sendimg_btn"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/selected_img_item" />
 
 
         <ImageView
@@ -423,8 +431,8 @@
             android:backgroundTint="@color/black"
             android:paddingHorizontal="10dp"
             android:paddingVertical="10dp"
-            android:tint="@color/white"
-            android:src="@drawable/ic_baseline_arrow_back_ios_new_24" />
+            android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
+            android:tint="@color/white" />
 
         <ImageView
             android:id="@+id/sendimg_btn"
@@ -433,7 +441,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:layout_marginRight="25dp"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="15dp"
             android:src="@drawable/send" />
     </RelativeLayout>
 

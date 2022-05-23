@@ -16,9 +16,9 @@ import android.view.animation.AnimationUtils
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
 import com.ayush.flow.Services.Permissions
-import com.ayush.flow.database.ChatViewModel
-import com.ayush.flow.database.ContactViewModel
+import com.ayush.flow.database.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.database.DataSnapshot
@@ -42,11 +42,13 @@ class Incoming_vdo : BaseActivity() {
     lateinit var localView:RelativeLayout
     lateinit var mCallerimg:CircleImageView
     lateinit var pickintent:Intent
+    lateinit var remoteUser:TextView
     var mAction=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.ayush.flow.R.layout.activity_incoming_vdo)
         val answer: CircleImageView = findViewById<View>(com.ayush.flow.R.id.answerButton) as CircleImageView
+        remoteUser = findViewById(com.ayush.flow.R.id.remoteUser)
         answer.setOnClickListener(mClickListener)
 
         val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
@@ -117,9 +119,11 @@ class Incoming_vdo : BaseActivity() {
             localView.addView(vc.localView)
 
             call.addCallListener(SinchCallListener())
-            val remoteUser = findViewById<View>(com.ayush.flow.R.id.remoteUser) as TextView
 
             val cons= ContactViewModel(application).getContact(call.remoteUserId)
+
+            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"video","incoming",System.currentTimeMillis(),0,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"video","incoming",System.currentTimeMillis(),0,call.remoteUserId,mCallId!!))
 
             if(cons == null){
 
@@ -152,7 +156,7 @@ class Incoming_vdo : BaseActivity() {
 
                     pickintent.putExtra("name",remoteUser.text)
 
-                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+                    val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),call.remoteUserId+".jpg")
 
                     Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
                         DiskCacheStrategy.NONE)
@@ -253,8 +257,18 @@ class Incoming_vdo : BaseActivity() {
 
     inner class SinchCallListener : VideoCallListener {
         override fun onCallEnded(call: Call) {
-            val cause: CallEndCause = call.getDetails().getEndCause()
-            Log.d(TAG, "Call ended, cause: $cause")
+            val callDetail = call.details
+            val cause = callDetail.endCause
+            Log.d("Ended", "Call ended, cause: " + cause)
+
+            var callStatus=CallHistoryViewModel(application).getCallStatus(mCallId)
+            if(cause.toString()=="CANCELED"){
+                callStatus="missed"
+            }
+
+            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId!!))
+
             mAudioPlayer!!.stopRingtone()
             localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
             finish()

@@ -58,10 +58,18 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
                 holder.invite.visibility=View.VISIBLE
             }
 
-            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(holder.image)
+//            Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+//                DiskCacheStrategy.NONE)
+//                .skipMemoryCache(true).into(holder.image)
 
+            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")
+            if(f.exists()) {
+                val b = BitmapFactory.decodeStream(FileInputStream(f))
+                holder.image.setImageBitmap(b)
+            }
+            else{
+                holder.image.setImageResource(R.drawable.user)
+            }
             holder.start_chat.setOnClickListener {
                 if(cons.isUser){
                     val intent= Intent(context, Message::class.java)

@@ -5,46 +5,43 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.AsyncTask
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.ImageHolder
-import com.ayush.flow.Services.Permissions
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.ayush.flow.database.MessageViewModel
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import de.hdodenhof.circleimageview.CircleImageView
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
-import java.lang.Math.abs
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
     val allChats=ArrayList<ChatEntity>()
     final val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
+    lateinit var viewModel: MessageViewModel
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.profile_pic)
         val name:TextView=view.findViewById(R.id.profile_name)
         val message:TextView=view.findViewById(R.id.profile_msg)
         val time:TextView=view.findViewById(R.id.timer)
         val unread:TextView=view.findViewById(R.id.unread_chat)
-        val chat_box:RelativeLayout=view.findViewById(R.id.paren)
+        val chat_box:ConstraintLayout=view.findViewById(R.id.paren)
 
         val call:ImageView=view.findViewById(R.id.call_chat)
         val vdo_call:ImageView=view.findViewById(R.id.vdo_call_chat)
@@ -69,29 +66,55 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             holder.name.text=chat.name
         }
 
-        if(chat.unread!=0){
-            holder.unread.visibility=View.VISIBLE
-            if(chat.unread>99){
-                holder.unread.text= "99+"
+        MessageViewModel(context).getUnreads(chat.id).observe(context as LifecycleOwner) {
+            if(it!=0){
+                holder.unread.visibility=View.VISIBLE
+                if(it>99){
+                    holder.unread.text= "99+"
+                }
+                else{
+                    holder.unread.text= it.toString()
+                }
             }
             else{
-                holder.unread.text= chat.unread.toString()
+                holder.unread.visibility=View.GONE
             }
         }
+
+
+
+
+        val currentTimestamp = System.currentTimeMillis()
+        val msgtime = chat.time
+
+        val diff = ((currentTimestamp-msgtime)/(1000*24*60*60)).toInt()
+        if(diff==0){
+            //set in time
+            var tm: Date = Date(chat.time)
+            val time = SimpleDateFormat("hh:mm a")
+            holder.time.text=time.format(tm)
+        }
+        else if(diff==1){
+            //set yesterday
+            holder.time.text="Yesterday"
+        }
         else{
-            holder.unread.visibility=View.GONE
+            //set date
+            var tm: Date = Date(chat.time)
+            val date = SimpleDateFormat("dd/MM/yy")
+
+            holder.time.text=date.format(tm)
         }
 
 
-//        val currentTimestamp: Date = Date(System.currentTimeMillis())
-//
+
 //        val wholeDateFormat= SimpleDateFormat("dd/MM/yy")
 //
 //        val dateFormat = SimpleDateFormat("dd")
 //        val monthFormat = SimpleDateFormat("MM")
 //        val yearFormat = SimpleDateFormat("yy")
 //
-//        val deliveryDate = chat.date
+//        val deliveryDate = chat.time
 //        val d = wholeDateFormat.parse(deliveryDate)
 //
 //        val formatDate = dateFormat.format(d).toInt()
@@ -113,11 +136,33 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 //            holder.time.text=chat.date
 //        }
 
-        holder.message.text=chat.lst_msg
+        holder.message.text = chat.lst_msg
+        var dr: Drawable? = null
+        if(chat.path!=""){
+            if(chat.lst_msg=="Photo"){
+                dr = ContextCompat.getDrawable(context, R.drawable.gallery)
+            }
+            if(chat.lst_msg=="Document"){
+                dr = ContextCompat.getDrawable(context, R.drawable.documents)
+            }
+        }
+        if(dr!=null){
+            dr!!.setBounds(0, 0, 36, 36)
+            holder.message.setCompoundDrawables(dr, null, null, null)
+        }
 
-        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(holder.image)
+
+        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
+        if(f.exists()){
+            val b = BitmapFactory.decodeStream(FileInputStream(f))
+            holder.image.setImageBitmap(b)
+        }
+        else{
+            holder.image.setImageResource(R.drawable.user)
+        }
+//        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+//            DiskCacheStrategy.NONE)
+//            .skipMemoryCache(true).into(holder.image)
 
         holder.chat_box.setOnClickListener {
 
@@ -130,6 +175,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
                 intent.putExtra("number", chat.number)
                 intent.putExtra("userid", chat.id)
                 intent.putExtra("image", chat.image)
+                intent.putExtra("unread",chat.unread)
                 context.startActivity(intent)
             }
 
@@ -144,22 +190,24 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         holder.call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            if(Permissions().checkMicpermission(context)){
-                clickListener.audioCall(holder.name.text.toString(),chat.id,chat.image)
-            }
-            else{
-                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
-            }
+            clickListener.audioCall(holder.name.text.toString(),chat.id)
+//            if(Permissions().checkMicpermission(context)){
+//
+//            }
+//            else{
+//                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+//            }
         }
 
         holder.vdo_call.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            if(Permissions().checkMicpermission(context)){
-                clickListener.videoCall(holder.name.text.toString(),chat.id,chat.image)
-            }
-            else{
-                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
-            }
+            clickListener.videoCall(holder.name.text.toString(),chat.id)
+//            if(Permissions().checkCamAndMicPermission(context)){
+//
+//            }
+//            else{
+//                Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,context.resources.getString(R.string.mic_and_cam_permission),context,"micandcam")
+//            }
 
         }
         holder.del_chat.setOnClickListener {
@@ -199,10 +247,12 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
     }
 
     interface OnAdapterItemClickListener {
-        fun audioCall(toString: String, id: String,image: String)
-        fun videoCall(toString: String,id: String,image: String)
+        fun audioCall(toString: String, id: String)
+        fun videoCall(toString: String,id: String)
         fun deleteChat(id:String,name:String)
         fun hideChat(id:String,name: String)
+
+        fun callHistoryBox(id:String,name: String)
     }
 
     inner class loadImage(val image:String,val holder: HomeViewHolder):AsyncTask<Void,Void, Boolean>(){

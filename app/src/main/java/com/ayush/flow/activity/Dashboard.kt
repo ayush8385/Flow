@@ -4,19 +4,15 @@ import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.*
 import android.net.Uri
 import android.os.*
-import android.provider.ContactsContract
 import android.provider.MediaStore
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.view.animation.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -36,15 +32,14 @@ import com.ayush.flow.Notification.MessagingService
 import com.ayush.flow.Notification.Token
 import com.ayush.flow.R
 import com.ayush.flow.Services.*
-import com.ayush.flow.Services.SharedPreferenceUtils.init
 import com.ayush.flow.adapter.CallAdapter
+import com.ayush.flow.adapter.CallHistoryAdapter
 import com.ayush.flow.adapter.ChatAdapter
 import com.ayush.flow.adapter.StoryAdapter
 import com.ayush.flow.database.*
 import com.ayush.flow.model.Chats
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.gms.common.util.SharedPreferencesUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
@@ -59,12 +54,10 @@ import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.*
-import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -99,6 +92,9 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     lateinit var theme: SwitchCompat
     lateinit var vibrator: Vibrator
 
+    var callname=""
+    var callId=""
+
     override fun onServiceConnected() {
         sinchServiceInterface!!.setStartListener(this)
     }
@@ -130,9 +126,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         if(ConnectionManager().checkconnectivity(this)){
             if(Permissions().checkContactpermission(this)){
-                GlobalScope.launch {
-                    loadContacts(application)
-                }
+//                GlobalScope.launch {
+//                    loadContacts(application)
+//                }
+                startService(Intent(this, LoadContacts::class.java))
             }
             else{
                 Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
@@ -140,7 +137,6 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         }
 
 
-        openChatHome(SharedPreferenceUtils.getIntPreference(SharedPreferenceUtils.IS_PRIVATE,0))
 
         GlobalScope.launch(Dispatchers.Main) {
             searchElement()
@@ -344,65 +340,71 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
-    fun loadContacts(applicat: Application){
-        val contentResolver = applicat.contentResolver
-        val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
-
- //       var contactMap:HashMap<String,String> = HashMap<String,String>()
-
-        while (contacts?.moveToNext() == true) {
-            val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-            var phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-
-            phoneNumber=phoneNumber.replace("\\s|[(]|[)]|[-]".toRegex(), "")
-
-            if(phoneNumber.length==13){
-                phoneNumber=phoneNumber.replace("\\+91".toRegex(),"")
-            }
-
-            if (phoneNumber.length==10){
-                ContactViewModel(applicat).inserContact(ContactEntity(name,phoneNumber,"",false,""))
-//                contactMap.put(phoneNumber,name)
-            }
-        }
-        contacts!!.close()
-
-
-        val ref= FirebaseDatabase.getInstance().reference.child("Users")
-        ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for(snapshot in snapshot.children){
-                    val num=snapshot.child("number").value.toString()
-                    val userid=snapshot.child("uid").value.toString()
-                    val profile_url=snapshot.child("profile_photo").value.toString()
-
-                    if(userid!=Constants.MY_USERID && ContactViewModel(applicat).isContactExist(num)/*contactMap.containsKey(num)*/){
-                        val usercon = ContactViewModel(applicat).getContactByNum(num)
-
-                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
-                        ContactViewModel(applicat).inserContact(consEntity)
-
-                        if(profile_url!=""){
-                            ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
-//                            val bmp = ImageHandling.GetImageFromUrl().execute(profile_url).get()
-//                            val selectedPtah = getRealPathFromURI(getImageUri(this@Dashboard,bmp!!))
-                           // ImageCompression(this@Dashboard).execute(selectedPtah)
-                            //ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
-                        }
-                        if(ChatViewModel(applicat).isUserExist(userid)){
-                            ChatViewModel(applicat).updateName(usercon.name,userid)
-                        }
-                    }
-
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-
-        })
-
-    }
+//    fun loadContacts(applicat: Application){
+//        val contentResolver = applicat.contentResolver
+//        val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
+//
+// //       var contactMap:HashMap<String,String> = HashMap<String,String>()
+//
+//        while (contacts?.moveToNext() == true) {
+//            val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+//            var phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+//
+//            phoneNumber=phoneNumber.replace("\\s|[(]|[)]|[-]".toRegex(), "")
+//
+//            if(phoneNumber.length==13){
+//                phoneNumber=phoneNumber.replace("\\+91".toRegex(),"")
+//            }
+//
+//            if (phoneNumber.length==10){
+//                ContactViewModel(applicat).inserContact(ContactEntity(name,phoneNumber,"",false,""))
+////                contactMap.put(phoneNumber,name)
+//            }
+//        }
+//        contacts!!.close()
+//
+//
+//        val ref= FirebaseDatabase.getInstance().reference.child("Users")
+//        ref.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                for(snapshot in snapshot.children){
+//                    val num=snapshot.child("number").value.toString()
+//                    val userid=snapshot.child("uid").value.toString()
+//                    val profile_url=snapshot.child("profile_photo").value.toString()
+//
+//                    if(userid!=Constants.MY_USERID && ContactViewModel(applicat).isContactExist(num)/*contactMap.containsKey(num)*/){
+//                        val usercon = ContactViewModel(applicat).getContactByNum(num)
+//
+//                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
+//                        ContactViewModel(applicat).inserContact(consEntity)
+//
+//                        if(profile_url!=""){
+//                            ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
+////                            val bmp = ImageHandling.GetImageFromUrl().execute(profile_url).get()
+////                            val selectedPtah = getRealPathFromURI(getImageUri(this@Dashboard,bmp!!))
+//                           // ImageCompression(this@Dashboard).execute(selectedPtah)
+//                            //ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
+//                        }
+//                        else{
+//                            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),userid+".jpg")
+//                            if(f.exists()){
+//                                f.delete()
+//                            }
+//                        }
+//                        if(ChatViewModel(applicat).isUserExist(userid)){
+//                            ChatViewModel(applicat).updateName(usercon.name,userid)
+//                        }
+//                    }
+//
+//                }
+//            }
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//
+//        })
+//
+//    }
 
     fun getImageUri(inContext: Context, inImage: Bitmap): Uri {
         val bytes = ByteArrayOutputStream()
@@ -454,28 +456,28 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     private fun openCallHome() {
         callAdapter= CallAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
-            override fun audioCall(name: String, id: String,image:String) {
+            override fun audioCall(name: String, id: String) {
 
-                val sinchServiceInterface=getSinchServiceInterface()
-                val callId=sinchServiceInterface!!.callUser(id).callId
-                val callScreen = Intent(this@Dashboard, Outgoing::class.java)
-                callScreen.putExtra("name",name)
-                callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("userid",id)
-                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
-                startActivity(callScreen)
+                callname=name
+                callId=id
+                if(Permissions().checkMicpermission(this@Dashboard)){
+                    audioCalling(name,id)
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,"mic")
+                }
             }
 
-            override fun videoCall(name: String, id: String,image:String) {
+            override fun videoCall(name: String, id: String) {
 
-                val sinchServiceInterface=getSinchServiceInterface()
-                val callId=sinchServiceInterface!!.callUserVideo(id).callId
-                val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
-                callScreen.putExtra("name",name)
-                callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("userid",id)
-                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
-                startActivity(callScreen)
+                callname = name
+                callId = id
+                if(Permissions().checkCamAndMicPermission(this@Dashboard)){
+                    videoCalling(name,id)
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,"micandcam")
+                }
             }
 
             override fun deleteChat(id: String,name: String) {
@@ -484,6 +486,48 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
             override fun hideChat(id: String,name: String) {
                 TODO("Not yet implemented")
+            }
+
+            override fun callHistoryBox(id: String,name: String) {
+                val historyBoxView = LayoutInflater.from(this@Dashboard).inflate(R.layout.history_box, null,false)
+                val historyBoxBuilder = AlertDialog.Builder(this@Dashboard,R.style.CustomAlertDialog)
+                historyBoxBuilder.setView(historyBoxView)
+                historyBoxBuilder.setCancelable(true)
+
+                val username:TextView = historyBoxView.findViewById(R.id.user_name)
+                val userimage:CircleImageView = historyBoxView.findViewById(R.id.user_img)
+                val historyRecycler:RecyclerView = historyBoxView.findViewById(R.id.history_recycler)
+                val audioCall:ImageView = historyBoxView.findViewById(R.id.audiocall_btn)
+                val videoCall:ImageView = historyBoxView.findViewById(R.id.vdocall_btn)
+
+                var layoutManager = LinearLayoutManager(this@Dashboard)
+                val historyAdapter = CallHistoryAdapter(this@Dashboard)
+
+                username.text=name
+                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),id+".jpg")
+                Glide.with(this@Dashboard).load(f).diskCacheStrategy(DiskCacheStrategy.NONE).placeholder(R.drawable.user).into(userimage)
+
+                (layoutManager as LinearLayoutManager).reverseLayout = true
+                historyRecycler.setHasFixedSize(true)
+                historyRecycler.layoutManager=layoutManager
+                historyRecycler.adapter=historyAdapter
+                CallHistoryViewModel(this@Dashboard).getCallHistory(id).observe(this@Dashboard){
+                    if(it!=null){
+                        historyAdapter.updateList(it)
+                        historyRecycler.smoothScrollToPosition(it.size)
+                    }
+                }
+
+                audioCall.setOnClickListener {
+                    audioCalling(name,id)
+                }
+
+                videoCall.setOnClickListener {
+                    videoCalling(name,id)
+                }
+
+                historyBoxBuilder.show()
+
             }
 
         })
@@ -516,27 +560,26 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         chatAdapter= ChatAdapter(this@Dashboard,object :ChatAdapter.OnAdapterItemClickListener{
 
-            override fun audioCall(name: String, id: String,image:String) {
-                val sinchServiceInterface=getSinchServiceInterface()
-                val callId=sinchServiceInterface!!.callUser(id).callId
-                val callScreen = Intent(this@Dashboard, Outgoing::class.java)
-                callScreen.putExtra("name",name)
-                callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("userid",id)
-                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
-                startActivity(callScreen)
+            override fun audioCall(name: String, id: String) {
+                callname=name
+                callId=id
+                if(Permissions().checkMicpermission(this@Dashboard)){
+                    audioCalling(name,id)
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,"mic")
+                }
             }
 
-            override fun videoCall(name: String, id: String,image:String) {
-
-                val sinchServiceInterface=getSinchServiceInterface()
-                val callId=sinchServiceInterface!!.callUserVideo(id).callId
-                val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
-                callScreen.putExtra("name",name)
-                callScreen.putExtra("CALL_ID", callId)
-                callScreen.putExtra("userid",id)
-                Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
-                startActivity(callScreen)
+            override fun videoCall(name: String, id: String) {
+                callname = name
+                callId = id
+                if(Permissions().checkCamAndMicPermission(this@Dashboard)){
+                    videoCalling(name,id)
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,"micandcam")
+                }
             }
 
             override fun deleteChat(id: String,name:String) {
@@ -545,6 +588,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
             override fun hideChat(id: String,name: String) {
                 showHideBottomSheetDialog(id,name)
+            }
+
+            override fun callHistoryBox(id: String,name: String) {
+
             }
 
         })
@@ -558,8 +605,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         chatsRecyclerView.scheduleLayoutAnimation()
 
         if(i==0){
-            story_box.visibility=View.VISIBLE
-            story_text.visibility=View.VISIBLE
+//            story_box.visibility=View.VISIBLE
+//            story_text.visibility=View.VISIBLE
             hidden.visibility=View.VISIBLE
 
             chat_text.text="Chats"
@@ -611,6 +658,38 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 //        storyRecyclerView.adapter=adapter2
 //        storyRecyclerView.layoutAnimation=controller
 //        storyRecyclerView.scheduleLayoutAnimation()
+    }
+
+    private fun videoCalling(name: String, id: String) {
+        val sinchServiceInterface=getSinchServiceInterface()
+        val callId=sinchServiceInterface!!.callUserVideo(id).callId
+
+        Constants.isCurrentUser=true
+        CallViewModel(application).inserCall(CallEntity(name,"video","outgoing",System.currentTimeMillis()/1000,0,id))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"video","outgoing",System.currentTimeMillis()/1000,0,id,callId))
+
+        val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
+        callScreen.putExtra("name",name)
+        callScreen.putExtra("CALL_ID", callId)
+        callScreen.putExtra("userid",id)
+        Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
+        startActivity(callScreen)
+    }
+
+    private fun audioCalling(name: String, id: String) {
+        val sinchServiceInterface=getSinchServiceInterface()
+        val callId=sinchServiceInterface!!.callUser(id).callId
+
+        Constants.isCurrentUser=true
+        CallViewModel(application).inserCall(CallEntity(name,"audio","outgoing",System.currentTimeMillis()/1000,0,id))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"audio","outgoing",System.currentTimeMillis()/1000,0,id,callId))
+
+        val callScreen = Intent(this@Dashboard, Outgoing::class.java)
+        callScreen.putExtra("name",name)
+        callScreen.putExtra("CALL_ID", callId)
+        callScreen.putExtra("userid",id)
+        Message().sendNotification(id, FirebaseAuth.getInstance().currentUser!!.uid, "","", 1)
+        startActivity(callScreen)
     }
 
     private fun showHideBottomSheetDialog(id: String,name:String) {
@@ -1048,20 +1127,20 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         when (requestCode) {
             103 -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Do_SOme_Operation()
-                    val executorService: ExecutorService = Executors.newFixedThreadPool(1)
-                    val task1 = java.lang.Runnable {
-                        try {
-                            GlobalScope.launch {
-                                loadContacts(application)
-                            }
-                        } catch (ex: InterruptedException) {
-                            throw IllegalStateException(ex)
-                        }
-                    }
-                    executorService.submit(task1)
-
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startService(Intent(this, LoadContacts::class.java))
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            104->{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    audioCalling(callname,callId)
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
+            105->{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    videoCalling(callname,callId)
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
@@ -1140,10 +1219,21 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     override fun onResume() {
         super.onResume()
+        if(navigationView.selectedItemId==R.id.chat){
+            openChatHome(SharedPreferenceUtils.getIntPreference(SharedPreferenceUtils.IS_PRIVATE,0))
+        }
+        else{
+            openCallHome()
+        }
         try {
             val f = File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")
-            val b = BitmapFactory.decodeStream(FileInputStream(f))
-            profile.setImageBitmap(b)
+            if(f.exists()){
+                val b = BitmapFactory.decodeStream(FileInputStream(f))
+                profile.setImageBitmap(b)
+            }
+            else{
+                profile.setImageResource(R.drawable.user)
+            }
 //            Glide.with(this).load(f).diskCacheStrategy(
 //                DiskCacheStrategy.RESOURCE)
 //                .skipMemoryCache(true).into(profile)

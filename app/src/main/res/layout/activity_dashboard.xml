@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,92 +7,92 @@
     android:background="@color/back"
     tools:context=".activity.Dashboard">
 
-
-
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/title_detail"
-        android:paddingHorizontal="20dp"
-        android:layout_marginBottom="10dp">
+        android:fontFamily="@font/michroma"
+        android:text="Messages"
+        android:textColor="@color/black"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/mode"
+        app:layout_constraintBottom_toBottomOf="@id/mode"
+        android:layout_marginStart="16dp"/>
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:fontFamily="@font/michroma"
-            android:text="Messages"
-            android:textColor="@color/black"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+    <ImageView
+        android:id="@+id/mode"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        app:layout_constraintTop_toTopOf="@id/user_img"
+        app:layout_constraintBottom_toBottomOf="@id/user_img"
+        app:layout_constraintEnd_toStartOf="@id/user_img"
+        android:layout_marginRight="30dp"
+        android:src="@drawable/sun"
+        android:background="?selectableItemBackgroundBorderless" />
 
-        <ImageView
-            android:id="@+id/mode"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_centerInParent="true"
-            android:layout_marginRight="30dp"
-            android:layout_toLeftOf="@+id/user_img"
-            android:background="?selectableItemBackgroundBorderless" />
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/user"
+        android:id="@+id/user_img"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/circle_shadow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/user"
-            android:id="@+id/user_img"
-            android:layout_centerVertical="true"
-            android:background="@drawable/circle_shadow"
-            android:layout_alignParentRight="true"/>
-    </RelativeLayout>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="5dp"
-        android:layout_below="@id/title_detail"
-        android:orientation="horizontal"
-        android:id="@+id/search_detail"
-        android:layout_marginHorizontal="16dp">
-        <androidx.appcompat.widget.SearchView
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            app:queryHint="Search for friend..."
-            android:focusable="false"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/contact"
-            android:layout_marginRight="30dp"
-            android:id="@+id/chat_searchview"
-            android:layout_centerVertical="true"
-            app:queryBackground="@android:color/transparent"
-            android:background="@drawable/addprofileback"/>
-        <ImageView
-            android:layout_width="39dp"
-            android:layout_height="40dp"
-            android:elevation="10dp"
-            android:src="@drawable/new_chat"
-            android:id="@+id/contact"
-            android:background="?selectableItemBackgroundBorderless"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"/>
-    </RelativeLayout>
+    <androidx.appcompat.widget.SearchView
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        app:queryHint="Search for friend..."
+        android:focusable="false"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="22dp"
+        android:id="@+id/chat_searchview"
+        app:layout_constraintTop_toBottomOf="@id/user_img"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/contact"
+        app:queryBackground="@android:color/transparent"
+        android:background="@drawable/addprofileback"/>
+
+    <ImageView
+        android:id="@+id/contact"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toTopOf="@+id/chat_searchview"
+        app:layout_constraintBottom_toBottomOf="@+id/chat_searchview"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="?selectableItemBackgroundBorderless"
+        android:elevation="10dp"
+        android:src="@drawable/new_chat" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stories"
-        android:layout_marginTop="10dp"
         android:id="@+id/stories"
         android:textColor="@color/black"
-        android:layout_below="@id/search_detail"
-        android:layout_marginLeft="20dp"
         android:textSize="18sp"
-        android:fontFamily="@font/senregular"/>
+        android:visibility="gone"
+        android:fontFamily="@font/senregular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_searchview"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"/>
 
     <LinearLayout
         android:id="@+id/story_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/stories"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/stories"
         android:layout_marginVertical="5dp"
         android:orientation="horizontal">
 
@@ -135,70 +135,69 @@
         android:layout_height="wrap_content"
         android:text="Chats"
         android:id="@+id/chats"
-        android:layout_marginTop="6dp"
         android:textColor="@color/black"
-        android:layout_below="@id/story_box"
-        android:layout_marginLeft="20dp"
         android:textSize="18sp"
-        android:fontFamily="@font/senregular"/>
+        android:fontFamily="@font/senregular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_searchview"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"/>
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1.4dp"
+        android:background="@color/lightdark"
+        app:layout_constraintTop_toBottomOf="@id/chats"
+        android:layout_marginTop="8dp"
+        android:elevation="6dp"/>
 
     <ImageView
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/hidden"
-        android:layout_marginTop="6dp"
         android:id="@+id/hidden"
-        android:layout_marginRight="16dp"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/story_box"/>
+        app:layout_constraintTop_toTopOf="@+id/chats"
+        app:layout_constraintBottom_toBottomOf="@+id/chats"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp"/>
+
     <ImageView
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_baseline_close_24"
-        android:layout_marginTop="6dp"
         android:id="@+id/close_hidden"
         android:visibility="gone"
-        android:layout_marginRight="16dp"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/story_box"/>
+        app:layout_constraintTop_toTopOf="@+id/chats"
+        app:layout_constraintBottom_toBottomOf="@+id/chats"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatsrecycler"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/chats"
-        android:layout_marginTop="5dp"
+        app:layout_constraintTop_toBottomOf="@id/view"
+        android:paddingBottom="60dp"
         android:clipToPadding="false"
-        android:paddingBottom="60dp" />
+        tools:listitem="@layout/chat_tem_swipe"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_height="wrap_content">
-        <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_marginBottom="30dp"
-            android:layout_marginHorizontal="120dp"
-            android:layout_centerInParent="true"
-            app:cardCornerRadius="30dp"
-            android:outlineSpotShadowColor="@color/black"
-            android:elevation="5dp"
-            app:cardElevation="50dp"
-            android:layout_height="wrap_content">
-            <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/bottom_navigation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:background="@drawable/bottom_back"
-                android:elevation="8dp"
-                app:itemIconTint="@color/bottom"
-                app:labelVisibilityMode="unlabeled"
-                android:layout_alignParentBottom="true"
-                app:menu="@menu/home_bottom_menu" />
-        </androidx.cardview.widget.CardView>
-    </RelativeLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:maxWidth="160dp"
+        android:background="@drawable/bottom_back"
+        android:elevation="20dp"
+        app:itemIconTint="@color/bottom"
+        app:labelVisibilityMode="unlabeled"
+        app:menu="@menu/home_bottom_menu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp"/>
 
 
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

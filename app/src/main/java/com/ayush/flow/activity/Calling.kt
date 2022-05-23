@@ -21,10 +21,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.ayush.flow.R
-import com.ayush.flow.database.CallEntity
-import com.ayush.flow.database.CallViewModel
-import com.ayush.flow.database.ChatViewModel
-import com.ayush.flow.database.ContactViewModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -45,6 +41,8 @@ import android.view.animation.AnimationUtils
 import android.view.animation.RotateAnimation
 import android.widget.EditText
 import android.view.View.OnTouchListener
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.database.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import java.security.Permissions
@@ -195,6 +193,11 @@ class Calling : BaseActivity(){
 
     override fun onServiceConnected() {
         val call: Call = getSinchServiceInterface()!!.getCall(mCallId)
+
+        CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"audio","incoming",System.currentTimeMillis(),0,call.remoteUserId))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"audio","incoming",System.currentTimeMillis(),0,call.remoteUserId,mCallId!!))
+
+
         var username=""
         var usernumber=""
         if (call != null) {
@@ -234,11 +237,10 @@ class Calling : BaseActivity(){
                     pickintent.putExtra(SinchService.CALL_ID, mCallId)
                     pickintent.putExtra("name",remoteUser.text)
 
-                    image=chat.image
                     username=chat.name
                     usernumber=chat.number
 
-                    val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+                    val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
 
                     Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
                         DiskCacheStrategy.NONE)
@@ -252,18 +254,16 @@ class Calling : BaseActivity(){
                 }
             }
             else{
-                Toast.makeText(applicationContext,"Cons",Toast.LENGTH_SHORT).show()
 
                 remoteUser.setText(cons.name)
 
                 pickintent.putExtra(SinchService.CALL_ID, mCallId)
                 pickintent.putExtra("name",remoteUser.text)
 
-                image=cons.image
                 username=cons.name
                 usernumber=cons.number
 
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")
 
                 Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
                     DiskCacheStrategy.NONE)
@@ -298,12 +298,26 @@ class Calling : BaseActivity(){
         }
 
         text1.setOnClickListener {
-            Message().sendMessageToUser(text1.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+            val ref=FirebaseDatabase.getInstance().reference
+            val messageKey=ref.push().key
+            MessageViewModel(application).insertMessage(
+                MessageEntity(messageKey!!,
+                    Constants.MY_USERID+"-"+call.remoteUserId,
+                    Constants.MY_USERID,text1.text.toString(),System.currentTimeMillis(),"message","","","",false,false,false)
+            )
+            Message().sendMessageToUser(text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
             finish()
         }
         text2.setOnClickListener {
-            Message().sendMessageToUser(text2.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+            val ref=FirebaseDatabase.getInstance().reference
+            val messageKey=ref.push().key
+            MessageViewModel(application).insertMessage(
+                MessageEntity(messageKey!!,
+                    Constants.MY_USERID+"-"+call.remoteUserId,
+                    Constants.MY_USERID,text2.text.toString(),System.currentTimeMillis(),"message","","","",false,false,false)
+            )
+            Message().sendMessageToUser(text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
             finish()
         }
@@ -318,7 +332,14 @@ class Calling : BaseActivity(){
                 if (event.rawX >= callMsg.getRight() - callMsg.getCompoundDrawables()
                         .get(DRAWABLE_RIGHT).getBounds().width()
                 ) {
-                    Message().sendMessageToUser(callMsg.text.toString(),call.remoteUserId,username,usernumber,image).execute()
+                    val ref=FirebaseDatabase.getInstance().reference
+                    val messageKey=ref.push().key
+                    MessageViewModel(application).insertMessage(
+                        MessageEntity(messageKey!!,
+                            Constants.MY_USERID+"-"+call.remoteUserId,
+                            Constants.MY_USERID,callMsg.text.toString(),System.currentTimeMillis(),"message","","","",false,false,false)
+                    )
+                    Message().sendMessageToUser(callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
                     call.hangup()
                     finish()
                     return@OnTouchListener true
@@ -384,12 +405,19 @@ class Calling : BaseActivity(){
 
     private inner class SinchCallListener : CallListener {
         override fun onCallEnded(call: Call) {
-            val cause: CallEndCause = call.getDetails().getEndCause()
-            Log.d(TAG, "Call ended, cause: " + cause.toString())
 
-            CallViewModel(application).inserCall(
-                CallEntity(remoteUser.text.toString(), image,cause.toString(), call.details.duration.toString(),call.remoteUserId)
-            )
+            val callDetail = call.details
+            val cause = callDetail.endCause
+            Log.d("Ended", "Call ended, cause: " + cause)
+
+            var callStatus=CallHistoryViewModel(application).getCallStatus(mCallId)
+            if(cause.toString()=="CANCELED"){
+                callStatus="missed"
+            }
+
+            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId!!))
+
 
             mAudioPlayer!!.stopRingtone()
             finish()

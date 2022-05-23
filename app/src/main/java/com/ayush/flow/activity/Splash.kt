@@ -96,7 +96,7 @@ class Splash : AppCompatActivity() {
             Handler().postDelayed({
                 startActivity(Intent(this,Dashboard::class.java))
                 finish()
-            },500)
+            },200)
         }
     }
 

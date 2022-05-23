@@ -114,29 +114,42 @@
         <entry key="app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.1615" />
         <entry key="app/src/main/res/drawable/ic_baseline_reply_24.xml" value="0.1475" />
         <entry key="app/src/main/res/drawable/ic_messages_pana.xml" value="0.1135" />
+        <entry key="app/src/main/res/drawable/invite_back.xml" value="0.1865" />
         <entry key="app/src/main/res/drawable/pass_edt_back.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/rounded_transparent_bottomsheet.xml" value="0.2605" />
+        <entry key="app/src/main/res/drawable/vdo_top_back.xml" value="0.1715" />
         <entry key="app/src/main/res/layout/activity_addprofile.xml" value="0.27447916666666666" />
+        <entry key="app/src/main/res/layout/activity_calling.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/activity_contact.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_dashboard.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_image_view.xml" value="0.31875" />
-        <entry key="app/src/main/res/layout/activity_message.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/activity_incoming_vdo.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/activity_message.xml" value="0.22046142578125" />
         <entry key="app/src/main/res/layout/activity_passcode.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_slider.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_user_profile.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/add_contact_box.xml" value="0.3333333333333333" />
-        <entry key="app/src/main/res/layout/calls_single_row.xml" value="0.31875" />
-        <entry key="app/src/main/res/layout/chat_tem_swipe.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/calls_single_row.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/chat_tem_swipe.xml" value="0.3846997347745028" />
         <entry key="app/src/main/res/layout/chats_single_row.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/layout/contacts_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/forward_modal_bottomsheet.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/fwd_single_row.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/fwd_to_single_row.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/history_box.xml" value="0.321644816306159" />
         <entry key="app/src/main/res/layout/layout_screen.xml" value="0.165" />
         <entry key="app/src/main/res/layout/message_box.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/pass_edit_back.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/pass_verify.xml" value="0.26769816080729164" />
         <entry key="app/src/main/res/layout/profile_modal_bottomsheet.xml" value="0.27447916666666666" />
+        <entry key="app/src/main/res/layout/receive_img_single_row.xml" value="0.20833333333333334" />
+        <entry key="app/src/main/res/layout/receive_single_row.xml" value="0.2078125" />
+        <entry key="app/src/main/res/layout/recent_call_single_row.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/selected_img_item.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/send_img_single_row.xml" value="0.3333333333333333" />
+        <entry key="app/src/main/res/layout/send_single_row.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/story_single_row.xml" value="0.28958333333333336" />
       </map>
     </option>
   </component>
@@ -149,7 +162,7 @@
   <component name="VisualizationToolProject">
     <option name="state">
       <ProjectState>
-        <option name="scale" value="0.165" />
+        <option name="scale" value="0.27447916666666666" />
       </ProjectState>
     </option>
   </component>

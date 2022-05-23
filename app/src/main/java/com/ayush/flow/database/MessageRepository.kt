@@ -27,6 +27,22 @@ class MessageRepository(private val messageDao: MessageDao) {
     fun deleteMsgWithId(id:String){
         messageDao.deleteChat(id)
     }
+
+    fun isSent(sent: Boolean,mid: String) {
+        messageDao.isSent(sent,mid)
+    }
+
+    fun getUnreads(id:String):LiveData<Int>{
+        return messageDao.getUnreads(id)
+    }
+
+    fun isSeen(seen: Boolean, mid: String) {
+        messageDao.isSeen(seen,mid)
+    }
+
+    fun setMsgSeen(userid: String) {
+        messageDao.setMsgSeen(userid)
+    }
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

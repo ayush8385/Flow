@@ -15,7 +15,10 @@ import androidx.annotation.RequiresApi
 import com.ayush.flow.Notification.*
 import com.ayush.flow.R
 import com.ayush.flow.Services.APIService
+import com.ayush.flow.Services.Constants
 import com.ayush.flow.database.CallEntity
+import com.ayush.flow.database.CallHistoryEntity
+import com.ayush.flow.database.CallHistoryViewModel
 import com.ayush.flow.database.CallViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -116,17 +119,17 @@ class Outgoing : BaseActivity() {
             mCallerName.text=intent.getStringExtra("name")
             mCallState.setText(call.getState().toString())
 
-            if(intent.getStringExtra("image")!=""){
-                userid = intent.getStringExtra("userid")!!
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),userid+".jpg")
-                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(mCallerimg)
+            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),intent.getStringExtra("userid")+".jpg")
+            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(mCallerimg)
 
-                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(backimg)
-            }
+            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE)
+                .skipMemoryCache(true).into(backimg)
+
+//            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"audio","out",System.currentTimeMillis(),"", intent.getStringExtra("userid")!!))
+
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.")
             finish()
@@ -145,19 +148,6 @@ class Outgoing : BaseActivity() {
         mDurationTask = UpdateCallDurationTask()
         mTimer!!.schedule(mDurationTask, 0, 500)
     }
-
-//    override fun onPause() {
-//        super.onPause()
-//     //   mDurationTask.cancel()
-//        mTimer!!.cancel()
-//    }
-
-//    override fun onResume() {
-//        super.onResume()
-//        mTimer = Timer()
-//        mDurationTask = UpdateCallDurationTask()
-//        mTimer!!.schedule(mDurationTask, 0, 500)
-//    }
 
     override fun onBackPressed() {
         // User should exit activity by ending call, not by going back.
@@ -188,10 +178,16 @@ class Outgoing : BaseActivity() {
 
     private inner class SinchCallListener : CallListener {
         override fun onCallEnded(call: Call) {
-            val cause: CallEndCause = call.getDetails().getEndCause()
-            Log.d(TAG, "Call ended. Reason: " + cause.toString())
+            val callDetail = call.details
+            val cause: CallEndCause = callDetail.getEndCause()
 
-            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"",cause.toString(), call.details.duration.toString(),call.remoteUserId))
+            var callStatus=CallHistoryViewModel(application).getCallStatus(mCallId)
+            if(cause.toString()=="CANCELED" && !Constants.isCurrentUser){
+                callStatus="missed"
+            }
+
+            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId))
 
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE

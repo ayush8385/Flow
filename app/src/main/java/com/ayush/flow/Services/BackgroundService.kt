@@ -24,7 +24,7 @@ class BackgroundService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Toast.makeText(this, "Retrieving Message", Toast.LENGTH_LONG).show()
         GlobalScope.launch {
-            RetrieveMessage(application).execute()
+            //RetrieveMessage(application).execute()
         }
         return START_STICKY
     }

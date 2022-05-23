@@ -122,5 +122,8 @@ dependencies {
 
     implementation 'com.alimuzaffar.lib:pinentryedittext:1.3.10'
 
+    //Linkify
+    implementation 'me.saket:better-link-movement-method:2.2.0'
+
 
 }

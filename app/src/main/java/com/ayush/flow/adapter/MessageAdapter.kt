@@ -1,68 +1,54 @@
 package com.ayush.flow.adapter
 
 
-import android.R.attr
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
+import android.graphics.*
 import android.os.Environment
 import android.os.Handler
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.URLSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.Constants
+import com.ayush.flow.activity.FileDownloader
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.MessageEntity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import android.widget.Toast
-
-import android.content.ActivityNotFoundException
-import android.net.Uri
-import androidx.core.content.ContextCompat
-
-import androidx.core.content.ContextCompat.startActivity
 import java.io.*
-import android.R.attr.data
-import android.graphics.Canvas
-import android.graphics.Paint
-
-import android.graphics.pdf.PdfDocument
-import android.graphics.pdf.PdfDocument.PageInfo
-import android.R.attr.mimeType
-
-import androidx.core.content.FileProvider
-import android.R.attr.src
-import android.app.Activity
-import android.app.DownloadManager
-import android.os.StrictMode
-import android.os.StrictMode.VmPolicy
-import android.util.Log
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.ImageHolder
-import com.ayush.flow.activity.FileDownloader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
     val allMsgs=ArrayList<MessageEntity>()
-
+    var searchedText: String = ""
+    var isLongClick=false
+    lateinit var messageViewHolder: MessageViewHolder
 
 
     class MessageViewHolder(val view: View):RecyclerView.ViewHolder(view){
@@ -86,26 +72,32 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         if(viewType==1){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.send_single_row,parent,false)
+            messageViewHolder= MessageViewHolder(view)
             return MessageViewHolder(view)
         }
         if(viewType==2){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.send_img_single_row,parent,false)
+            messageViewHolder=MessageViewHolder(view)
             return MessageViewHolder(view)
         }
         if(viewType==3){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_img_single_row,parent,false)
+            messageViewHolder=MessageViewHolder(view)
             return MessageViewHolder(view)
         }
         if(viewType==4){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_doc_single_row,parent,false)
+            messageViewHolder=MessageViewHolder(view)
             return MessageViewHolder(view)
         }
         if(viewType==5){
             val view=LayoutInflater.from(parent.context).inflate(R.layout.send_doc_single_row,parent,false)
+            messageViewHolder=MessageViewHolder(view)
             return MessageViewHolder(view)
         }
         else{
             val view=LayoutInflater.from(parent.context).inflate(R.layout.receive_single_row,parent,false)
+            messageViewHolder=MessageViewHolder(view)
             return MessageViewHolder(view)
         }
     }
@@ -113,12 +105,26 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
     @SuppressLint("ResourceAsColor")
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         var chat=allMsgs[position]
-
+//
+//        Linkify.addLinks(holder.message, Linkify.ALL)
+//        holder.message.movementMethod = BetterLinkMovementMethod.getInstance()
+//
+//        holder.message.movementMethod = BetterLinkMovementMethod.newInstance().apply {
+//            setOnLinkClickListener { textView, url ->
+//                // Handle click or return false to let the framework handle this link.
+//                false
+//            }
+//            setOnLinkLongClickListener { textView, url ->
+//                Log.e("Ayush",url)
+//                // Handle long-click or return false to let the framework handle this link.
+//                false
+//            }
+//        }
 
         if(chat.type=="image"){
 
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.mid+".jpg")
-            Glide.with(context).load(f).into(holder.image_msg)
+            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.path)
+            Glide.with(context).load(f).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
 
 
 
@@ -138,7 +144,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
             holder.message.text=chat.message
 
-            val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Documents"),chat.message)
+            val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),Constants.DOC_LOCATION),chat.message)
 
             if(pdfFile.exists()){
                 holder.download.visibility=View.GONE
@@ -158,11 +164,31 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             }
         }
         if(chat.type=="message"){
+
             holder.message.text=chat.message
+            holder.message.movementMethod = LinkMovementMethod.getInstance()
+
+            if(searchedText!=""){
+                if(chat.message.toLowerCase().contains(searchedText)){
+                    var start = chat.message.toLowerCase().indexOf(searchedText)
+                    var end = start + searchedText.length
+                    val spanString = Spannable.Factory.getInstance().newSpannable(chat.message)
+                    spanString.setSpan(ForegroundColorSpan(Color.GREEN),start,end,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    holder.message.text=spanString
+
+                }
+            }
             holder.seen_txt.text="sent"
         }
-//        holder.time.text=chat.time
-//        holder.date.text=chat.date
+
+
+        //setting date and time
+        var tm: Date = Date(chat.time)
+        val time = SimpleDateFormat("hh:mm a")
+        val date = SimpleDateFormat("dd/MM/yy")
+
+        holder.time.text=time.format(tm)
+        holder.date.text=date.format(tm)
 
         holder.select.visibility=View.GONE
 
@@ -194,18 +220,28 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     holder.seen_txt.text="seen"
                 }
             }
-//            holder.msg_box.setOnClickListener {
-//
-//                holder.seen_txt.visibility=View.VISIBLE
-//                Handler().postDelayed({
-//                    holder.seen_txt.visibility=View.GONE
-//                },400)
-//            }
         }
+
+
+//        holder.msg_box.setOnLongClickListener(OnLongClickListener {
+//            isLongClick = true
+//            true
+//        })
+//        holder.msg_box.setOnTouchListener(OnTouchListener { v, event ->
+//            if (event.action == MotionEvent.ACTION_UP && isLongClick) {
+//                isLongClick = false
+//                return@OnTouchListener true
+//            }
+//            if (event.action == MotionEvent.ACTION_DOWN) {
+//                isLongClick = false
+//            }
+//            v.onTouchEvent(event)
+//        })
 
 
         holder.msg_box.setOnClickListener {
             if(selectedMsg.size!=0){
+                Log.e("Ayuhs","SElected")
                 if(chat in selectedMsg){
                     selectedMsg.remove(chat)
                     holder.select.visibility=View.GONE
@@ -288,7 +324,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     val builder = VmPolicy.Builder()
                     StrictMode.setVmPolicy(builder.build())
 
-                    val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),"/Flow/Medias/Chat Documents"),chat.message)
+                    val pdfFile = File(File(Environment.getExternalStorageDirectory().toString(),Constants.DOC_LOCATION),chat.message)
 
 
                     val path = FileProvider.getUriForFile(context,"com.ayush.flow"+".fileprovider",pdfFile)
@@ -316,7 +352,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
         holder.msg_box.setOnLongClickListener(object :View.OnLongClickListener{
             override fun onLongClick(v: View?): Boolean {
-
+                holder.message.autoLinkMask=0
                 if(chat !in selectedMsg){
                     selectedMsg.add(chat)
                     clickListener.updateCount()
@@ -336,6 +372,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
     interface OnAdapterItemClickListener {
         fun updateCount()
+        fun updateSeen(mid: String)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -361,7 +398,12 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         }
     }
 
-
+    fun colorSearchedText(allMsgs:ArrayList<MessageEntity>,searchedText:String){
+        this.searchedText=searchedText
+        this.allMsgs.clear()
+        this.allMsgs.addAll(allMsgs)
+        notifyDataSetChanged()
+    }
 
 
     fun updateList(msgList:ArrayList<MessageEntity>){

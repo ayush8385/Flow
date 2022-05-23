@@ -4,12 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import com.ayush.flow.model.CallerDetail
+import com.sinch.android.rtc.calling.CallDetails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ChatViewModel(application: Application):AndroidViewModel(application) {
     val allChats:LiveData<List<ChatEntity>>
     val repository: ChatRepository
+    lateinit var callDetails:CallerDetail
 
     init {
         val database= ChatDatabase.getDatabase(application).chatDao()
@@ -51,5 +54,9 @@ class ChatViewModel(application: Application):AndroidViewModel(application) {
 
     fun setLastMsg(s: String, userId: String)=viewModelScope.launch(Dispatchers.IO){
         repository.setLastMsg(s,userId)
+    }
+
+    fun callerDetail(callerDetail: CallerDetail){
+        callDetails=callerDetail
     }
 }

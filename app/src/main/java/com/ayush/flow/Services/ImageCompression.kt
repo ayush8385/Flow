@@ -1,29 +1,39 @@
 package com.ayush.flow.Services
 
+import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.graphics.*
 import android.media.ExifInterface
 import android.os.AsyncTask
-import android.os.Environment
-import com.ayush.flow.activity.Addprofile
-import com.ayush.flow.activity.uploadImage
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
+import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.ayush.flow.activity.Message
 import java.io.IOException
-import java.util.concurrent.Flow
 
 
-class ImageCompression(context: Context) :
+class ImageCompression(context: Context,from:String,intent: Intent,application: Application) :
     AsyncTask<String?, Void?, Bitmap>() {
     private val context: Context
+    private val from:String
+    private val intent:Intent
+    private val application:Application
 
     override fun doInBackground(vararg strings: String?): Bitmap? {
         return if (strings.size == 0 || strings[0] == null) null else compressImage(strings[0])
     }
 
     override fun onPostExecute(imageBmp: Bitmap?) {
-        // imagePath is path of new compressed image.
+        if(from=="message"){
+            Message().sendImageMessageToUser(
+                imageBmp!!,
+                intent.getStringExtra("userid")!!,
+                intent.getStringExtra("name")!!,
+                intent.getStringExtra("number")!!,
+                intent.getStringExtra("image")!!,
+                application
+            ).execute()
+        }
     }
 
     fun compressImage(imagePath: String?): Bitmap {
@@ -164,6 +174,9 @@ class ImageCompression(context: Context) :
 
     init {
         this.context = context
+        this.from=from
+        this.intent=intent
+        this.application=application
     }
 
 }

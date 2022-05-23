@@ -33,7 +33,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 
 
-class UserProfile : AppCompatActivity() {
+class UserProfile : AppCompatActivity(),MessageListener {
     lateinit var image:CircleImageView
     lateinit var name:TextView
     lateinit var about:TextView
@@ -128,9 +128,25 @@ class UserProfile : AppCompatActivity() {
         }
 
         delete.setOnClickListener {
-            url=""
-            image.setImageResource(R.drawable.user)
-            image_card.visibility=View.GONE
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Are you sure want to Delete")
+                .setCancelable(false)
+                .setPositiveButton("Yes") {
+                        dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                    url=""
+                    image.setImageResource(R.drawable.user)
+                    image_card.visibility=View.GONE
+                    FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue(url)
+                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), Constants.PROFILE_PHOTO_LOCATION)
+                    var file: File = File(directory,Constants.MY_USERID+".jpg")
+                    file.delete()
+                }
+                .setNegativeButton("No") {
+                        dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         edt_name.setOnClickListener {
@@ -266,7 +282,7 @@ class UserProfile : AppCompatActivity() {
 
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
-            photo = ImageCompression(context).execute(result).get()
+            photo = ImageCompression(context,"profile",intent,application).execute(result).get()
             updtImg.setImageBitmap(photo)
         }
         override fun doInBackground(vararg p0: Void?): String {
@@ -301,7 +317,7 @@ class UserProfile : AppCompatActivity() {
             if(imageuri!=null){
                 try {
                     updateImgLayout.visibility=View.VISIBLE
-                    photo = ImageCompression(this).execute(imagepath).get()
+                    photo = ImageCompression(this,"profile",intent,application).execute(imagepath).get()
                     updtImg.setImageBitmap(photo)
                 } catch (e: IOException) {
                     e.printStackTrace();

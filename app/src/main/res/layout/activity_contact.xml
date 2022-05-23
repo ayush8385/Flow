@@ -44,16 +44,17 @@
     </RelativeLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/pullToRefresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbar_contact"
-        android:id="@+id/pullToRefresh">
+        android:layout_below="@+id/toolbar_contact">
+
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/contact_recycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:id="@+id/contact_recycler"
             tools:listitem="@layout/contacts_single_row" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

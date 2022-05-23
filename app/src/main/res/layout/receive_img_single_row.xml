@@ -39,12 +39,12 @@
 
 
     <androidx.cardview.widget.CardView
-        android:layout_width="200dp"
+        android:layout_width="160dp"
         android:layout_marginVertical="4dp"
         android:layout_marginLeft="10dp"
         app:cardCornerRadius="15dp"
         android:id="@+id/box"
-        android:layout_height="200dp">
+        android:layout_height="160dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:id="@+id/msg_box"
@@ -55,12 +55,14 @@
                 android:layout_centerInParent="true"
                 android:padding="10dp"
                 android:id="@+id/progressbar"/>
+
             <ImageView
                 android:id="@+id/img_msg"
+                android:adjustViewBounds="true"
                 android:layout_width="match_parent"
-                android:scaleType="centerCrop"
                 android:layout_height="match_parent"
-                android:layout_alignParentTop="true" />
+                android:layout_alignParentTop="true"
+                android:scaleType="centerCrop" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

@@ -37,7 +37,7 @@ import com.squareup.picasso.Picasso
 import java.io.*
 
 
-class Addprofile : AppCompatActivity() {
+class Addprofile : AppCompatActivity(),MessageListener {
     lateinit var next:CircularProgressButton
     lateinit var name:EditText
     lateinit var about:EditText
@@ -314,7 +314,7 @@ class Addprofile : AppCompatActivity() {
 
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
-            photo = ImageCompression(context).execute(result).get()
+            photo = ImageCompression(context,"profile",intent,application).execute(result).get()
             userimage.setImageBitmap(photo)
         }
         override fun doInBackground(vararg p0: Void?): String {
@@ -349,9 +349,9 @@ class Addprofile : AppCompatActivity() {
         if(requestCode==110 && resultCode==Activity.RESULT_OK){
             if(imageuri!=null){
                 try {
-                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+//                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                     if(photo!=null){
-                        photo = ImageCompression(this).execute(selectedPath).get()
+                        photo = ImageCompression(this,"profile",intent,application).execute(selectedPath).get()
                         userimage.setImageBitmap(photo)
                     }
                 } catch (e: IOException) {

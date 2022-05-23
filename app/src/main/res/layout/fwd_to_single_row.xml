@@ -9,13 +9,14 @@
         android:layout_height="40dp"
         android:id="@+id/story_img"
         android:src="@drawable/user"/>
+
     <ImageView
+        android:id="@+id/del_fwd"
         android:layout_width="18dp"
         android:layout_height="18dp"
         android:background="@drawable/bottom_back"
-        android:src="@drawable/ic_baseline_close_24"
         android:padding="2dp"
-        android:id="@+id/del_fwd"
+        android:src="@drawable/ic_baseline_close_24"
         app:tint="#FFFFFF" />
 
 </RelativeLayout>
