@@ -1622,7 +1622,7 @@ class Message : BaseActivity() {
                     messageHashmap.put("mid", messageKey!!)
                     messageHashmap.put("userid",recvid)
                     messageHashmap.put("sender",Constants.MY_USERID)
-                    messageHashmap.put("message","")  //image url here
+                    messageHashmap.put("message","")
                     messageHashmap.put("time",System.currentTimeMillis())
                     messageHashmap.put("type","image")
                     messageHashmap.put("url",url)

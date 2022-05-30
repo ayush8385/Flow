@@ -105,21 +105,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
     @SuppressLint("ResourceAsColor")
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         var chat=allMsgs[position]
-//
-//        Linkify.addLinks(holder.message, Linkify.ALL)
-//        holder.message.movementMethod = BetterLinkMovementMethod.getInstance()
-//
-//        holder.message.movementMethod = BetterLinkMovementMethod.newInstance().apply {
-//            setOnLinkClickListener { textView, url ->
-//                // Handle click or return false to let the framework handle this link.
-//                false
-//            }
-//            setOnLinkLongClickListener { textView, url ->
-//                Log.e("Ayush",url)
-//                // Handle long-click or return false to let the framework handle this link.
-//                false
-//            }
-//        }
 
         if(chat.type=="image"){
 
@@ -196,7 +181,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             holder.select.visibility=View.VISIBLE
         }
 
-        if(chat.sender!=firebaseUser!!.uid && !chat.seen){
+        if(chat.sender!=firebaseUser!!.uid){
 
             val refer=FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid)
             refer.addListenerForSingleValueEvent(object :ValueEventListener{

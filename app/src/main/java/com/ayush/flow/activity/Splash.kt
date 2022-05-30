@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +27,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
@@ -32,16 +35,13 @@ import java.io.IOException
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 import kotlin.properties.Delegates
+
 
 class Splash : AppCompatActivity() {
     var firebaseuser: FirebaseUser?=null
     lateinit var sharedPreferences: SharedPreferences
-
-    var runnable: Runnable? = null
-    var delay = 800
-
-    lateinit var theme:SwitchCompat
     lateinit var hiddenViewModel: HiddenViewModel
     var isLoggedIn by Delegates.notNull<Boolean>()
 
@@ -50,14 +50,12 @@ class Splash : AppCompatActivity() {
 
         hiddenViewModel= ViewModelProviders.of(this).get(HiddenViewModel::class.java)
         SharedPreferenceUtils.init(applicationContext)
-        if(SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)){
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }
+
+        intializeTheme()
 
         super.onCreate(savedInstanceState)
 
-//        requestWindowFeature(Window.FEATURE_NO_TITLE)
-//        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        setFullScreen()
 
         FirebaseApp.initializeApp(this)
         firebaseuser= FirebaseAuth.getInstance().currentUser
@@ -75,12 +73,17 @@ class Splash : AppCompatActivity() {
                 finishAffinity()
             },300)
         }
+    }
 
+    private fun setFullScreen() {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+    }
 
-
-
-
-
+    private fun intializeTheme() {
+        if(SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        }
     }
 
     private fun callDashboard() {
