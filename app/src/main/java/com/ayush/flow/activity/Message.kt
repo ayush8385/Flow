@@ -373,7 +373,7 @@ class Message : BaseActivity() {
                 val ref=FirebaseDatabase.getInstance().reference
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
-                    Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","",false,false,false))
+                    Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","",false,false,false))
                 sendMessageToUser(msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
                 send_txt.setText("")
             }
@@ -1245,7 +1245,7 @@ class Message : BaseActivity() {
                     else{
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
-                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","",false,false,false))
+                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","",false,false,false))
                         sendMessageToUser(msg.message,messageKey,chat.id,chat.name,chat.number,chat.image).execute()
                     }
                 }
@@ -1500,7 +1500,7 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","",uriString,"",false,false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","",uriString,"","",false,false,false))
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
@@ -1577,7 +1577,7 @@ class Message : BaseActivity() {
 
                     ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
 
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","","",url,false,false,true))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","","",url,"",false,false,true))
                     GlobalScope.launch(Dispatchers.IO) {
                         MessageViewModel(application).isMsgSent(true,messageKey)
 
@@ -1601,47 +1601,58 @@ class Message : BaseActivity() {
     inner class uploadImageToFirebase(val bitmapImage: Bitmap,val messageKey: String,val recvid:String,val applicat: Application):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg p0: Void?): Boolean {
 
-            val baos= ByteArrayOutputStream()
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG,100,baos)
-            val fileinBytes: ByteArray =baos.toByteArray()
+            val imagebaos= ByteArrayOutputStream()
+            val thumbnailbaos= ByteArrayOutputStream()
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG,100,imagebaos)
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG,0,thumbnailbaos)
+            val imagefileinBytes: ByteArray = imagebaos.toByteArray()
+            val thumbnailfileinBytes: ByteArray = thumbnailbaos.toByteArray()
 
             val refStore= FirebaseDatabase.getInstance().reference
             val profilekey=refStore.push().key
 
-            val store: StorageReference = FirebaseStorage.getInstance().reference.child("Chat Images/")
-            val pathupload=store.child("$profilekey.jpg")
-            val uploadTask: StorageTask<*>
-            uploadTask=pathupload.putBytes(fileinBytes)
-            val ref = FirebaseDatabase.getInstance().reference
+            val imagestore: StorageReference = FirebaseStorage.getInstance().reference.child("Chat Images/")
+            val imagepathupload=imagestore.child("$profilekey.jpg")
+            val imageuploadTask: StorageTask<*>
+            imageuploadTask=imagepathupload.putBytes(imagefileinBytes)
 
-            uploadTask.addOnSuccessListener(OnSuccessListener { taskSnapshot ->
+            val ref = FirebaseDatabase.getInstance().reference
+            imageuploadTask.addOnSuccessListener(OnSuccessListener { taskSnapshot ->
                 val firebaseUri = taskSnapshot.storage.downloadUrl
                 firebaseUri.addOnSuccessListener { uri ->
-                    val url = uri.toString()
-                    val messageHashmap=HashMap<String,Any>()
-                    messageHashmap.put("mid", messageKey!!)
-                    messageHashmap.put("userid",recvid)
-                    messageHashmap.put("sender",Constants.MY_USERID)
-                    messageHashmap.put("message","")
-                    messageHashmap.put("time",System.currentTimeMillis())
-                    messageHashmap.put("type","image")
-                    messageHashmap.put("url",url)
-                    messageHashmap.put("received",false)
-                    messageHashmap.put("seen",false)
+                    val image_url = uri.toString()
 
-                    ref.child("Messages").child(recvid).child(messageKey).setValue(messageHashmap)
+                    val thumbstore: StorageReference = FirebaseStorage.getInstance().reference.child("Thumbnail/")
+                    val thumbpathupload=thumbstore.child("$profilekey.jpg")
+                    val thumbuploadTask: StorageTask<*>
+                    thumbuploadTask=thumbpathupload.putBytes(thumbnailfileinBytes)
 
-                    GlobalScope.launch(Dispatchers.IO) {
-                        MessageViewModel(applicat).isMsgSent(true,messageKey)
-//                        MessageAdapter(this@Message,selectedMsg,object:MessageAdapter.OnAdapterItemClickListener{
-//                            override fun updateCount() {
-//                                mainViewModel.setText(selectedMsg.size.toString())
-//                            }
-//
-//                        }).notifyDataSetChanged()
+                    thumbuploadTask.addOnSuccessListener(OnSuccessListener { taskSnapshot->
+                            val thumbFirebaseUri = taskSnapshot.storage.downloadUrl
+                            thumbFirebaseUri.addOnSuccessListener{ thumbUri->
+                                val thumb_url = thumbUri.toString()
 
-                        sendNotification(recvid, Constants.MY_USERID, "Image", messageKey!!, 0)
-                    }
+                                val messageHashmap=HashMap<String,Any>()
+                                messageHashmap.put("mid", messageKey!!)
+                                messageHashmap.put("userid",recvid)
+                                messageHashmap.put("sender",Constants.MY_USERID)
+                                messageHashmap.put("message","")
+                                messageHashmap.put("time",System.currentTimeMillis())
+                                messageHashmap.put("type","image")
+                                messageHashmap.put("url",image_url)
+                                messageHashmap.put("thumbnail",thumb_url)
+                                messageHashmap.put("received",false)
+                                messageHashmap.put("seen",false)
+
+                                ref.child("Messages").child(recvid).child(messageKey).setValue(messageHashmap)
+
+                                GlobalScope.launch(Dispatchers.IO) {
+                                    MessageViewModel(applicat).isMsgSent(true,messageKey)
+                                    sendNotification(recvid, Constants.MY_USERID, "Image", messageKey!!, 0)
+                                }
+                            }
+                        }
+                    )
                 }
             })
             return true
@@ -1714,7 +1725,7 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","",false,false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","","",false,false,false))
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)

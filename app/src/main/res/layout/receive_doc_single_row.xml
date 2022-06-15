@@ -106,5 +106,29 @@
         android:visibility="gone"
         android:text=""/>
 
+    <View
+        android:id="@+id/dim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#C3000000" />
+    <ProgressBar
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:indeterminateTint="@color/white"
+        android:background="@android:color/transparent"
+        android:id="@+id/progressbar"/>
+    <ImageView
+        android:id="@+id/download_bar"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_baseline_downloading_24"
+        android:tint="@color/white"/>
+
+
 
 </RelativeLayout>

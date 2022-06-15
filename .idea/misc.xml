@@ -143,10 +143,12 @@
         <entry key="app/src/main/res/layout/pass_edit_back.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/pass_verify.xml" value="0.26769816080729164" />
         <entry key="app/src/main/res/layout/profile_modal_bottomsheet.xml" value="0.27447916666666666" />
-        <entry key="app/src/main/res/layout/receive_img_single_row.xml" value="0.20833333333333334" />
+        <entry key="app/src/main/res/layout/receive_doc_single_row.xml" value="0.20208333333333334" />
+        <entry key="app/src/main/res/layout/receive_img_single_row.xml" value="0.375" />
         <entry key="app/src/main/res/layout/receive_single_row.xml" value="0.2078125" />
         <entry key="app/src/main/res/layout/recent_call_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/selected_img_item.xml" value="0.28958333333333336" />
+        <entry key="app/src/main/res/layout/send_doc_single_row.xml" value="0.20208333333333334" />
         <entry key="app/src/main/res/layout/send_img_single_row.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/layout/send_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/story_single_row.xml" value="0.28958333333333336" />

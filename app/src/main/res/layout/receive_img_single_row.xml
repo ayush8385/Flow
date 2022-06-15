@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="?selectableItemBackground"
     android:id="@+id/msg_par"
     android:layout_height="wrap_content">
@@ -49,20 +50,35 @@
             android:layout_width="match_parent"
             android:id="@+id/msg_box"
             android:layout_height="match_parent">
-            <ProgressBar
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_centerInParent="true"
-                android:padding="10dp"
-                android:id="@+id/progressbar"/>
 
             <ImageView
                 android:id="@+id/img_msg"
-                android:adjustViewBounds="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
+                android:adjustViewBounds="true"
                 android:scaleType="centerCrop" />
+
+            <View
+                android:id="@+id/dim"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#C3000000" />
+            <ProgressBar
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_centerInParent="true"
+                android:visibility="gone"
+                android:indeterminateTint="@color/white"
+                android:background="@android:color/transparent"
+                android:id="@+id/progressbar"/>
+            <ImageView
+                android:id="@+id/download_bar"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_baseline_downloading_24"
+                android:tint="@color/white"/>
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

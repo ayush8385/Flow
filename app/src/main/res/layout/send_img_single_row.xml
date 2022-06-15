@@ -85,6 +85,22 @@
                         android:background="@drawable/bottom_nav_back"
                         android:indeterminateTint="#F7FFFFFF"
                         android:padding="10dp" />
+
+                    <View
+                        android:id="@+id/dim"
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#C3000000" />
+
+                    <ImageView
+                        android:id="@+id/download_bar"
+                        android:layout_width="55dp"
+                        android:layout_height="55dp"
+                        android:visibility="gone"
+                        android:layout_centerInParent="true"
+                        android:src="@drawable/ic_baseline_downloading_24"
+                        android:tint="@color/white"/>
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 

@@ -32,7 +32,7 @@ class BlurTransformation(context: Context?) :
         script.setInput(input)
 
         // Set the blur radius
-        script.setRadius(20f)
+        script.setRadius(25f)
         script.forEach(output)
 
         // Copy the output to the blurred bitmap

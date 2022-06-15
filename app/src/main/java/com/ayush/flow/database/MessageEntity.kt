@@ -16,6 +16,7 @@ data class MessageEntity(
     @ColumnInfo(name = "msg_type") val type: String,
     @ColumnInfo(name = "msg_path") var path:String,
     @ColumnInfo(name = "doc_path") var docpath: String,
+    @ColumnInfo(name = "thumbnail") var thumbnail: String,
     @ColumnInfo(name = "url") val url:String,
     @ColumnInfo(name = "recev") var recev:Boolean,
     @ColumnInfo(name = "seen") var seen:Boolean,

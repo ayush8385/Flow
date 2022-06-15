@@ -6,10 +6,10 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
-import android.os.Environment
-import android.os.Handler
-import android.os.StrictMode
+import android.net.Uri
+import android.os.*
 import android.os.StrictMode.VmPolicy
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
@@ -21,20 +21,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
+import com.ayush.flow.Services.BlurTransformation
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.activity.FileDownloader
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.MessageEntity
+import com.ayush.flow.database.MessageViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -62,7 +69,8 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         val image_msg:ImageView=view.findViewById(R.id.img_msg)
         val progressBar:ProgressBar=view.findViewById(R.id.progressbar)
         val date:TextView =view.findViewById(R.id.msg_date)
-
+        val dim:View =view.findViewById(R.id.dim)
+        val downloadBar:ImageView=view.findViewById(R.id.download_bar)
         val download:ImageView=view.findViewById(R.id.download)
 
 
@@ -108,12 +116,9 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
         if(chat.type=="image"){
 
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.path)
-            Glide.with(context).load(f).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
-
-
-
-            if(chat.sender==firebaseUser!!.uid){
+            if(chat.sender==Constants.MY_USERID){
+                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.path)
+                Glide.with(context).load(f).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
                 if(chat.sent){
                     holder.seen_txt.text="sent"
                     holder.progressBar.visibility=View.GONE
@@ -121,6 +126,17 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 else{
                     holder.seen_txt.text="sending..."
                     holder.progressBar.visibility=View.VISIBLE
+                }
+            }
+            else{
+                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.mid+".jpg")
+                if(f.exists()){
+                    holder.dim.visibility=View.GONE
+                    holder.downloadBar.visibility=View.GONE
+                    Glide.with(context).load(f).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
+                }
+                else{
+                    Glide.with(context).load(chat.thumbnail).skipMemoryCache(false).apply(RequestOptions.bitmapTransform(BlurTransformation(context))).diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.image_msg)
                 }
             }
 
@@ -238,18 +254,35 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                 clickListener.updateCount()
             }
             else if(chat.type=="image"){
-                val intent = Intent(context, SelectedImage::class.java)
-//                var fos  =  ByteArrayOutputStream()
-//                ((holder.image_msg.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
-//                val byteArray = fos.toByteArray()
-//                ImageHolder.imageDraw=holder.image_msg.drawable
-                intent.putExtra("type","msgImg")
-//                intent.putExtra("image", byteArray)
-                intent.putExtra("userid",chat.mid)
-//                intent.putExtra("name","")
-//                intent.putExtra("number","")
-//                intent.putExtra("user_image","")
-                context.startActivity(intent)
+                if(holder.downloadBar.visibility==View.VISIBLE){
+                    holder.downloadBar.visibility=View.GONE
+                    holder.progressBar.visibility=View.VISIBLE
+                    if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+                        if (Environment.isExternalStorageManager()) {
+                            val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,false,false,false)
+                            saveImagefromUrlMsg(
+                                Constants.ALL_PHOTO_LOCATION,
+                                chat.mid + ".jpg",
+                                msg,holder
+                            ).execute(chat.url)
+                        } else {
+                            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                            val uri = Uri.fromParts("package", context.packageName, null)
+                            intent.data = uri
+                            context.startActivity(intent)
+                        }
+                    }
+                    else{
+                        val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,false,false,false)
+                        saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,chat.mid+".jpg",msg,holder).execute(chat.url)
+                    }
+                }
+                else{
+                    val intent = Intent(context, SelectedImage::class.java)
+                    intent.putExtra("type","msgImg")
+                    intent.putExtra("userid",chat.mid)
+                    context.startActivity(intent)
+                }
             }
             else if(chat.type=="doc"){
 
@@ -395,5 +428,71 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         allMsgs.clear()
         allMsgs.addAll(msgList)
         notifyDataSetChanged()
+    }
+
+
+    inner class saveImagefromUrlMsg(val location: String,val fileName: String,val msg:MessageEntity,val holder: MessageViewHolder) : AsyncTask<String?, Void?, Boolean>() {
+        var bmp: Bitmap?=null
+        override fun doInBackground(vararg url: String?): Boolean {
+            val url: URL = mStringToURL(url[0]!!)!!
+            val connection: HttpURLConnection?
+            try {
+                connection = url.openConnection() as HttpURLConnection
+                connection.connect()
+                val inputStream: InputStream = connection.inputStream
+                val bufferedInputStream = BufferedInputStream(inputStream)
+                bmp= BitmapFactory.decodeStream(bufferedInputStream)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+            return true
+        }
+
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            saveImgMsgToInternalStorage(bmp!!, location, fileName, msg,holder).execute()
+        }
+
+        private fun mStringToURL(string: String): URL? {
+            try {
+                return URL(string)
+            } catch (e: MalformedURLException) {
+                e.printStackTrace()
+            }
+            return null
+        }
+    }
+
+    inner class saveImgMsgToInternalStorage(val bitmapImage:Bitmap,val location:String,val fileName:String,val msg: MessageEntity,val holder: MessageViewHolder):AsyncTask<Void,Void,Boolean>(){
+        val directory: File = File(Environment.getExternalStorageDirectory().toString(), location)
+        var file: File = File(directory,fileName)
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+//            msg.path=fileName
+//            MessageViewModel(context).insertMessage(msg)
+            holder.progressBar.visibility=View.GONE
+            holder.dim.visibility=View.GONE
+
+            Glide.with(context).load(file).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
+
+        }
+        override fun doInBackground(vararg params: Void?):Boolean {
+            if(!directory.exists()){
+                directory.mkdirs()
+            }
+            var fos: FileOutputStream = FileOutputStream(file)
+            try {
+                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                try {
+                    fos.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+            return true
+        }
     }
 }
