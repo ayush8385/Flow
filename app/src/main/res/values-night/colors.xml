@@ -9,7 +9,7 @@
     <color name="white">#FF000000</color>
     <color name="back">#F7151515</color>
     <color name="lightdark">#333333</color>
-    <color name="bottom">@layout/navigation_state</color>
+    <color name="bottom">@drawable/navigation_state</color>
 
     <color name="shine_startColor">#00151515</color>
     <color name="shine_centerColor">#AA151515</color>

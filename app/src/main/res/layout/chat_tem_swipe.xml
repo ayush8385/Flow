@@ -1,141 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.chauthai.swipereveallayout.SwipeRevealLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/swipelayout"
-    app:dragEdge="right"
-    app:flingVelocity="100"
-    android:layout_marginBottom="3dp"
-    android:layout_marginTop="4dp"
-    android:background="?selectableItemBackground"
-    app:mode="same_level">
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:paddingHorizontal="10dp"
-            android:src="@drawable/icons8_call"
-            android:layout_centerVertical="true"
-            android:id="@+id/call_chat"/>
-        <ImageView
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:paddingHorizontal="10dp"
-            android:src="@drawable/icons8_video_call"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/call_chat"
-            android:id="@+id/vdo_call_chat"/>
-        <ImageView
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:paddingHorizontal="10dp"
-            android:src="@drawable/hidden"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/vdo_call_chat"
-            android:id="@+id/hide_chat"/>
-        <ImageView
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:paddingHorizontal="10dp"
-            android:src="@drawable/delete"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/hide_chat"
-            android:id="@+id/del_chat"/>
-
-    </RelativeLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/paren"
+<layout>
+    <com.chauthai.swipereveallayout.SwipeRevealLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/swipelayout"
+        app:dragEdge="right"
+        app:flingVelocity="100"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="4dp"
         android:background="?selectableItemBackground"
-        android:paddingHorizontal="16dp">
+        app:mode="same_level">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profile_pic"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:background="@drawable/circle_shadow"
-            android:scaleType="centerCrop"
-            android:src="@drawable/user"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/profile_name"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:fontFamily="@font/senbold"
-            android:maxLines="1"
-            android:text="fdsfkhjk"
-            android:textColor="@color/black"
-            android:textSize="19sp"
-            android:textStyle="bold"
-            android:ellipsize="end"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="10dp"
-            app:layout_constraintTop_toTopOf="@id/profile_pic"
-            app:layout_constraintBottom_toTopOf="@+id/profile_msg"
-            app:layout_constraintStart_toEndOf="@id/profile_pic" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/profile_msg"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:fontFamily="@font/senregular"
-            android:maxWidth="300dp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:drawablePadding="6dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="12dp"
-            android:text="sakhjs sd sazmn sdb  j saj djs ndas dda jh sf a"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="normal"
-            app:layout_constraintEnd_toStartOf="@id/timer"
-            app:layout_constraintStart_toEndOf="@id/profile_pic"
-            app:layout_constraintTop_toBottomOf="@+id/profile_name" />
+            <ImageView
+                android:id="@+id/call_chat"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_centerVertical="true"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/icons8_call" />
+            <ImageView
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/icons8_video_call"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/call_chat"
+                android:id="@+id/vdo_call_chat"/>
+            <ImageView
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/hidden"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/vdo_call_chat"
+                android:id="@+id/hide_chat"/>
+            <ImageView
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/delete"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/hide_chat"
+                android:id="@+id/del_chat"/>
 
-        <TextView
-            android:id="@+id/unread_chat"
-            android:layout_width="wrap_content"
+        </RelativeLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/paren"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bottom_back"
-            android:fontFamily="@font/senbold"
-            android:padding="5dp"
-            android:text="6"
-            android:textColor="#FFFF"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toTopOf="@id/timer"
-            app:layout_constraintTop_toTopOf="@id/profile_pic"
-            app:layout_constraintStart_toStartOf="@id/timer"
-            app:layout_constraintEnd_toEndOf="@id/timer"/>
+            android:background="?selectableItemBackground"
+            android:paddingHorizontal="16dp">
 
-        <TextView
-            android:id="@+id/timer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/senregular"
-            android:text="12:39 pm"
-            android:textColor="@color/black"
-            android:textSize="10sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/unread_chat"
-            app:layout_constraintBottom_toBottomOf="@id/profile_pic"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profile_pic"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                android:background="@drawable/circle_shadow"
+                android:scaleType="centerCrop"
+                android:src="@drawable/user"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chat_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@+id/profile_pic"
+                app:layout_constraintEnd_toStartOf="@id/time_data"
+                app:layout_constraintTop_toTopOf="@id/profile_pic"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/profile_pic">
+                <TextView
+                    android:id="@+id/profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/senbold"
+                    android:maxLines="1"
+                    android:text="fdsfkhjk"
+                    android:textColor="@color/black"
+                    android:textSize="19sp"
+                    android:textStyle="bold"
+                    android:ellipsize="end"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintBottom_toTopOf="@+id/profile_msg"
+                    app:layout_constraintStart_toEndOf="@id/profile_pic" />
+
+                <TextView
+                    android:id="@+id/profile_msg"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/senregular"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:drawablePadding="6dp"
+                    android:layout_marginTop="4dp"
+                    android:text="sakhjs sd sazmn sshb dsahjhbda sahdjasjkdhbsajh"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="normal"
+                    app:layout_constraintEnd_toStartOf="@id/timer"
+                    app:layout_constraintStart_toEndOf="@id/profile_pic"
+                    app:layout_constraintTop_toBottomOf="@+id/profile_name" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/time_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@id/chat_data"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/profile_pic"
+                app:layout_constraintBottom_toBottomOf="@id/profile_pic">
+                <TextView
+                    android:id="@+id/unread_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bottom_back"
+                    android:fontFamily="@font/senbold"
+                    android:padding="5dp"
+                    android:text="6"
+                    android:visibility="gone"
+                    android:textColor="#FFFF"
+                    android:textSize="10sp"
+                    app:layout_constraintBottom_toTopOf="@id/timer"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintStart_toStartOf="@id/timer"
+                    app:layout_constraintEnd_toEndOf="@id/timer"/>
+
+                <ImageView
+                    android:id="@+id/waiting_tick"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/waiting"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:tint="@color/black"
+                    app:layout_constraintBottom_toTopOf="@id/timer"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintStart_toStartOf="@id/timer"
+                    app:layout_constraintEnd_toEndOf="@id/timer"/>
+
+                <ImageView
+                    android:id="@+id/sent_tick"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tick"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone"
+                    android:tint="@color/black"
+                    app:layout_constraintBottom_toTopOf="@id/timer"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintStart_toStartOf="@id/timer"
+                    app:layout_constraintEnd_toEndOf="@id/timer"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/delivered_tick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintBottom_toTopOf="@id/timer"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintStart_toStartOf="@id/timer"
+                    app:layout_constraintEnd_toEndOf="@id/timer">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:tint="@color/black"
+                        android:src="@drawable/tick" />
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/tick"
+                        android:tint="@color/black"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="6dp" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/seen_tick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintBottom_toTopOf="@id/timer"
+                    app:layout_constraintTop_toTopOf="@id/profile_pic"
+                    app:layout_constraintStart_toStartOf="@id/timer"
+                    app:layout_constraintEnd_toEndOf="@id/timer">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:tint="@color/purple_200"
+                        android:src="@drawable/tick" />
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/tick"
+                        android:tint="@color/purple_200"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="6dp" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <TextView
+                    android:id="@+id/timer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/senregular"
+                    android:text="12:39 pm"
+                    android:textColor="@color/black"
+                    android:textSize="10sp"
+                    android:layout_marginTop="6dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/unread_chat"
+                    app:layout_constraintBottom_toBottomOf="@id/profile_pic"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <!--    <View-->
         <!--        android:layout_width="match_parent"-->
         <!--        android:layout_height="0.5dp"-->
         <!--        android:background="#6E6C6C"-->
         <!--        android:layout_marginHorizontal="20dp"/>-->
 
-</com.chauthai.swipereveallayout.SwipeRevealLayout>
+    </com.chauthai.swipereveallayout.SwipeRevealLayout>
+</layout>

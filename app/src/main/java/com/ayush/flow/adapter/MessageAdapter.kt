@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.FileProvider
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.BlurTransformation
@@ -119,13 +120,15 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             if(chat.sender==Constants.MY_USERID){
                 val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.path)
                 Glide.with(context).load(f).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.NONE).into(holder.image_msg)
-                if(chat.sent){
-                    holder.seen_txt.text="sent"
-                    holder.progressBar.visibility=View.GONE
-                }
-                else{
-                    holder.seen_txt.text="sending..."
-                    holder.progressBar.visibility=View.VISIBLE
+                MessageViewModel(context).getMsgStatus(chat.mid).observe(context as LifecycleOwner) {
+                    if (it == "sent" || it == "Delivered" || it == "seen") {
+                        holder.seen_txt.text=it
+                        holder.progressBar.visibility=View.GONE
+                    }
+                    else{
+                        holder.seen_txt.text="sending..."
+                        holder.progressBar.visibility=View.VISIBLE
+                    }
                 }
             }
             else{
@@ -154,13 +157,15 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
 
             if(chat.sender==firebaseUser!!.uid){
-                if(chat.sent){
-                    holder.seen_txt.text="sent"
-                    holder.progressBar.visibility=View.GONE
-                }
-                else{
-                    holder.seen_txt.text="sending..."
-                    holder.progressBar.visibility=View.VISIBLE
+                MessageViewModel(context).getMsgStatus(chat.mid).observe(context as LifecycleOwner) {
+                    if (it == "sent" || it == "Delivered" || it == "seen") {
+                        holder.seen_txt.text=it
+                        holder.progressBar.visibility=View.GONE
+                    }
+                    else{
+                        holder.seen_txt.text="sending..."
+                        holder.progressBar.visibility=View.VISIBLE
+                    }
                 }
             }
         }
@@ -203,7 +208,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             refer.addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if(snapshot.hasChild(chat.mid)){
-                        FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(chat.mid).child("seen").setValue(true)
+                        FirebaseDatabase.getInstance().reference.child("Messages").child(firebaseUser.uid).child(chat.mid).child("msgStatus").setValue("seen")
                     }
                 }
 
@@ -215,12 +220,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
         }
         else{
-            if(chat.recev){
-                holder.seen_txt.text="Delivered"
-                if(chat.seen){
-                    holder.seen_txt.text="seen"
-                }
-            }
+            holder.seen_txt.text=chat.msgStatus
         }
 
 
@@ -242,7 +242,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
 
         holder.msg_box.setOnClickListener {
             if(selectedMsg.size!=0){
-                Log.e("Ayuhs","SElected")
                 if(chat in selectedMsg){
                     selectedMsg.remove(chat)
                     holder.select.visibility=View.GONE
@@ -259,7 +258,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     holder.progressBar.visibility=View.VISIBLE
                     if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                         if (Environment.isExternalStorageManager()) {
-                            val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,false,false,false)
+                            val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,"sending...")
                             saveImagefromUrlMsg(
                                 Constants.ALL_PHOTO_LOCATION,
                                 chat.mid + ".jpg",
@@ -273,7 +272,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                         }
                     }
                     else{
-                        val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,false,false,false)
+                        val msg = MessageEntity(chat.mid,Constants.MY_USERID+"-"+chat.sender,chat.sender,chat.message,chat.time,chat.type,"","","",chat.url,"sending...")
                         saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,chat.mid+".jpg",msg,holder).execute(chat.url)
                     }
                 }
@@ -292,7 +291,7 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     holder.progressBar.visibility=View.VISIBLE
 
                     Handler().postDelayed({
-                        val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Chat Documents")
+                        val directory: File = File(Environment.getExternalStorageDirectory().toString(), Constants.DOC_LOCATION)
                         if (!directory.exists()) {
                             directory.mkdirs()
                         }

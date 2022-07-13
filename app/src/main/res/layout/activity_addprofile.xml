@@ -1,152 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/back"
-
-    tools:context=".AddProfile">
-
-
-
-    <RelativeLayout
+<layout>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/userimg"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/user"
-            android:background="@drawable/circle_shadow"
-            app:civ_circle_background_color="@color/white"
-            app:civ_border_width="2dp"
-            android:elevation="20dp"
-            app:civ_border_color="#424040"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@id/userimg"
-            android:id="@+id/cams"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_margin="10dp"
-                android:id="@+id/cam"
-                android:elevation="20dp"
-                android:src="@drawable/camera"/>
-            <ImageView
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_margin="10dp"
-                android:id="@+id/gall"
-                android:elevation="20dp"
-                android:src="@drawable/gallery"/>
-            <ImageView
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_margin="8dp"
-                android:id="@+id/del"
-                android:elevation="20dp"
-                android:src="@drawable/delete"/>
-
-        </LinearLayout>
+        android:layout_height="match_parent"
+        tools:context=".AddProfile">
 
 
-        <androidx.cardview.widget.CardView
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="12dp"
-            android:id="@+id/name"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="30dp"
-            android:layout_marginHorizontal="40dp"
-            android:layout_below="@+id/cams"
-            android:background="?attr/selectableItemBackground"
-            app:cardBackgroundColor="@color/white">
+            android:layout_centerInParent="true">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/userimg"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/user"
+                android:background="@drawable/circle_shadow"
+                app:civ_circle_background_color="@color/white"
+                app:civ_border_width="2dp"
+                android:elevation="20dp"
+                app:civ_border_color="#424040"/>
 
-            <EditText
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Set Your Name here"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="10dp"
-                android:cursorVisible="false"
-                android:id="@+id/username"
-                android:fontFamily="@font/amiko_semibold"
-                android:background="@drawable/editext_bg"
-                android:backgroundTint="@color/white"/>
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/userimg"
+                android:id="@+id/cams"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
 
-        </androidx.cardview.widget.CardView>
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_margin="10dp"
+                    android:id="@+id/cam"
+                    android:elevation="20dp"
+                    android:src="@drawable/camera"/>
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_margin="10dp"
+                    android:id="@+id/gall"
+                    android:elevation="20dp"
+                    android:src="@drawable/gallery"/>
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_margin="8dp"
+                    android:id="@+id/del"
+                    android:elevation="20dp"
+                    android:src="@drawable/delete"/>
+
+            </LinearLayout>
 
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="10dp"
-            android:layout_centerHorizontal="true"
-            app:cardElevation="12dp"
-            android:id="@+id/status"
-            android:layout_marginHorizontal="40dp"
-            android:layout_marginTop="30dp"
-            android:layout_below="@+id/name"
-            app:cardBackgroundColor="@color/white">
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="12dp"
+                android:id="@+id/name"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="30dp"
+                android:layout_marginHorizontal="40dp"
+                android:layout_below="@+id/cams"
+                android:background="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/white">
 
-            <EditText
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Set Your Name here"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:cursorVisible="false"
+                    android:id="@+id/username"
+                    android:importantForAutofill="no"
+                    android:inputType="textCapWords|textNoSuggestions"
+                    android:fontFamily="@font/amiko_semibold"
+                    android:background="@drawable/editext_bg"
+                    android:backgroundTint="@color/white"/>
+
+            </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                android:importantForAutofill="no"
+                android:inputType="textCapWords|textNoSuggestions"
+                android:layout_centerHorizontal="true"
+                app:cardElevation="12dp"
+                android:id="@+id/status"
+                android:layout_marginHorizontal="40dp"
+                android:layout_marginTop="30dp"
+                android:layout_below="@+id/name"
+                app:cardBackgroundColor="@color/white">
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="Set Your Status here"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    android:text="I'm with the Flow"
+                    android:id="@+id/userabt"
+                    android:cursorVisible="false"
+                    android:fontFamily="@font/amiko_semibold"
+                    android:background="@drawable/editext_bg"
+                    android:backgroundTint="@color/white"/>
+
+            </androidx.cardview.widget.CardView>
+
+
+            <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
+                android:id="@+id/nxt_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Set Your Status here"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="10dp"
-                android:text="I'm with the Flow"
-                android:id="@+id/userabt"
-                android:cursorVisible="false"
-                android:fontFamily="@font/amiko_semibold"
-                android:background="@drawable/editext_bg"
-                android:backgroundTint="@color/white"/>
+                android:layout_below="@+id/status"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="80dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/getstartedbtn_back"
+                android:paddingHorizontal="42dp"
+                android:text="Next"
+                android:textColor="#FFFFFF"
+                android:textSize="19sp"
 
-        </androidx.cardview.widget.CardView>
+                app:spinning_bar_color="#FFF"
+                app:spinning_bar_padding="6dp"
+                app:spinning_bar_width="4dp" />
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp"
+                android:layout_below="@+id/nxt_btn"
+                android:id="@+id/progressbar"/>
+        </RelativeLayout>
 
 
-        <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
-            android:id="@+id/nxt_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:textSize="19sp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginHorizontal="80dp"
-            android:layout_marginBottom="20dp"
-            android:background="@drawable/getstartedbtn_back"
-            android:paddingHorizontal="42dp"
-            android:text="Next"
-            android:layout_below="@+id/status"
-            android:textColor="@color/white"
 
-            app:spinning_bar_width="4dp"
-            app:spinning_bar_color="#FFF"
-            app:spinning_bar_padding="6dp"/>
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="40dp"
-            android:layout_below="@+id/nxt_btn"
-            android:id="@+id/progressbar"/>
+
     </RelativeLayout>
-
-
-
-
-
-</RelativeLayout>
+</layout>

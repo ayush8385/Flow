@@ -2,6 +2,7 @@ package com.ayush.flow.database
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -30,10 +31,6 @@ class MessageViewModel(context: Context): ViewModel() {
         repository.insert(messageEntity)
     }
 
-    fun updatetMessage(mid: String, rec: Boolean, seen: Boolean) =viewModelScope.launch (Dispatchers.IO){
-        repository.update(mid,rec,seen)
-    }
-
     fun deleteMsg(item: MessageEntity) {
         repository.deleteMsg(item)
     }
@@ -42,19 +39,19 @@ class MessageViewModel(context: Context): ViewModel() {
         repository.deleteMsgWithId(id)
     }
 
-    fun isMsgSent(sent: Boolean,mid: String)=viewModelScope.launch(Dispatchers.IO) {
-        repository.isSent(sent, mid)
+    fun updateMsgStatus(status: String,mid: String)=viewModelScope.launch(Dispatchers.IO) {
+        repository.updateMsgStatus(status, mid)
     }
 
     fun getUnreads(id: String):LiveData<Int>{
         return repository.getUnreads(id)
     }
 
-    fun isMsgSeen(seen: Boolean, mid: String)=viewModelScope.launch(Dispatchers.IO) {
-        repository.isSeen(seen, mid)
+    fun getMsgStatus(mid: String):LiveData<String>{
+        return repository.getMsgStatus(mid)
     }
 
-    fun setMsgSeen(userid: String)=viewModelScope.launch(Dispatchers.IO) {
+    fun setAllMsgSeen(userid: String)=viewModelScope.launch(Dispatchers.IO) {
         repository.setMsgSeen(userid)
     }
 }

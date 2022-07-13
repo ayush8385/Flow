@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -28,7 +29,6 @@ import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -41,6 +41,7 @@ import com.ayush.flow.adapter.ForwardToAdapter
 import com.ayush.flow.adapter.MessageAdapter
 import com.ayush.flow.adapter.SelectedImgAdapter
 import com.ayush.flow.database.*
+import com.ayush.flow.databinding.ActivityMessageBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.gms.tasks.OnSuccessListener
@@ -51,7 +52,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
@@ -68,166 +68,57 @@ import java.util.*
 
 
 class Message : BaseActivity() {
-    lateinit var recyclerView: RecyclerView
-//    lateinit var fwdrecyclerView:RecyclerView
-  //  lateinit var fwdtorecyclerView:RecyclerView
     lateinit var layoutManager: RecyclerView.LayoutManager
-    lateinit var more: ImageView
-    lateinit var name:TextView
-    lateinit var more_card:LinearLayout
-    lateinit var parent:RelativeLayout
-    lateinit var back: ImageView
-    lateinit var send_txt:EditText
     var handler = Handler()
     var runnable: Runnable? = null
     var delay = 100
-    lateinit var send: ImageView
-    lateinit var image:CircleImageView
     lateinit var viewModel: MessageViewModel
-    lateinit var selectAll:CheckBox
     var userid:String=""
     var user_image:String=""
     var number:String=""
     var photo:Bitmap?=null
     var rotatedBitmap:Bitmap?=null
-    lateinit var status:TextView
     lateinit var firebaseUser: FirebaseUser
     var adapter: MessageAdapter? = null
     var apiService: APIService?=null
-    lateinit var search: androidx.appcompat.widget.SearchView
     val allMsg = arrayListOf<MessageEntity>()
     val selectedMsg = arrayListOf<MessageEntity>()
-    lateinit var up: ImageView
-    lateinit var down: ImageView
-    lateinit var search_txt:TextView
-    lateinit var searched:CardView
-    lateinit var delete: ImageView
     private var imageuri: Uri?=null
-    lateinit var forward: ImageView
-    lateinit var close: ImageView
-    lateinit var select_txt:TextView
-    lateinit var selected:CardView
     lateinit var mainViewModel: MainViewModel
     lateinit var fwdViewModel: ForwardViewModel
-    lateinit var send_box:CardView
-//    lateinit var forward_card:CardView
-//    lateinit var close_fwd: ImageView
- //   lateinit var dim:View
     private lateinit var photofile: File
- //   lateinit var searchfwd:SearchView
-//    lateinit var fwd_btn: ImageView
-    lateinit var send_cam: ImageView
-    lateinit var send_con: ImageView
-    lateinit var send_doc: ImageView
-    lateinit var send_gall: ImageView
-    lateinit var details:LinearLayout
     lateinit var sharedPreferences:SharedPreferences
-    lateinit var profile:ImageView
-
-    lateinit var sendImgLayout:RelativeLayout
-    lateinit var sendImg:TouchImageView
-    lateinit var backNow:ImageView
-    lateinit var sendImgBtn:ImageView
     lateinit var selectedPath:String
     lateinit var gallImagesPath:ArrayList<String>
     lateinit var allSelectedUri:ArrayList<Uri>
-    lateinit var selectedImgRecyclerView: RecyclerView
     lateinit var selectedImgAdapter: SelectedImgAdapter
     lateinit var selectedLayoutManager: RecyclerView.LayoutManager
 
-
-
-   // lateinit var option:ImageView
+    lateinit var binding:ActivityMessageBinding
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_message)
+        binding= ActivityMessageBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         selectedPath=""
         gallImagesPath= arrayListOf<String>()
         allSelectedUri= arrayListOf<Uri>()
-        recyclerView=findViewById(R.id.message_recycler)
-        name=findViewById(R.id.user_name)
-        more=findViewById(R.id.more)
-        more_card=findViewById(R.id.more_card)
-        parent=findViewById(R.id.msg_parent)
-        back=findViewById(R.id.back)
-        send_txt=findViewById(R.id.send_text)
-        send=findViewById(R.id.send_btn)
-       search=findViewById(R.id.searchview)
-        image=findViewById(R.id.user_pic)
-        status=findViewById(R.id.status)
-//       fwd_btn=findViewById(R.id.fwd_btn)
-       send_box=findViewById(R.id.send)
-       close=findViewById(R.id.close)
-       details=findViewById(R.id.details)
-       profile=findViewById(R.id.user_profile)
-
-       //send img doc cons box
-       send_con=findViewById(R.id.send_con)
-       send_doc=findViewById(R.id.send_doc)
-       send_cam=findViewById(R.id.send_cam)
-       send_gall=findViewById(R.id.send_gall)
-       selectedImgRecyclerView=findViewById(R.id.selected_img_recycler)
-
-
-       apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
-       //forwarding
-
-     //  forward_card=findViewById(R.id.fwd_card)
-   //    close_fwd=findViewById(R.id.close_fwd)
-   //    dim=findViewById(R.id.dim)
-    //   searchfwd=findViewById(R.id.searchview_fwd)
-    //   fwdrecyclerView=findViewById(R.id.forwardrecycler)
-   //    fwdtorecyclerView=findViewById(R.id.forwarded_to)
-//       selectAll=findViewById(R.id.selectAll)
-    //    option=findViewById(R.id.more_option)
-
-
-
-       searched=findViewById(R.id.searched)
-       search_txt=findViewById(R.id.search_text)
-       up=findViewById(R.id.up_log)
-       down=findViewById(R.id.down_log)
-
-       selected=findViewById(R.id.selected)
-       select_txt=findViewById(R.id.select_text)
-       delete=findViewById(R.id.delete)
-       forward=findViewById(R.id.forward)
-
-
-       sendImgLayout=findViewById(R.id.send_img_now)
-       sendImg=findViewById(R.id.send_select_img)
-       backNow=findViewById(R.id.back_now)
-       sendImgBtn=findViewById(R.id.sendimg_btn)
-
+        apiService= Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
-
-       sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
-//       if(sharedPreferences.getBoolean("nightMode",true)){
-//           audiocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.call))
-//           videocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.video_call))
-//       }
-//       else{
-//           audiocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.audio_black))
-//           videocall.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.video_black))
-//       }
-
+        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
        fwdViewModel=ViewModelProviders.of(this).get(ForwardViewModel::class.java)
        mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
 
-//        viewModel=ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(application)).get(MessageViewModel::class.java)
-
-        back.setOnClickListener {
+        binding.back.setOnClickListener {
             onBackPressed()
         }
 
-
         if(intent.getStringExtra("name")==""){
-            name.text=intent.getStringExtra("number")!!
+            binding.userName.text=intent.getStringExtra("number")!!
         }
         else{
-            name.text=intent.getStringExtra("name")!!
+            binding.userName.text=intent.getStringExtra("name")!!
         }
         userid= intent.getStringExtra("userid")!!
         user_image=intent.getStringExtra("image")!!
@@ -240,14 +131,14 @@ class Message : BaseActivity() {
        }
 
 
-       close.setOnClickListener {
-           selected.visibility=View.GONE
-           send_box.visibility=View.VISIBLE
+       binding.close.setOnClickListener {
+           binding.selected.visibility=View.GONE
+           binding.sendBox.visibility=View.VISIBLE
            selectedMsg.clear()
            adapter!!.notifyDataSetChanged()
        }
 
-       delete.setOnClickListener {
+       binding.delete.setOnClickListener {
            AlertDialog.Builder(this)
                .setTitle("Are you sure want to Delete")
                .setCancelable(false)
@@ -261,33 +152,32 @@ class Message : BaseActivity() {
                    dialog.dismiss()
                }
                .show()
-           selected.visibility=View.GONE
-           send_box.visibility=View.VISIBLE
+           binding.selected.visibility=View.GONE
+           binding.sendBox.visibility=View.VISIBLE
 
        }
 
 
-       forward.setOnClickListener {
-
+       binding.forward.setOnClickListener {
            openForwardBottomSheet(this)
        }
 
-       image.setOnClickListener {
-           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       binding.userPic.setOnClickListener {
+           openProfileBottomSheet(this,binding.userName.text.toString(),userid,true)
        }
 
-       details.setOnClickListener {
-           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       binding.details.setOnClickListener {
+           openProfileBottomSheet(this,binding.userName.text.toString(),userid,true)
        }
 
-       profile.setOnClickListener {
-           openProfileBottomSheet(this,name.text.toString(),image,userid,user_image,true)
+       binding.userProfile.setOnClickListener {
+           openProfileBottomSheet(this,binding.userName.text.toString(),userid,true)
        }
 
 
         layoutManager= LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).stackFromEnd=true
-        recyclerView.layoutManager=layoutManager
+        binding.messageRecycler.layoutManager=layoutManager
         adapter = MessageAdapter(this,selectedMsg,object:MessageAdapter.OnAdapterItemClickListener{
             override fun updateCount() {
                 mainViewModel.setText(selectedMsg.size.toString())
@@ -298,19 +188,19 @@ class Message : BaseActivity() {
             }
 
         })
-        recyclerView.adapter=adapter
+        binding.messageRecycler.adapter=adapter
 //       val n = allMsg.size
 //       recyclerView.smoothScrollToPosition(intent.getIntExtra("unread",0))
 
        mainViewModel.getText().observe(this,Observer{it->
            if(it=="0"){
-               selected.visibility=View.GONE
-               send_box.visibility=View.VISIBLE
+               binding.selected.visibility=View.GONE
+               binding.sendBox.visibility=View.VISIBLE
            }
            else{
-               select_txt.text=it+" Selected"
-               selected.visibility=View.VISIBLE
-               send_box.visibility=View.INVISIBLE
+               binding.selectText.text=it+" Selected"
+               binding.selected.visibility=View.VISIBLE
+               binding.sendBox.visibility=View.INVISIBLE
            }
        })
 
@@ -320,13 +210,12 @@ class Message : BaseActivity() {
                 allMsg.clear()
                 allMsg.addAll(list)
                 adapter!!.updateList(list as ArrayList<MessageEntity>)
-                recyclerView.smoothScrollToPosition(list.size)
+                binding.messageRecycler.smoothScrollToPosition(list.size)
             }
         })
 
-        more.setOnClickListener {
-            if(more_card.visibility== View.GONE){
-
+        binding.more.setOnClickListener {
+            if(binding.moreCard.visibility== View.GONE){
                 val rotate = RotateAnimation(
                     0F,
                     360F,
@@ -338,15 +227,15 @@ class Message : BaseActivity() {
                 rotate.duration = 400
                 rotate.fillAfter=true
                 rotate.interpolator = LinearInterpolator()
-                more.startAnimation(rotate)
+                binding.more.startAnimation(rotate)
 
 
-                more_card.visibility=View.VISIBLE
+                binding.moreCard.visibility=View.VISIBLE
                 val animFadein: Animation = AnimationUtils.loadAnimation(
                     applicationContext,
                     R.anim.slide_up
                 )
-                more_card.startAnimation(animFadein)
+                binding.moreCard.startAnimation(animFadein)
             }
             else{
                 val rotate = RotateAnimation(
@@ -360,31 +249,31 @@ class Message : BaseActivity() {
                 rotate.duration = 300
                 rotate.fillAfter=true
                 rotate.interpolator = LinearInterpolator()
-                more.startAnimation(rotate)
+                binding.more.startAnimation(rotate)
 
 
-                more_card.visibility=View.GONE
+                binding.moreCard.visibility=View.GONE
             }
         }
 
-        send.setOnClickListener {
-            val msg=send_txt.text.toString()
+        binding.send.setOnClickListener {
+            val msg=binding.sendText.text.toString()
             if(msg!=""){
                 val ref=FirebaseDatabase.getInstance().reference
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
-                    Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","",false,false,false))
+                    Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","","sending..."))
                 sendMessageToUser(msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
-                send_txt.setText("")
+                binding.sendText.setText("")
             }
         }
 
 
-       send_cam.setOnClickListener {
+       binding.sendCam.setOnClickListener {
 
            if(Permissions().checkCamerapermission(this)){
                openCamera()
-               more_card.visibility=View.GONE
+               binding.moreCard.visibility=View.GONE
 
            }
            else{
@@ -395,10 +284,10 @@ class Message : BaseActivity() {
 
        }
 
-       send_gall.setOnClickListener {
+       binding.sendGall.setOnClickListener {
            if(Permissions().checkWritepermission(this)){
                openGallery()
-               more_card.visibility=View.GONE
+               binding.moreCard.visibility=View.GONE
            }
            else{
                Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
@@ -406,10 +295,10 @@ class Message : BaseActivity() {
 
        }
 
-       send_doc.setOnClickListener {
+       binding.sendDoc.setOnClickListener {
            if(Permissions().checkWritepermission(this)){
                openDocuments()
-               more_card.visibility=View.GONE
+               binding.moreCard.visibility=View.GONE
            }
            else{
                Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
@@ -418,7 +307,7 @@ class Message : BaseActivity() {
        }
 
 
-       sendImgBtn.setOnClickListener {
+       binding.sendimgBtn.setOnClickListener {
            if(gallImagesPath.size!=0){
                for(imgpath in gallImagesPath){
                    ImageCompression(this,"message",intent,application).execute(imgpath)
@@ -427,16 +316,16 @@ class Message : BaseActivity() {
            else if(selectedPath!=null && selectedPath!=""){
                ImageCompression(this,"message",intent,application).execute(selectedPath)
            }
-           sendImg.setImageResource(android.R.color.transparent)
-           sendImgLayout.visibility=View.GONE
+           binding.sendSelectImg.setImageResource(android.R.color.transparent)
+           binding.sendImgNow.visibility=View.GONE
            gallImagesPath.clear()
            allSelectedUri.clear()
        }
 
-       backNow.setOnClickListener {
-           sendImg.setImageResource(android.R.color.transparent)
+       binding.backNow.setOnClickListener {
+           binding.sendSelectImg.setImageResource(android.R.color.transparent)
            photo=null
-           sendImgLayout.visibility=View.GONE
+           binding.sendImgNow.visibility=View.GONE
            gallImagesPath.clear()
            allSelectedUri.clear()
        }
@@ -449,7 +338,7 @@ class Message : BaseActivity() {
     }
 
     private fun setAllMsgSeen() {
-        MessageViewModel(application).setMsgSeen(Constants.MY_USERID+"-"+userid)
+        MessageViewModel(application).setAllMsgSeen(userid)
     }
 
     fun checkStatus(){
@@ -670,12 +559,12 @@ class Message : BaseActivity() {
             }
         })
 
-        send_box.visibility=View.VISIBLE
-        selected.visibility=View.GONE
+        binding.sendBox.visibility=View.VISIBLE
+        binding.selected.visibility=View.GONE
 
     }
 
-    fun openProfileBottomSheet(context: Context,username:String,userimg:CircleImageView,user_id:String,user_image_path:String,isChat:Boolean) {
+    fun openProfileBottomSheet(context: Context,username:String,user_id:String,isChat:Boolean) {
         val bottomSheetDialog = BottomSheetDialog(context,R.style.AppBottomSheetDialogTheme)
         bottomSheetDialog.setContentView(R.layout.profile_modal_bottomsheet)
 
@@ -716,7 +605,6 @@ class Message : BaseActivity() {
                 intent.putExtra("name", username)
                 intent.putExtra("number",username)
                 intent.putExtra("userid", user_id)
-                intent.putExtra("image", user_image_path)
                 context.startActivity(intent)
             }
         }
@@ -846,19 +734,20 @@ class Message : BaseActivity() {
 
     override fun onBackPressed() {
 
-        if(selected.visibility===View.VISIBLE){
-            selected.visibility=View.GONE
-            send_box.visibility=View.VISIBLE
+        if(binding.selected.visibility===View.VISIBLE){
+            binding.selected.visibility=View.GONE
+            binding.sendBox.visibility=View.VISIBLE
             selectedMsg.clear()
             adapter!!.notifyDataSetChanged()
         }
-        else if(sendImgLayout.visibility==View.VISIBLE){
-            sendImgLayout.visibility=View.GONE
+        else if(binding.sendImgNow.visibility==View.VISIBLE){
+            binding.sendImgNow.visibility=View.GONE
             gallImagesPath.clear()
             allSelectedUri.clear()
-            sendImg.setImageResource(android.R.color.transparent)
+            binding.sendSelectImg.setImageResource(android.R.color.transparent)
         }
         else{
+            setAllMsgSeen()
             super.onBackPressed()
         }
 //        finishAffinity()
@@ -869,12 +758,12 @@ class Message : BaseActivity() {
         val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),userid+".jpg")
         Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
             DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(image)
+            .skipMemoryCache(true).into(binding.userPic)
 
         RetrieveMessage(application).execute()
         handler.postDelayed(Runnable {
             handler.postDelayed(runnable!!, delay.toLong())
-            ChatViewModel(application).setUnread(0,userid)
+//            ChatViewModel(application).setUnread(0,userid)
             val notId: Int = Regex("[\\D]").replace(userid, "").toInt()
             NotificationManagerCompat.from(applicationContext).cancel(notId)
             MessagingService.messsageHashmap.remove(notId)
@@ -893,42 +782,41 @@ class Message : BaseActivity() {
 
     fun searchElement() {
 
-        search.queryHint="Search messages..."
-        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
-
-        val theTextArea = search.findViewById(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+        binding.searchview.queryHint="Search messages..."
+        val theTextArea = binding.searchview.findViewById(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
 
         theTextArea.isCursorVisible=false
 
-        search.setOnSearchClickListener {
-            back.visibility= View.GONE
-            name.visibility=View.GONE
-            status.visibility=View.GONE
-            profile.visibility=View.GONE
-            image.visibility=View.GONE
+        binding.searchview.setOnSearchClickListener {
+            binding.back.visibility= View.GONE
+            binding.userName.visibility=View.GONE
+            binding.status.visibility=View.GONE
+            binding.userProfile.visibility=View.GONE
+            binding.userPic.visibility=View.GONE
+
             val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
-            search.layoutParams=params
+            binding.searchview.layoutParams=params
         }
 
-        search.setOnCloseListener(object :SearchView.OnCloseListener{
+        binding.searchview.setOnCloseListener(object :SearchView.OnCloseListener{
             override fun onClose(): Boolean {
-                back.visibility= View.VISIBLE
-                name.visibility=View.VISIBLE
-                profile.visibility=View.VISIBLE
-                image.visibility=View.VISIBLE
-                searched.visibility=View.GONE
-                send_box.visibility=View.VISIBLE
+                binding.back.visibility= View.VISIBLE
+                binding.userName.visibility=View.VISIBLE
+                binding.userProfile.visibility=View.VISIBLE
+                binding.userPic.visibility=View.VISIBLE
+                binding.searched.visibility=View.GONE
+                binding.sendBox.visibility=View.VISIBLE
                 setOnlineStatus()
                 val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-                search.layoutParams=params
+                binding.searchview.layoutParams=params
                 return false
             }
 
         })
 
         val manager=getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+        binding.searchview.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
 //                search.clearFocus()
                 filterr(query)
@@ -949,10 +837,10 @@ class Message : BaseActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val stat=snapshot.child("status").value.toString()
                 if(stat=="online"){
-                    status.visibility=View.VISIBLE
+                    binding.status.visibility=View.VISIBLE
                 }
                 else{
-                    status.visibility=View.GONE
+                    binding.status.visibility=View.GONE
                 }
             }
 
@@ -969,15 +857,21 @@ class Message : BaseActivity() {
         grantResults: IntArray
     ) {
         when (requestCode) {
+            101->{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openCamera()
+                }
+                super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+            }
             104 -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    audioCalling(name.text.toString(),userid)
+                    audioCalling(binding.userName.text.toString(),userid)
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
             105->{
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    videoCalling(name.text.toString(),userid)
+                    videoCalling(binding.userName.text.toString(),userid)
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
@@ -996,29 +890,29 @@ class Message : BaseActivity() {
         var n=filteredlist.size-1
         if(filteredlist.isEmpty()){
             Toast.makeText(applicationContext,"No Data Found",Toast.LENGTH_SHORT).show()
-            search_txt.text="0"+" of "+"0"
+            binding.searchText.text="0"+" of "+"0"
         }
         else{
-            searched.visibility=View.VISIBLE
-            send_box.visibility=View.INVISIBLE
+            binding.searched.visibility=View.VISIBLE
+            binding.sendBox.visibility=View.INVISIBLE
 
-            search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
-            recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+            binding.searchText.text=(n+1).toString()+" of "+filteredlist.size.toString()
+            binding.messageRecycler.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
 
            // adapter.updateList(filteredlist)
 
-            up.setOnClickListener {
+            binding.upLog.setOnClickListener {
                 if(n>0){
                     n--
-                    search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
-                    recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+                    binding.searchText.text=(n+1).toString()+" of "+filteredlist.size.toString()
+                    binding.messageRecycler.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
                 }
             }
-            down.setOnClickListener {
+            binding.downLog.setOnClickListener {
                 if(n<filteredlist.size-1){
                     n++;
-                    search_txt.text=(n+1).toString()+" of "+filteredlist.size.toString()
-                    recyclerView.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
+                    binding.searchText.text=(n+1).toString()+" of "+filteredlist.size.toString()
+                    binding.messageRecycler.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
                 }
             }
 
@@ -1029,7 +923,7 @@ class Message : BaseActivity() {
         for(item in allMsg){
             if(item.message.toLowerCase().contains(text.toLowerCase())){
                 //recyclerView.scrollToPosition(mChatlist.indexOf(item))
-                recyclerView.smoothScrollToPosition(allMsg.indexOf(item))
+                binding.messageRecycler.smoothScrollToPosition(allMsg.indexOf(item))
                 adapter?.colorSearchedText(allMsg,text.toLowerCase())
 
             }
@@ -1069,16 +963,13 @@ class Message : BaseActivity() {
         override fun doInBackground(vararg params: Void?): Boolean {
 
             val ref=FirebaseDatabase.getInstance().reference
-//            val messageKey=ref.push().key
 
             if(application!=null){
-//                MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","",false,false,false))
-
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,"",System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
             }
 
             val messageHashmap=HashMap<String,Any>()
@@ -1086,38 +977,20 @@ class Message : BaseActivity() {
             messageHashmap.put("userid",userid)
             messageHashmap.put("sender",Constants.MY_USERID)
             messageHashmap.put("message",msg)
-            messageHashmap.put("received",false)
-            messageHashmap.put("seen",false)
+            messageHashmap.put("msgStatus","")
             messageHashmap.put("url","")
             messageHashmap.put("time",System.currentTimeMillis())
             messageHashmap.put("type","message")
 
 
-            ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
+            ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap).addOnSuccessListener {
+                MessageViewModel(application).updateMsgStatus("sent",messageKey)
+            }
 
             sendNotification(userid, Constants.MY_USERID, msg,messageKey, 0)
 
             return true
         }
-    }
-
-    inner class setIconImage(val image:CircleImageView,val user_image:String):AsyncTask<Void,Void,Boolean>(){
-        var b: Bitmap?=null
-        override fun onPostExecute(result: Boolean?) {
-            super.onPostExecute(result)
-            image.setImageBitmap(b)
-        }
-        override fun doInBackground(vararg params: Void?): Boolean {
-            try {
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),user_image)
-                b = BitmapFactory.decodeStream(FileInputStream(f))
-
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
-            }
-            return true
-        }
-
     }
 
     inner class checkSeen():AsyncTask<Void,Void,Boolean>(){
@@ -1130,14 +1003,13 @@ class Message : BaseActivity() {
                         val sender=snap.child("sender").value.toString()
 
                         if(sender==firebaseUser.uid){
-                            val rec:Boolean=snap.child("received").value as Boolean
-                            val seen:Boolean=snap.child("seen").value as Boolean
+                            val msgStatus:String=snap.child("msgStatus").value.toString()
                             val mid=snap.child("mid").value.toString()
-                            MessageViewModel(application).updatetMessage(mid,rec,seen)
+                            MessageViewModel(application).updateMsgStatus(msgStatus,mid)
                             adapter!!.notifyDataSetChanged()
-                            if(seen){
-                              //  snap.child(mid).ref.parent!!.removeValue()
-                            }
+//                            if(seen){
+//                                snap.child(mid).ref.parent!!.removeValue()
+//                            }
                         }
                     }
                 }
@@ -1178,14 +1050,13 @@ class Message : BaseActivity() {
                         msg.mid=messageKey!!
                         msg.sender=Constants.MY_USERID
                         msg.userid=Constants.MY_USERID+"-"+chat.id
-                        msg.sent=false
-                        msg.recev=false
-                        msg.seen=false
+                        msg.msgStatus=""
 
                         MessageViewModel(application).insertMessage(msg)
 
                         chat.lst_msg="Document"
                         chat.time=System.currentTimeMillis()
+                        chat.last_mid=messageKey
                         if(ChatViewModel(application).isUserExist(chat.id)){
                             chat.unread+=1
                         }
@@ -1210,7 +1081,7 @@ class Message : BaseActivity() {
                         ref.child("Messages").child(chat.id).child(messageKey).setValue(messageHashmap)
 
                         GlobalScope.launch(Dispatchers.IO) {
-                            MessageViewModel(application).isMsgSent(true,messageKey)
+                            MessageViewModel(application).updateMsgStatus("sent",messageKey)
                             sendNotification(chat.id, Constants.MY_USERID, "Document", messageKey!!, 0)
                         }
 //                        uploadDocumentToFirebase(null,messageKey,msg.message).execute()
@@ -1221,14 +1092,13 @@ class Message : BaseActivity() {
                         msg.mid=messageKey!!
                         msg.sender=Constants.MY_USERID
                         msg.userid=Constants.MY_USERID+"-"+chat.id
-                        msg.sent=false
-                        msg.recev=false
-                        msg.seen=false
+                        msg.msgStatus=""
 
                         MessageViewModel(application).insertMessage(msg)
 
                         chat.lst_msg="Photo"
                         chat.time=System.currentTimeMillis()
+                        chat.last_mid=messageKey
                         if(ChatViewModel(application).isUserExist(chat.id)){
                             chat.unread+=1
                         }
@@ -1245,7 +1115,7 @@ class Message : BaseActivity() {
                     else{
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
-                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","",false,false,false))
+                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","","sending..."))
                         sendMessageToUser(msg.message,messageKey,chat.id,chat.name,chat.number,chat.image).execute()
                     }
                 }
@@ -1336,9 +1206,9 @@ class Message : BaseActivity() {
             try {
 //                photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                 if(imageuri!=null){
-                    sendImgLayout.visibility=View.VISIBLE
+                    binding.sendImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
-                    sendImg.setImageBitmap(photo)
+                    binding.sendSelectImg.setImageBitmap(photo)
                 }
             } catch (e: IOException) {
                 e.printStackTrace();
@@ -1349,9 +1219,9 @@ class Message : BaseActivity() {
             try {
 //                photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                 if(imageuri!=null){
-                    sendImgLayout.visibility=View.VISIBLE
+                    binding.sendImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
-                    sendImg.setImageBitmap(photo)
+                    binding.sendSelectImg.setImageBitmap(photo)
                     selectedPath = getRealPathFromURI(this,imageuri!!).execute().get()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
                 }
             } catch (e: IOException) {
@@ -1382,7 +1252,7 @@ class Message : BaseActivity() {
 
                 //setting recycelerview
                 selectedLayoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-                selectedImgRecyclerView.layoutManager=selectedLayoutManager
+                binding.selectedImgRecycler.layoutManager=selectedLayoutManager
 
                 val mClipData: ClipData? = data.clipData
                 val count: Int = mClipData!!.getItemCount()
@@ -1394,7 +1264,7 @@ class Message : BaseActivity() {
                 }
                 selectedImgAdapter=SelectedImgAdapter(this,allSelectedUri,object :SelectedImgAdapter.OnImageCardClickListener{
                     override fun loadNewImage(uri: Uri) {
-                        sendImg.setImageURI(uri)
+                        binding.sendSelectImg.setImageURI(uri)
                     }
 
                     override fun removeImage(position: Int) {
@@ -1402,22 +1272,22 @@ class Message : BaseActivity() {
                         gallImagesPath.removeAt(position)
                         selectedImgAdapter.notifyDataSetChanged()
                         if(allSelectedUri.size==0){
-                            sendImgLayout.visibility=View.GONE
+                            binding.sendImgNow.visibility=View.GONE
                         }
                     }
 
                 })
-                selectedImgRecyclerView.adapter=selectedImgAdapter
+                binding.selectedImgRecycler.adapter=selectedImgAdapter
                 // setting 1st selected image into image switcher
-                sendImgLayout.visibility=View.VISIBLE
-                sendImg.setImageURI(mClipData.getItemAt(0)?.uri)
+                binding.sendImgNow.visibility=View.VISIBLE
+                binding.sendSelectImg.setImageURI(mClipData.getItemAt(0)?.uri)
                 //position = 0
             } else {
                 val imageurl: Uri = data.getData()!!
-                sendImgLayout.visibility=View.VISIBLE
+                binding.sendImgNow.visibility=View.VISIBLE
                 photo=MediaStore.Images.Media.getBitmap(contentResolver,imageurl)
 //                sendImg.setImageURI(imageurl)
-                sendImg.setImageBitmap(photo)
+                binding.sendSelectImg.setImageBitmap(photo)
                 gallImagesPath.add(getRealPathFromURI(this,imageurl).execute().get())
 
 //                position = 0
@@ -1500,13 +1370,13 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","",uriString,"","",false,false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","",uriString,"","","sending..."))
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",userid,System.currentTimeMillis(),false,currentChat.unread,userid))
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",userid,System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,0,userid))
 
             }
 
@@ -1569,17 +1439,16 @@ class Message : BaseActivity() {
                     messageHashmap.put("userid",userid)
                     messageHashmap.put("sender",firebaseUser.uid)
                     messageHashmap.put("message",displayName!!)
+                    messageHashmap.put("msgStatus","sent")
                     messageHashmap.put("time",System.currentTimeMillis())
                     messageHashmap.put("type","doc")
                     messageHashmap.put("url",url)
-                    messageHashmap.put("received",false)
-                    messageHashmap.put("seen",false)
 
                     ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap)
 
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","","",url,"",false,false,true))
+//                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,firebaseUser.uid+"-"+userid,firebaseUser.uid,displayName!!,System.currentTimeMillis(),"doc","","",url,"","seen"))
                     GlobalScope.launch(Dispatchers.IO) {
-                        MessageViewModel(application).isMsgSent(true,messageKey)
+                        MessageViewModel(application).updateMsgStatus("sent",messageKey)
 
                         saveDoctoLocalStorage(url,displayName)
 
@@ -1637,19 +1506,16 @@ class Message : BaseActivity() {
                                 messageHashmap.put("userid",recvid)
                                 messageHashmap.put("sender",Constants.MY_USERID)
                                 messageHashmap.put("message","")
+                                messageHashmap.put("msgStatus","sent")
                                 messageHashmap.put("time",System.currentTimeMillis())
                                 messageHashmap.put("type","image")
                                 messageHashmap.put("url",image_url)
                                 messageHashmap.put("thumbnail",thumb_url)
-                                messageHashmap.put("received",false)
-                                messageHashmap.put("seen",false)
 
                                 ref.child("Messages").child(recvid).child(messageKey).setValue(messageHashmap)
 
-                                GlobalScope.launch(Dispatchers.IO) {
-                                    MessageViewModel(applicat).isMsgSent(true,messageKey)
-                                    sendNotification(recvid, Constants.MY_USERID, "Image", messageKey!!, 0)
-                                }
+                                MessageViewModel(applicat).updateMsgStatus("sent",messageKey)
+                                sendNotification(recvid, Constants.MY_USERID, "Image", messageKey!!, 0)
                             }
                         }
                     )
@@ -1725,13 +1591,13 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","","",false,false,false))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","","","sending..."))
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",userid+".jpg",System.currentTimeMillis(),false,currentChat.unread,userid))
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",userid+".jpg",System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,0,userid))
 
             }
 

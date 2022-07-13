@@ -1,12 +1,14 @@
 package com.ayush.flow.activity
 
 import android.app.Activity
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
@@ -15,6 +17,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
@@ -24,6 +27,7 @@ import androidx.lifecycle.ViewModelProviders
 import br.com.simplepass.loadingbutton.customViews.CircularProgressButton
 import com.ayush.flow.R
 import com.ayush.flow.Services.*
+import com.ayush.flow.databinding.ActivityAddprofileBinding
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -38,55 +42,36 @@ import java.io.*
 
 
 class Addprofile : AppCompatActivity(),MessageListener {
-    lateinit var next:CircularProgressButton
-    lateinit var name:EditText
-    lateinit var about:EditText
-    lateinit var camera: ImageView
-    lateinit var gallery: ImageView
-    lateinit var delete: ImageView
-    lateinit var userimage:ImageView
-    lateinit var progressBar: ProgressBar
-    lateinit var sharedPreferences: SharedPreferences
     var url=""
     var imagepath=""
     var selectedPath=""
     var photo:Bitmap?=null
+    var addingUser=false
+    var resumeCount=0
     lateinit var hiddenViewModel: HiddenViewModel
     private lateinit var photofile: File
     private var imageuri: Uri?=null
-    lateinit var fileBytes: ByteArray
 
-    lateinit var mode:ImageView
+    lateinit var binding:ActivityAddprofileBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_addprofile)
+        binding=ActivityAddprofileBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        getFullScreenViewBack()
         getWindow().setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
-        next=findViewById(R.id.nxt_btn)
-        name=findViewById(R.id.username)
-        about=findViewById(R.id.userabt)
-        camera=findViewById(R.id.cam)
-        gallery=findViewById(R.id.gall)
-        delete=findViewById(R.id.del)
-        userimage=findViewById(R.id.userimg)
-        progressBar=findViewById(R.id.progressbar)
-
-
-
-        sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,"")
         hiddenViewModel= ViewModelProviders.of(this).get(HiddenViewModel::class.java)
-        progressBar.visibility= View.GONE
+        binding.progressbar.visibility= View.VISIBLE
         getWindow().clearFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         setData().execute()
 
-
-
-        camera.setOnClickListener {
+        binding.cam.setOnClickListener {
             if(Permissions().checkCamerapermission(this)){
                 openCamera()
             }
@@ -97,60 +82,31 @@ class Addprofile : AppCompatActivity(),MessageListener {
         }
 
 
-        gallery.setOnClickListener {
+        binding.gall.setOnClickListener {
             if(Permissions().checkWritepermission(this)){
                 openGallery()
-
             }
             else{
                 Permissions().openPermissionBottomSheet(R.drawable.gallery_permission,this.resources.getString(R.string.storage_permission),this,"storage")
             }
         }
 
-        delete.setOnClickListener {
+        binding.del.setOnClickListener {
             url=""
-            userimage.setImageResource(R.drawable.user)
+            binding.userimg.setImageResource(R.drawable.user)
             photo=null
         }
 
-        userimage.setOnClickListener {
-            ImageHolder.imageDraw=userimage.drawable
-            val intent = Intent(this,SelectedImage::class.java)
-            intent.putExtra("type","view")
-            startActivity(intent)
-        }
 
 
-
-        next.setOnClickListener {
-            val username=name.text.toString()
-            val abt=about.text.toString()
-            if(username==""){
+        binding.nxtBtn.setOnClickListener {
+            if(binding.username.text.toString()==""){
                 Toast.makeText(applicationContext, "Please Fill Username", Toast.LENGTH_SHORT).show()
             }
             else{
+                addingUser=true
                 if(Permissions().checkWritepermission(this)){
-                    if(photo!=null){
-                        ImageHandling.saveToInternalStorage(photo!!,Constants.PROFILE_PHOTO_LOCATION,Constants.MY_USERID+".jpg").execute()
-                        uploadImage(photo!!).execute()
-                    }
-                    else{
-                        FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue("")
-                    }
-                    next.startAnimation()
-                    SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,username)
-                    SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_PROFILE_URL,imagepath)
-                    SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.ABOUT,abt)
-
-
-                    FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("username").setValue(username)
-                    FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("about").setValue(abt)
-
-                    val intent = Intent(this@Addprofile,Dashboard::class.java)
-                    intent.putExtra("private",0)
-                    startActivity(intent)
-                    finishAffinity()
-
+                    addUserData()
                 }
                 else{
                     Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
@@ -159,6 +115,45 @@ class Addprofile : AppCompatActivity(),MessageListener {
         }
 
 
+    }
+
+    private fun addUserData() {
+        if(photo!=null){
+            if(imagepath!=null && imagepath!=""){
+                ImageCompression(this,"profile",intent,application).execute(imagepath)
+            }
+        }
+        else{
+            FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue("")
+        }
+        binding.nxtBtn.startAnimation()
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,binding.username.text.toString())
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_PROFILE_URL,imagepath)
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.ABOUT,binding.userabt.text.toString())
+
+
+        FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("username").setValue(binding.username.text.toString())
+        FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("about").setValue(binding.userabt.text.toString())
+
+        val intent = Intent(this@Addprofile,Dashboard::class.java)
+        intent.putExtra("private",0)
+        startActivity(intent)
+        finishAffinity()
+    }
+
+    private fun getFullScreenViewBack() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window = window
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            val decorView: View = window.decorView
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
+            } else {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            }
+            window.statusBarColor = Color.TRANSPARENT
+        }
     }
 
 //    private fun mSaveMediaToStorage(bitmap: Bitmap?) {
@@ -186,6 +181,18 @@ class Addprofile : AppCompatActivity(),MessageListener {
 //        }
 //    }
 
+    override fun onResume() {
+        super.onResume()
+        if(addingUser){
+            resumeCount+=1
+            if(resumeCount==2){
+                if(Permissions().checkWritepermission(this)){
+                    addUserData()
+                }
+            }
+        }
+    }
+
     private fun openGallery() {
         var intent= Intent(Intent.ACTION_GET_CONTENT)
         intent.type="image/*"
@@ -208,20 +215,19 @@ class Addprofile : AppCompatActivity(),MessageListener {
 
     inner class setData():AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
-            val ref = FirebaseDatabase.getInstance().reference.child("Users").child(FirebaseAuth.getInstance().currentUser!!.uid)
+            val ref = FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID)
             ref.addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     var img=""
-                    name.setText(snapshot.child("username").value.toString())
-                    about.setText(snapshot.child("about").value.toString())
+                    binding.username.setText(snapshot.child("username").value.toString())
+                    binding.userabt.setText(snapshot.child("about").value.toString())
                     img = snapshot.child("profile_photo").value.toString()
 
                     if(img!=""){
-                        Picasso.get().load(img).into(userimage)
+                        Picasso.get().load(img).into(binding.userimg)
                         photo=ImageHandling.GetImageFromUrl().execute(img).get()
-
                     }
-                    progressBar.visibility= View.GONE
+                    binding.progressbar.visibility= View.GONE
                     getWindow().clearFlags(
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 }
@@ -303,6 +309,12 @@ class Addprofile : AppCompatActivity(),MessageListener {
                             intent.data = uri
                             startActivity(intent)
                         }
+                        else{
+                            addUserData()
+                        }
+                    }
+                    else{
+                        addUserData()
                     }
                 }
             }
@@ -312,34 +324,123 @@ class Addprofile : AppCompatActivity(),MessageListener {
     }
     inner class getRealPathFromURI_API19(val context: Context,val uri: Uri?):AsyncTask<Void,Void,String>() {
 
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            photo = ImageCompression(context,"profile",intent,application).execute(result).get()
-            userimage.setImageBitmap(photo)
-        }
-        override fun doInBackground(vararg p0: Void?): String {
-            var filePath = ""
-            val wholeID = DocumentsContract.getDocumentId(uri)
+        override fun doInBackground(vararg p0: Void?): String? {
+            val isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
 
-            // Split at colon, use second item in the array
-            val id = wholeID.split(":".toRegex()).toTypedArray()[1]
-            val column = arrayOf(MediaStore.Images.Media.DATA)
+            // DocumentProvider
 
-            // where id is equal to
-            val sel = MediaStore.Images.Media._ID + "=?"
-            val cursor = context.contentResolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                column, sel, arrayOf(id), null
-            )
-            val columnIndex = cursor!!.getColumnIndex(column[0])
-            if (cursor.moveToFirst()) {
-                filePath = cursor.getString(columnIndex)
+            // DocumentProvider
+            if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+                // ExternalStorageProvider
+                if (isExternalStorageDocument(uri!!)) {
+                    val docId = DocumentsContract.getDocumentId(uri)
+                    val split = docId.split(":".toRegex()).toTypedArray()
+                    val type = split[0]
+                    if ("primary".equals(type, ignoreCase = true)) {
+                        return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+                    }
+
+                    // TODO handle non-primary volumes
+                } else if (isDownloadsDocument(uri)) {
+                    val id = DocumentsContract.getDocumentId(uri)
+                    val contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"),
+                        java.lang.Long.valueOf(id)
+                    )
+                    return getDataColumn(context, contentUri, null, null)
+                } else if (isMediaDocument(uri)) {
+                    val docId = DocumentsContract.getDocumentId(uri)
+                    val split = docId.split(":".toRegex()).toTypedArray()
+                    val type = split[0]
+                    var contentUri: Uri? = null
+                    if ("image" == type) {
+                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    } else if ("video" == type) {
+                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    } else if ("audio" == type) {
+                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                    }
+                    val selection = "_id=?"
+                    val selectionArgs = arrayOf(
+                        split[1]
+                    )
+                    return getDataColumn(context, contentUri, selection, selectionArgs)
+                }
+            } else if ("content".equals(uri!!.scheme, ignoreCase = true)) {
+
+                // Return the remote address
+                return if (isGooglePhotosUri(uri)) uri!!.lastPathSegment!! else getDataColumn(
+                    context,
+                    uri,
+                    null,
+                    null
+                )
+            } else if ("file".equals(uri!!.scheme, ignoreCase = true)) {
+                return uri!!.path!!
             }
-            cursor.close()
-            return filePath
+
+            return null
         }
 
 
+    }
+
+
+    fun getDataColumn(
+        context: Context, uri: Uri?, selection: String?,
+        selectionArgs: Array<String>?
+    ): String? {
+        var cursor: Cursor? = null
+        val column = "_data"
+        val projection = arrayOf(
+            column
+        )
+        try {
+            cursor = context.contentResolver.query(
+                uri!!, projection, selection, selectionArgs,
+                null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                val index: Int = cursor.getColumnIndexOrThrow(column)
+                return cursor.getString(index)
+            }
+        } finally {
+            if (cursor != null) cursor.close()
+        }
+        return null
+    }
+
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is ExternalStorageProvider.
+     */
+    fun isExternalStorageDocument(uri: Uri): Boolean {
+        return "com.android.externalstorage.documents" == uri.authority
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is DownloadsProvider.
+     */
+    fun isDownloadsDocument(uri: Uri): Boolean {
+        return "com.android.providers.downloads.documents" == uri.authority
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is MediaProvider.
+     */
+    fun isMediaDocument(uri: Uri): Boolean {
+        return "com.android.providers.media.documents" == uri.authority
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is Google Photos.
+     */
+    fun isGooglePhotosUri(uri: Uri): Boolean {
+        return "com.google.android.apps.photos.content" == uri.authority
     }
 
 
@@ -349,10 +450,9 @@ class Addprofile : AppCompatActivity(),MessageListener {
         if(requestCode==110 && resultCode==Activity.RESULT_OK){
             if(imageuri!=null){
                 try {
-//                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
-                    if(photo!=null){
-                        photo = ImageCompression(this,"profile",intent,application).execute(selectedPath).get()
-                        userimage.setImageBitmap(photo)
+                    if(imageuri!=null){
+                        photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                        binding.userimg.setImageBitmap(photo)
                     }
                 } catch (e: IOException) {
                     e.printStackTrace();
@@ -366,9 +466,16 @@ class Addprofile : AppCompatActivity(),MessageListener {
                 if(photo!=null){
                     getRealPathFromURI_API19(this,imageuri!!).execute()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
                 }
+
+                if(imageuri!=null){
+                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                    binding.userimg.setImageBitmap(photo)
+                    imagepath = getRealPathFromURI_API19(this,imageuri!!).execute().get()
+                }
             } catch (e: IOException) {
                 e.printStackTrace();
             }
+
         }
     }
 

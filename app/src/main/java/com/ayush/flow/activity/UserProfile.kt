@@ -5,24 +5,25 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.Image
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import com.ayush.flow.R
 import com.ayush.flow.Services.*
-import com.ayush.flow.database.ChatViewModel
+import com.ayush.flow.databinding.ActivityAddprofileBinding
+import com.ayush.flow.databinding.ActivityUserProfileBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -34,78 +35,52 @@ import java.io.*
 
 
 class UserProfile : AppCompatActivity(),MessageListener {
-    lateinit var image:CircleImageView
-    lateinit var name:TextView
-    lateinit var about:TextView
-    lateinit var number:TextView
-    lateinit var settings:RelativeLayout
-    lateinit var signout:TextView
-    lateinit var camera: ImageView
-    lateinit var gallery: ImageView
-    lateinit var delete: ImageView
     lateinit var sharedPreferences: SharedPreferences
-    lateinit var edt_img: ImageView
-    lateinit var image_card:CardView
-    lateinit var parent:RelativeLayout
-    var url=""
+    var delete=false
     private lateinit var photofile: File
     private var imageuri: Uri?=null
     var imagepath=""
     var photo:Bitmap?=null
-    lateinit var edt_name: ImageView
-    lateinit var edt_about: ImageView
     lateinit var firebaseUser: FirebaseUser
-    lateinit var back:ImageView
-    lateinit var updateImgLayout:RelativeLayout
-    lateinit var backImg:ImageView
-    lateinit var updtImg:TouchImageView
-    lateinit var updtImgbtn:ImageView
+    lateinit var binding:ActivityUserProfileBinding
+    var isSave:Boolean=false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_user_profile)
+        binding= ActivityUserProfileBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        image=findViewById(R.id.user_img)
-        name=findViewById(R.id.user_name)
-        about=findViewById(R.id.user_about)
-        number=findViewById(R.id.user_number)
-        settings=findViewById(R.id.settings)
-        signout=findViewById(R.id.sign_out)
-        camera=findViewById(R.id.cam)
-        gallery=findViewById(R.id.gall)
-        delete=findViewById(R.id.del)
-        edt_img=findViewById(R.id.edt_img)
-        edt_name=findViewById(R.id.edt_name)
-        edt_about=findViewById(R.id.edt_abt)
-        image_card=findViewById(R.id.img_card)
-        parent=findViewById(R.id.user_parent)
-        updateImgLayout=findViewById(R.id.update_img_now)
-        backImg=findViewById(R.id.back_now)
-        updtImg=findViewById(R.id.update_select_img)
-        updtImgbtn=findViewById(R.id.updimg_btn)
         firebaseUser=FirebaseAuth.getInstance().currentUser!!
-        back=findViewById(R.id.back)
+        binding.userName.setText(SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,""))
+        binding.userAbout.setText(SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.ABOUT,"I'm with the Flow"))
+        binding.userNumber.setText(SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.NUMBER,""))
 
-
-        name.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,"")
-        about.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.ABOUT,"I'm with the Flow")
-        number.text=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.NUMBER,"")
-
-        settings.visibility=View.GONE
-
-
-        edt_img.setOnClickListener {
-            image_card.visibility= View.VISIBLE
-        }
-
-        parent.setOnClickListener {
-            image_card.visibility=View.GONE
-        }
-
-        back.setOnClickListener {
+        binding.back.setOnClickListener {
             onBackPressed()
         }
 
-        camera.setOnClickListener {
+        binding.edtDetail.setOnClickListener {
+            if(isSave){
+                isSave=false
+                binding.imgCard.visibility=View.GONE
+                binding.edtDetail.setImageResource(R.drawable.edit)
+                binding.userName.isEnabled=false
+                binding.userName.setBackgroundResource(0)
+                binding.userAbout.isEnabled=false
+                binding.userAbout.setBackgroundResource(0)
+                updateData()
+            }
+            else{
+                isSave=true
+                binding.imgCard.visibility=View.VISIBLE
+                binding.edtDetail.setImageResource(R.drawable.save)
+                binding.userName.isEnabled=true
+                binding.userName.setBackgroundResource(R.drawable.editext_bg)
+                binding.userAbout.isEnabled=true
+                binding.userAbout.setBackgroundResource(R.drawable.editext_bg)
+            }
+        }
+
+        binding.cam.setOnClickListener {
             if(Permissions().checkCamerapermission(this)){
                 openCamera()
             }
@@ -113,34 +88,27 @@ class UserProfile : AppCompatActivity(),MessageListener {
                 Permissions().openPermissionBottomSheet(R.drawable.camera,
                     this.resources.getString(R.string.camera_permission),this,"camera")
             }
-            image_card.visibility=View.GONE
         }
 
 
-        gallery.setOnClickListener {
+        binding.gall.setOnClickListener {
             if(Permissions().checkWritepermission(this)){
                 openGallery()
             }
             else{
                 Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
             }
-            image_card.visibility=View.GONE
         }
 
-        delete.setOnClickListener {
+        binding.del.setOnClickListener {
             android.app.AlertDialog.Builder(this)
                 .setTitle("Are you sure want to Delete")
                 .setCancelable(false)
                 .setPositiveButton("Yes") {
                         dialog: DialogInterface, _: Int ->
                     dialog.dismiss()
-                    url=""
-                    image.setImageResource(R.drawable.user)
-                    image_card.visibility=View.GONE
-                    FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue(url)
-                    val directory: File = File(Environment.getExternalStorageDirectory().toString(), Constants.PROFILE_PHOTO_LOCATION)
-                    var file: File = File(directory,Constants.MY_USERID+".jpg")
-                    file.delete()
+                    delete = true
+                    binding.userImg.setImageResource(R.drawable.user)
                 }
                 .setNegativeButton("No") {
                         dialog: DialogInterface, _: Int ->
@@ -149,65 +117,7 @@ class UserProfile : AppCompatActivity(),MessageListener {
                 .show()
         }
 
-        edt_name.setOnClickListener {
-
-            val bottomSheetDialog = BottomSheetDialog(this)
-            bottomSheetDialog.setContentView(R.layout.edit_modal_bottomsheet)
-
-            val title=bottomSheetDialog.findViewById<TextView>(R.id.textView)
-            val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_save)
-            val edt=bottomSheetDialog.findViewById<EditText>(R.id.set_name)
-            val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
-
-            title!!.text="Set your username"
-
-            edt!!.setText(name.text)
-            edt!!.isCursorVisible=false
-            edt!!.isSelected=true
-
-            btn1!!.setOnClickListener {
-                name.text = edt.text.toString()
-                sharedPreferences.edit().putString("name", name.text.toString()).apply()
-                FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("username").setValue(name.text.toString())
-                bottomSheetDialog.dismiss()
-            }
-            btn2!!.setOnClickListener {
-                bottomSheetDialog.dismiss()
-            }
-
-            bottomSheetDialog.show()
-        }
-
-        edt_about.setOnClickListener {
-
-            val bottomSheetDialog = BottomSheetDialog(this)
-            bottomSheetDialog.setContentView(R.layout.edit_modal_bottomsheet)
-
-            val title=bottomSheetDialog.findViewById<TextView>(R.id.textView)
-            val btn1=bottomSheetDialog.findViewById<Button>(R.id.btn_save)
-            val edt=bottomSheetDialog.findViewById<EditText>(R.id.set_name)
-            val btn2=bottomSheetDialog.findViewById<Button>(R.id.btn_cancel)
-
-            title!!.text="Set your status"
-
-            edt!!.setText(about.text)
-            edt!!.isCursorVisible=false
-            edt!!.isSelected=true
-
-            btn1!!.setOnClickListener {
-                about.text = edt.text.toString()
-                sharedPreferences.edit().putString("about",about.text.toString()).apply()
-                FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("about").setValue(about.text.toString())
-                bottomSheetDialog.dismiss()
-            }
-            btn2!!.setOnClickListener {
-                bottomSheetDialog.dismiss()
-            }
-
-            bottomSheetDialog.show()
-        }
-
-        image.setOnClickListener {
+        binding.userImg.setOnClickListener {
           //  ImageHolder.imageDraw=image.drawable
             val intent = Intent(this,SelectedImage::class.java)
             intent.putExtra("type","view")
@@ -215,32 +125,82 @@ class UserProfile : AppCompatActivity(),MessageListener {
             startActivity(intent)
         }
 
-        signout.visibility=View.GONE
-        signout.setOnClickListener {
-            signoutUser()
-        }
-
-        backImg.setOnClickListener {
-            updtImg.setImageResource(android.R.color.transparent)
+        binding.backNow.setOnClickListener {
+            binding.updateSelectImg.setImageResource(android.R.color.transparent)
             photo=null
-            updateImgLayout.visibility=View.GONE
+            binding.updateImgNow.visibility=View.GONE
         }
 
-        updtImgbtn.setOnClickListener {
+        binding.updimgBtn.setOnClickListener {
             if(photo!=null){
-                ImageHandling.saveToInternalStorage(photo!!,Constants.PROFILE_PHOTO_LOCATION,Constants.MY_USERID+".jpg").execute()
-                uploadImage(photo!!).execute()
-                image.setImageBitmap(photo)
+                binding.userImg.setImageBitmap(photo)
             }
-            updtImg.setImageResource(android.R.color.transparent)
-            updateImgLayout.visibility=View.GONE
+            binding.updateSelectImg.setImageResource(android.R.color.transparent)
+            binding.updateImgNow.visibility=View.GONE
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            101 -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openCamera()
+                }
+            }
+            102->{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
+                        if(!Environment.isExternalStorageManager()){
+                            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                            val uri = Uri.fromParts("package", packageName, null)
+                            intent.data = uri
+                            startActivity(intent)
+                        }
+                        else{
+                            openGallery()
+                        }
+                    }
+                    else{
+                        openGallery()
+                    }
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
+        }
+    }
+
+    private fun updateData() {
+
+        if(delete){
+            FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue("")
+            val directory: File = File(Environment.getExternalStorageDirectory().toString(), Constants.PROFILE_PHOTO_LOCATION)
+            var file: File = File(directory,Constants.MY_USERID+".jpg")
+            file.delete()
+        }
+
+        if(photo!=null){
+            if(imagepath!=null && imagepath!=""){
+                ImageCompression(this,"profile",intent,application).execute(imagepath)
+            }
+        }
+
+        //name
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,binding.userName.text.toString())
+        FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("username").setValue(binding.userName.text.toString())
+
+        //about
+        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.ABOUT,binding.userAbout.text.toString())
+        FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser.uid).child("about").setValue(binding.userAbout.text.toString())
+    }
+
     override fun onBackPressed() {
-        if(updateImgLayout.visibility==View.VISIBLE){
-            updateImgLayout.visibility=View.GONE
-            updtImg.setImageResource(android.R.color.transparent)
+        if(binding.updateImgNow.visibility==View.VISIBLE){
+            binding.updateImgNow.visibility=View.GONE
+            binding.updateSelectImg.setImageResource(android.R.color.transparent)
         }
         else{
             super.onBackPressed()
@@ -254,7 +214,7 @@ class UserProfile : AppCompatActivity(),MessageListener {
     override fun onResume() {
         Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
             DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(image)
+            .skipMemoryCache(true).into(binding.userImg)
         super.onResume()
     }
 
@@ -280,11 +240,6 @@ class UserProfile : AppCompatActivity(),MessageListener {
 
     inner class getRealPathFromURI(val context: Context,val uri: Uri?):AsyncTask<Void,Void,String>() {
 
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            photo = ImageCompression(context,"profile",intent,application).execute(result).get()
-            updtImg.setImageBitmap(photo)
-        }
         override fun doInBackground(vararg p0: Void?): String {
             var filePath = ""
             val wholeID = DocumentsContract.getDocumentId(uri)
@@ -314,22 +269,24 @@ class UserProfile : AppCompatActivity(),MessageListener {
         super.onActivityResult(requestCode, resultCode, data)
 
         if(requestCode==110 && resultCode== Activity.RESULT_OK){
-            if(imageuri!=null){
-                try {
-                    updateImgLayout.visibility=View.VISIBLE
-                    photo = ImageCompression(this,"profile",intent,application).execute(imagepath).get()
-                    updtImg.setImageBitmap(photo)
-                } catch (e: IOException) {
-                    e.printStackTrace();
+            try {
+                if(imageuri!=null){
+                    binding.updateImgNow.visibility=View.VISIBLE
+                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                    binding.updateSelectImg.setImageBitmap(photo)
                 }
+            } catch (e: IOException) {
+                e.printStackTrace();
             }
         }
         else if(requestCode==112 && resultCode== Activity.RESULT_OK){
             imageuri=data!!.data
             try {
                 if(imageuri!=null){
-                    updateImgLayout.visibility=View.VISIBLE
-                    getRealPathFromURI(this,imageuri!!).execute()
+                    binding.updateImgNow.visibility=View.VISIBLE
+                    photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
+                    binding.updateSelectImg.setImageBitmap(photo)
+                    imagepath = getRealPathFromURI(this,imageuri!!).execute().get()
                 }
             } catch (e: IOException) {
                 e.printStackTrace();

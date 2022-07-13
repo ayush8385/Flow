@@ -1,337 +1,178 @@
 package com.ayush.flow.activity
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.text.method.PasswordTransformationMethod
-import android.util.Patterns
-import android.view.MotionEvent
+import android.os.CountDownTimer
+import android.text.*
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.util.Log
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-import br.com.simplepass.loadingbutton.customViews.CircularProgressButton
+import androidx.core.content.ContextCompat
 import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.Services.SharedPreferenceUtils
-import com.google.firebase.auth.FirebaseAuth
+import com.ayush.flow.databinding.ActivityRegisterBinding
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.*
+import com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
+import com.google.firebase.auth.PhoneAuthProvider.OnVerificationStateChangedCallbacks
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import java.lang.Exception
+
 
 class Register : AppCompatActivity() {
-    lateinit var welc: TextView
-    lateinit var email: EditText
-    lateinit var numb: EditText
-    lateinit var pass: EditText
-    lateinit var cnf_pass: EditText
-    lateinit var register: CircularProgressButton
-    lateinit var sign_in: TextView
-    lateinit var progressBar: ProgressBar
-    lateinit var forgot: TextView
-    lateinit var sign_up: TextView
-    lateinit var back:ImageView
-    lateinit var help:ImageView
-    lateinit var sharedPreferences: SharedPreferences
+
+    lateinit var binding:ActivityRegisterBinding
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
 
-        welc=findViewById(R.id.create)
-        email=findViewById(R.id.email_edt)
-        numb=findViewById(R.id.number_edt)
-        pass=findViewById(R.id.pass_edt)
-        cnf_pass=findViewById(R.id.cnfpass_edt)
-        register=findViewById(R.id.register_button)
-        sign_in=findViewById(R.id.signin)
-        progressBar=findViewById(R.id.progressbar)
-        forgot=findViewById(R.id.forgot)
-        sign_up=findViewById(R.id.signup)
-        back=findViewById(R.id.back)
-        help=findViewById(R.id.help)
+        binding= ActivityRegisterBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
 
         SharedPreferenceUtils.init(applicationContext)
 
-        back.setOnClickListener {
+        moveOtpNum()
+
+        getFullScreenViewBack()
+
+        binding.back.setOnClickListener {
             onBackPressed()
         }
 
-        sign_in.setOnClickListener {
-            openLogin()
-        }
-        sign_up.setOnClickListener {
-            openSignUp()
-        }
-
-        forgot.setOnClickListener {
-            openForgot()
-        }
-
-        help.setOnClickListener {
+        binding.help.setOnClickListener {
             openHelp()
         }
 
-        register.setOnClickListener {
-            if(register.text=="Register"){
-                registerUser()
-            }
-            else if(register.text=="reset"){
-               resetPass()
+        binding.registerButton.setOnClickListener {
+
+            if(binding.registerButton.text.toString().toLowerCase()=="get otp"){
+                sendCode()
             }
             else{
-              loginUser()
+                verifyOtp()
             }
+
         }
 
-        pass.setOnTouchListener(View.OnTouchListener { v, event ->
-            val DRAWABLE_LEFT = 0
-            val DRAWABLE_TOP = 1
-            val DRAWABLE_RIGHT = 2
-            val DRAWABLE_BOTTOM = 3
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= pass.getRight() - pass.getCompoundDrawables().get(DRAWABLE_RIGHT)
-                        .getBounds().width()-60
-                ) {
-                    if (pass.transformationMethod != null) {
-                        pass.transformationMethod = null
-                        pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.ic_baseline_lock_24,0,
-                            R.drawable.unlock,0)
-                    } else {
-                        pass.transformationMethod = PasswordTransformationMethod()
-                        pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.ic_baseline_lock_24,0,
-                            R.drawable.lock,0)
-                    }
-                    return@OnTouchListener false
-                }
-            }
-            false
-        })
+        binding.resendCodeBtn.setOnClickListener {
+            binding.resendCodeBtn.isEnabled=false
+           resendVerificationCode("+91"+binding.numberEdt.text.toString(), resendToken!!)
+        }
 
-        cnf_pass.setOnTouchListener(View.OnTouchListener { v, event ->
-            val DRAWABLE_LEFT = 0
-            val DRAWABLE_TOP = 1
-            val DRAWABLE_RIGHT = 2
-            val DRAWABLE_BOTTOM = 3
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= cnf_pass.getRight() - cnf_pass.getCompoundDrawables().get(DRAWABLE_RIGHT)
-                        .getBounds().width()-60
-                ) {
-                    if (cnf_pass.transformationMethod != null) {
-                        cnf_pass.transformationMethod = null
-                        cnf_pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.ic_baseline_lock_24,0,
-                            R.drawable.unlock,0)
-                    } else {
-                        cnf_pass.transformationMethod = PasswordTransformationMethod()
-                        cnf_pass.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.ic_baseline_lock_24,0,
-                            R.drawable.lock,0)
-                    }
-                    return@OnTouchListener false
-                }
+    }
+
+    private fun getFullScreenViewBack() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window = window
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            val decorView: View = window.decorView
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
+            } else {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
-            false
-        })
+            window.statusBarColor = Color.TRANSPARENT
+        }
+    }
+
+    private fun sendCode() {
+        if (!TextUtils.isEmpty(binding.numberEdt.getText().toString())) {
+            if(binding.numberEdt.text.toString().trim().length==10){
+
+                binding.registerButton.startAnimation()
+
+                val phone = "+91" + binding.numberEdt.getText().toString()
+                sendVerificationCode(phone)
+            }
+            else{
+                Toast.makeText(
+                    this,
+                    "Please enter a valid phone number",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            Toast.makeText(
+                this,
+                "Enter a phone number",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     private fun openHelp() {
 
     }
 
-    private fun openForgot() {
-        flipButton()
-        register.text="reset"
-        welc.text="Password Reset"
-
-        val slide: Animation =
-            AnimationUtils.loadAnimation(this, android.R.anim.fade_out) //the above transition
-
-        Handler().postDelayed({
-            sign_up.visibility=View.VISIBLE
-            forgot.visibility=View.INVISIBLE
-            pass.visibility=View.GONE
-        },60)
-
-
-
-    }
-
-    private fun openSignUp() {
-        flipButton()
-        register.text="Register"
-        welc.text="Create Account"
-
-        val slide: Animation =
-            AnimationUtils.loadAnimation(this, android.R.anim.fade_in) //the above transition
-        numb.startAnimation(slide)
-        cnf_pass.startAnimation(slide)
-        Handler().postDelayed({
-            numb.visibility=View.VISIBLE
-            cnf_pass.visibility=View.VISIBLE
-            sign_in.visibility=View.VISIBLE
-            sign_up.visibility=View.INVISIBLE
-            forgot.visibility=View.INVISIBLE
-            pass.visibility=View.VISIBLE
-            progressBar.visibility=View.GONE
-            register.visibility=View.VISIBLE
-        },60)
-
-    }
-
-    private fun flipButton() {
-        val flip:Animation = AnimationUtils.loadAnimation(this,R.anim.flip)
-        register.startAnimation(flip)
-
-    }
-
-    private fun openLogin() {
-        flipButton()
-
-        welc.text="Welcome Back"
-        register.text="Log in"
-
-
-        val slide: Animation =
-            AnimationUtils.loadAnimation(this, android.R.anim.fade_out) //the above transition
-        numb.startAnimation(slide)
-        cnf_pass.startAnimation(slide)
-        Handler().postDelayed({
-            numb.visibility=View.GONE
-            cnf_pass.visibility=View.GONE
-            sign_in.visibility=View.INVISIBLE
-            sign_up.visibility=View.VISIBLE
-            forgot.visibility=View.VISIBLE
-            pass.visibility= View.VISIBLE
-        },400)
-
-
-
-    }
-
-    private fun registerUser() {
-
-        val email:String=email.text.trim().toString()
-        val num:String=numb.text.trim().toString()
-        val pass:String=pass.text.trim().toString()
-        val cnf:String=cnf_pass.text.trim().toString()
-
-        if(email==""|| !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-            Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
-        }
-        else if(pass==""){
-            Toast.makeText(applicationContext, "Please Enter Strong Password", Toast.LENGTH_SHORT).show()
-        }
-        else if(pass.length<=4){
-            Toast.makeText(applicationContext, "Password is too short", Toast.LENGTH_SHORT).show()
-        }
-        else if(pass != cnf){
-            Toast.makeText(applicationContext, "Password doesn't match", Toast.LENGTH_SHORT).show()
-        }
-        else if(num=="" || num.length<10 || (num[0] in '0'..'5')){
-            Toast.makeText(applicationContext, "Enter Proper number", Toast.LENGTH_SHORT).show()
-        }
-        else{
-            register.startAnimation()
-            sign_in.visibility=View.GONE
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
-                .addOnCompleteListener{ text->
-                    try {
-                        if(text.isSuccessful){
-                            val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID)
-
-                            val userHashmap=HashMap<String, Any>()
-                            userHashmap["uid"]=Constants.MY_USERID
-                            userHashmap["email"]=email
-                            userHashmap["number"]=num
-                            userHashmap["username"]=""
-                            userHashmap["password"]=pass
-                            userHashmap["about"]="I'm with the Flow"
-                            userHashmap["profile_photo"]=""
-
-                            refuser.updateChildren(userHashmap)
-                                .addOnCompleteListener { text->
-                                    if(text.isSuccessful){
-                                        savePreferences(userHashmap)
-                                        val intent=Intent(this@Register, Addprofile::class.java)
-                                        startActivity(intent)
-                                        finishAffinity()
-                                    }
-                                    else{
-                                        Toast.makeText(this, "Unexpected Error", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                        }
-                        else{
-                            register.revertAnimation {
-                                register.text="Register"
-                                register.setBackgroundResource(R.drawable.getstartedbtn_back)
-                            }
-                            sign_in.visibility=View.VISIBLE
-                            Toast.makeText(applicationContext, "Error in registering", Toast.LENGTH_SHORT).show()
-                        }
-                    }catch (e:Exception){
-                        Toast.makeText(applicationContext,e.toString(),Toast.LENGTH_LONG).show()
-                    }
-                }
-        }
-    }
-
     fun savePreferences(data: HashMap<String,Any>) {
         SharedPreferenceUtils.setBooleanPreference(SharedPreferenceUtils.IS_LOGGED,true)
         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_USERID, data["uid"].toString())
-        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.EMAIL, data["email"].toString())
         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.NUMBER, data["number"].toString())
-        SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.PASSWORD, data["password"].toString())
         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.ABOUT,data["about"].toString())
         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_NAME,data["username"].toString())
         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.MY_PROFILE_URL,data["profile_photo"].toString())
     }
 
-    private fun loginUser() {
-        val pass:String=pass.text.toString()
-        val email:String=email.text.toString()
-        if(email=="" || !Patterns.EMAIL_ADDRESS.matcher(email).matches() || pass==""){
-            Toast.makeText(applicationContext, "Enter Proper Details", Toast.LENGTH_SHORT).show()
-        }
-        else{
-            sign_up.visibility=View.GONE
-            forgot.visibility=View.INVISIBLE
-            register.startAnimation()
-
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
-                .addOnCompleteListener { text->
-                    if(text.isSuccessful){
-
-                        val userId=FirebaseAuth.getInstance().currentUser!!.uid
-                        val refuser= FirebaseDatabase.getInstance().reference.child("Users").child(userId)
+    private fun signInWithCredential(credential: PhoneAuthCredential) {
+        // inside this method we are checking if
+        // the code entered is correct or not.
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener(OnCompleteListener<AuthResult?> { task ->
+                try {
+                    if(task.isSuccessful){
+                        val refuser= FirebaseDatabase.getInstance().reference.child("Users")
                         refuser.addListenerForSingleValueEvent(object :ValueEventListener{
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 val userHashmap=HashMap<String, Any>()
-                                userHashmap["uid"]=userId
-                                userHashmap["email"]=snapshot.child("email").value.toString()
-                                userHashmap["number"]=snapshot.child("number").value.toString()
-                                userHashmap["username"]=snapshot.child("username").value.toString()
-                                userHashmap["password"]=snapshot.child("password").value.toString()
-                                userHashmap["about"]=snapshot.child("about").value.toString()
-                                userHashmap["profile_photo"]=snapshot.child("profile_photo").value.toString()
+                                if(!snapshot.hasChild(Constants.MY_USERID)){
 
-                                savePreferences(userHashmap)
-                                val intent=Intent(this@Register, Addprofile::class.java)
-                                startActivity(intent)
-                                finishAffinity()
+                                    Toast.makeText(this@Register,"Not exist",Toast.LENGTH_SHORT).show()
+
+                                    userHashmap["uid"]=Constants.MY_USERID
+                                    userHashmap["number"]=binding.numberEdt.text.toString()
+                                    userHashmap["username"]=""
+                                    userHashmap["about"]="I'm with the Flow"
+                                    userHashmap["profile_photo"]=""
+                                }
+                                else{
+                                    userHashmap["uid"]=Constants.MY_USERID
+                                    userHashmap["number"]=snapshot.child(Constants.MY_USERID).child("number").value.toString()
+                                    userHashmap["username"]=snapshot.child(Constants.MY_USERID).child("username").value.toString()
+                                    userHashmap["about"]=snapshot.child(Constants.MY_USERID).child("about").value.toString()
+                                    userHashmap["profile_photo"]=snapshot.child(Constants.MY_USERID).child("profile_photo").value.toString()
+
+                                }
+
+                                refuser.child(Constants.MY_USERID).updateChildren(userHashmap)
+                                    .addOnCompleteListener { text->
+                                        if(text.isSuccessful){
+                                            savePreferences(userHashmap)
+                                            val intent=Intent(this@Register, Addprofile::class.java)
+                                            startActivity(intent)
+                                            finishAffinity()
+                                        }
+                                        else{
+                                            Toast.makeText(this@Register, "Unexpected Error", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
                             }
 
                             override fun onCancelled(error: DatabaseError) {
@@ -339,57 +180,284 @@ class Register : AppCompatActivity() {
                             }
 
                         })
-
-
                     }
                     else{
-                        Toast.makeText(applicationContext, "Error in login", Toast.LENGTH_SHORT).show()
-                        register.revertAnimation {
-                            register.text="log in"
-                            register.setBackgroundResource(R.drawable.getstartedbtn_back)
+                        binding.registerButton.revertAnimation{
+                            binding.registerButton.text="Verify"
+                            binding.registerButton.setBackgroundResource(R.drawable.getstartedbtn_back)
                         }
-                        sign_up.visibility=View.VISIBLE
-                        forgot.visibility=View.VISIBLE
+                        Toast.makeText(
+                            this,
+                            task.exception?.message,
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
+                }catch (e:Exception){
+                    binding.registerButton.revertAnimation{
+                        binding.registerButton.text="Verify"
+                        binding.registerButton.setBackgroundResource(R.drawable.getstartedbtn_back)
+                    }
+                    Toast.makeText(applicationContext,e.toString(),Toast.LENGTH_LONG).show()
                 }
-        }
+            })
     }
 
-    private fun resetPass() {
-        val email:String=email.text.toString()
-        if(email=="" || !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-            Toast.makeText(applicationContext, "Enter Proper Email", Toast.LENGTH_SHORT).show()
-        }
-        else{
 
-            register.startAnimation()
-            FirebaseAuth.getInstance().sendPasswordResetEmail(email).addOnCompleteListener { text->
-                if(text.isSuccessful){
-                    Toast.makeText(applicationContext, "Reset link sent", Toast.LENGTH_SHORT).show()
-                    register.revertAnimation()
-                    numb.visibility=View.GONE
-                    cnf_pass.visibility=View.GONE
-                    sign_in.visibility=View.GONE
-                    pass.visibility=View.VISIBLE
-                    sign_up.visibility=View.VISIBLE
-                    forgot.visibility=View.VISIBLE
-                    welc.text="Welcome Back"
+    private fun sendVerificationCode(number: String) {
+        // this method is used for getting
+        // OTP on user phone number.
+        val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
+            .setPhoneNumber(number) // Phone number to verify
+            .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(this) // Activity (for callback binding)
+            .setCallbacks(mCallBack) // OnVerificationStateChangedCallbacks
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
 
-                    register.revertAnimation {
-                        register.text="log in"
-                        register.setBackgroundResource(R.drawable.getstartedbtn_back)
-                    }
+    private fun resendVerificationCode(
+        phoneNumber: String,
+        token: ForceResendingToken
+    ) {
+        val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
+            .setPhoneNumber(phoneNumber) // Phone number to verify
+            .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(this) // Activity (for callback binding)
+            .setCallbacks(mCallBack)
+            .setForceResendingToken(token)// OnVerificationStateChangedCallbacks
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    private var verificationId: String? = null
+    private var resendToken:ForceResendingToken?=null
+
+    // callback method is called on Phone auth provider.
+    private val mCallBack: OnVerificationStateChangedCallbacks =
+        object : OnVerificationStateChangedCallbacks() {
+            override fun onCodeSent(s: String, forceResendingToken: ForceResendingToken) {
+                super.onCodeSent(s, forceResendingToken)
+                verificationId = s
+                resendToken = forceResendingToken
+
+                binding.create.text="Verification Code"
+                binding.otpDesc.text=coloredText("We have sent 6-Digit Code to your Mobille number ","+91-${binding.numberEdt.text.toString()}",R.color.black)
+
+                binding.imageStat.setImageResource(R.drawable.otp_verify)
+                binding.numberBox.visibility=View.GONE
+                binding.otpBox.visibility=View.VISIBLE
+                binding.registerButton.revertAnimation {
+                    binding.registerButton.text="Verify"
+                    binding.registerButton.setBackgroundResource(R.drawable.getstartedbtn_back)
                 }
-                else{
-                    Toast.makeText(applicationContext,"This email is not Registered",Toast.LENGTH_LONG).show()
-                    register.revertAnimation {
-                        register.text="reset"
-                        register.setBackgroundResource(R.drawable.getstartedbtn_back)
-                    }
+                binding.resendDetail.visibility=View.VISIBLE
+
+                setTimer()
+            }
+
+            override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
+                val code = phoneAuthCredential.smsCode
+
+                if (code != null) {
+//                    otpBox.setText(code)
+                    val codeChar = code.toCharArray()
+                    binding.et1.setText(code[0].toString())
+                    binding.et2.setText(code[1].toString())
+                    binding.et3.setText(code[2].toString())
+                    binding.et4.setText(code[3].toString())
+                    binding.et5.setText(code[4].toString())
+                    binding.et6.setText(code[5].toString())
+
+                    verifyOtp()
                 }
             }
+
+            override fun onVerificationFailed(e: FirebaseException) {
+                binding.registerButton.revertAnimation{
+                    binding.registerButton.text="Get Otp"
+                    binding.registerButton.setBackgroundResource(R.drawable.getstartedbtn_back)
+                }
+                Toast.makeText(this@Register, e.message, Toast.LENGTH_LONG).show()
+            }
+        }
+
+    // below method is use to verify code from Firebase.
+    private fun verifyCode(code: String) {
+        // below line is used for getting
+        // credentials from our verification id and code.
+        val credential = PhoneAuthProvider.getCredential(verificationId!!, code)
+
+        // after getting credential we are
+        // calling sign in method.
+        signInWithCredential(credential)
+    }
+
+    fun coloredText(
+        baseText: String,
+        coloredText: String,
+        targetColor: Int
+    ): SpannableStringBuilder {
+        val transformText = "$baseText $coloredText"
+        return SpannableStringBuilder(transformText).apply {
+            setSpan(
+                ForegroundColorSpan(targetColor),
+                transformText.indexOf(coloredText),
+                (transformText.indexOf(coloredText) + coloredText.length),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            setSpan(
+                StyleSpan(Typeface.BOLD),
+                transformText.indexOf(coloredText),
+                (transformText.indexOf(coloredText) + coloredText.length),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 
+    private fun moveOtpNum() {
+        binding.et1.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.et2.requestFocus()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+//                TODO("Not yet implemented")
+            }
+
+        })
+
+        binding.et2.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.et3.requestFocus()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0!!.isEmpty()){
+                    binding.et1.requestFocus()
+                }
+            }
+
+        })
+
+        binding.et3.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.et4.requestFocus()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0!!.length==0){
+                    binding.et2.requestFocus()
+                }
+            }
+
+        })
+
+        binding.et4.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.et5.requestFocus()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0!!.length==0){
+                    binding.et3.requestFocus()
+                }
+            }
+
+        })
+
+        binding.et5.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.et6.requestFocus()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0!!.length==0){
+                    binding.et4.requestFocus()
+                }
+            }
+
+        })
+
+        binding.et6.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(!p0.toString().isEmpty()){
+                    binding.root.hideKeyboard()
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0!!.length==0){
+                    binding.et5.requestFocus()
+                }
+            }
+
+        })
+    }
+
+    fun View.hideKeyboard() {
+        val imm = ContextCompat.getSystemService(applicationContext,InputMethodManager::class.java) as InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
+    }
+
+    private fun verifyOtp() {
+        if(!binding.et1.text.isEmpty() && !binding.et2.text.isEmpty() && !binding.et3.text.isEmpty() && !binding.et4.text.isEmpty() && !binding.et5.text.isEmpty() && !binding.et6.text.isEmpty()){
+            val otpCode=binding.et1.text.toString()+binding.et2.text+binding.et3.text+binding.et4.text+binding.et5.text+binding.et6.text
+            binding.registerButton.startAnimation()
+            verifyCode(otpCode)
+        }
+        else{
+            Toast.makeText(applicationContext,"Please Enter OTP",Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun setTimer() {
+        binding.resendCodeBtn.isEnabled=false
+        object : CountDownTimer(60000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val remainedSecs = millisUntilFinished / 1000
+                binding.resendCodeBtn.setText("" + remainedSecs / 60 + ":" + remainedSecs % 60)
+            }
+
+            override fun onFinish() {
+                binding.resendCodeBtn.isEnabled=true
+                binding.resendCodeBtn.setText("Resend Code")
+                binding.resendCodeBtn.setOnClickListener(View.OnClickListener { setTimer() })
+            }
+        }.start()
+    }
 
 }

@@ -8,11 +8,13 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.AsyncTask
 import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -23,9 +25,14 @@ import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.MessageViewModel
+import com.ayush.flow.databinding.ChatTemSwipeBinding
+import com.bumptech.glide.Glide
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
@@ -35,49 +42,69 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
     val allChats=ArrayList<ChatEntity>()
     final val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
     lateinit var viewModel: MessageViewModel
-    class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
-        val image:CircleImageView=view.findViewById(R.id.profile_pic)
-        val name:TextView=view.findViewById(R.id.profile_name)
-        val message:TextView=view.findViewById(R.id.profile_msg)
-        val time:TextView=view.findViewById(R.id.timer)
-        val unread:TextView=view.findViewById(R.id.unread_chat)
-        val chat_box:ConstraintLayout=view.findViewById(R.id.paren)
 
-        val call:ImageView=view.findViewById(R.id.call_chat)
-        val vdo_call:ImageView=view.findViewById(R.id.vdo_call_chat)
-        val del_chat:ImageView=view.findViewById(R.id.del_chat)
-        val hide:ImageView=view.findViewById(R.id.hide_chat)
-        val swipeRevealLayout:SwipeRevealLayout=view.findViewById(R.id.swipelayout)
+    class HomeViewHolder(val binding: ChatTemSwipeBinding):RecyclerView.ViewHolder(binding.root){
+        var chatTembinding: ChatTemSwipeBinding = binding
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
-        val view=LayoutInflater.from(parent.context).inflate(R.layout.chat_tem_swipe,parent,false)
-
-        return HomeViewHolder(view)
+        val binding:ChatTemSwipeBinding=ChatTemSwipeBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        return HomeViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         var chat=allChats[position]
 
         if(chat.name==""){
-            holder.name.text=chat.number
+            holder.chatTembinding.profileName.text=chat.number
         }
         else{
-            holder.name.text=chat.name
+            holder.chatTembinding.profileName.text=chat.name
         }
 
-        MessageViewModel(context).getUnreads(chat.id).observe(context as LifecycleOwner) {
-            if(it!=0){
-                holder.unread.visibility=View.VISIBLE
-                if(it>99){
-                    holder.unread.text= "99+"
+        if(chat.last_sender==Constants.MY_USERID){
+            holder.chatTembinding.unreadChat.visibility=View.GONE
+            holder.chatTembinding.waitingTick.visibility=View.VISIBLE
+            MessageViewModel(context).getMsgStatus(chat.last_mid).observe(context as LifecycleOwner,
+                androidx.lifecycle.Observer {
+                    if(it=="sent"){
+                        holder.chatTembinding.waitingTick.visibility=View.GONE
+                        holder.chatTembinding.sentTick.visibility=View.VISIBLE
+                        holder.chatTembinding.seenTick.visibility=View.GONE
+                        holder.chatTembinding.sentTick.visibility=View.VISIBLE
+                    }
+                    else if(it=="Delivered"){
+                        holder.chatTembinding.sentTick.visibility=View.GONE
+                        holder.chatTembinding.waitingTick.visibility=View.GONE
+                        holder.chatTembinding.seenTick.visibility=View.GONE
+                        holder.chatTembinding.deliveredTick.visibility=View.VISIBLE
+                    }
+                    else if(it=="seen"){
+                        holder.chatTembinding.deliveredTick.visibility=View.GONE
+                        holder.chatTembinding.waitingTick.visibility=View.GONE
+                        holder.chatTembinding.sentTick.visibility=View.GONE
+                        holder.chatTembinding.seenTick.visibility=View.VISIBLE
+                    }
+                })
+        }
+        else{
+            holder.chatTembinding.waitingTick.visibility=View.GONE
+            holder.chatTembinding.sentTick.visibility=View.GONE
+            holder.chatTembinding.seenTick.visibility=View.GONE
+            holder.chatTembinding.sentTick.visibility=View.GONE
+            MessageViewModel(context).getUnreads(chat.id).observe(context as LifecycleOwner) {
+                if(it!=0){
+                    holder.chatTembinding.unreadChat.visibility=View.VISIBLE
+                    if(it>99){
+                        holder.chatTembinding.unreadChat.text= "99+"
+                    }
+                    else{
+                        holder.chatTembinding.unreadChat.text= it.toString()
+                    }
                 }
                 else{
-                    holder.unread.text= it.toString()
+                    holder.chatTembinding.unreadChat.visibility=View.GONE
                 }
-            }
-            else{
-                holder.unread.visibility=View.GONE
             }
         }
 
@@ -92,18 +119,18 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             //set in time
             var tm: Date = Date(chat.time)
             val time = SimpleDateFormat("hh:mm a")
-            holder.time.text=time.format(tm)
+            holder.chatTembinding.timer.text=time.format(tm)
         }
         else if(diff==1){
             //set yesterday
-            holder.time.text="Yesterday"
+            holder.chatTembinding.timer.text="Yesterday"
         }
         else{
             //set date
             var tm: Date = Date(chat.time)
             val date = SimpleDateFormat("dd/MM/yy")
 
-            holder.time.text=date.format(tm)
+            holder.chatTembinding.timer.text=date.format(tm)
         }
 
 
@@ -136,7 +163,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 //            holder.time.text=chat.date
 //        }
 
-        holder.message.text = chat.lst_msg
+        holder.chatTembinding.profileMsg.text = chat.lst_msg
         var dr: Drawable? = null
         if(chat.path!=""){
             if(chat.lst_msg=="Photo"){
@@ -148,26 +175,27 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         }
         if(dr!=null){
             dr!!.setBounds(0, 0, 36, 36)
-            holder.message.setCompoundDrawables(dr, null, null, null)
+            holder.chatTembinding.profileMsg.setCompoundDrawables(dr, null, null, null)
         }
 
 
         val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
         if(f.exists()){
-            val b = BitmapFactory.decodeStream(FileInputStream(f))
-            holder.image.setImageBitmap(b)
+//            val b = BitmapFactory.decodeStream(FileInputStream(f))
+//            holder.image.setImageBitmap(b)
+            Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.chatTembinding.profilePic)
         }
         else{
-            holder.image.setImageResource(R.drawable.user)
+            holder.chatTembinding.profilePic.setImageResource(R.drawable.user)
         }
 //        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
 //            DiskCacheStrategy.NONE)
 //            .skipMemoryCache(true).into(holder.image)
 
-        holder.chat_box.setOnClickListener {
+        holder.chatTembinding.paren.setOnClickListener {
 
-            if(holder.swipeRevealLayout.isOpened){
-                holder.swipeRevealLayout.close(true)
+            if(holder.chatTembinding.swipelayout.isOpened){
+                holder.chatTembinding.swipelayout.close(true)
             }
             else {
                 val intent = Intent(context, Message::class.java)
@@ -183,14 +211,14 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         }
 
         viewBinderHelper.setOpenOnlyOne(true)
-        viewBinderHelper.bind(holder.swipeRevealLayout,chat.id)
+        viewBinderHelper.bind(holder.chatTembinding.swipelayout,chat.id)
         viewBinderHelper.closeLayout(chat.id)
 
 
 
-        holder.call.setOnClickListener {
+        holder.chatTembinding.callChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.audioCall(holder.name.text.toString(),chat.id)
+            clickListener.audioCall(holder.chatTembinding.profileName.text.toString(),chat.id)
 //            if(Permissions().checkMicpermission(context)){
 //
 //            }
@@ -199,9 +227,9 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 //            }
         }
 
-        holder.vdo_call.setOnClickListener {
+        holder.chatTembinding.vdoCallChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
-            clickListener.videoCall(holder.name.text.toString(),chat.id)
+            clickListener.videoCall(holder.chatTembinding.profileName.text.toString(),chat.id)
 //            if(Permissions().checkCamAndMicPermission(context)){
 //
 //            }
@@ -210,23 +238,18 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 //            }
 
         }
-        holder.del_chat.setOnClickListener {
+        holder.chatTembinding.delChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
             clickListener.deleteChat(chat.id,chat.name)
         }
-        holder.hide.setOnClickListener {
+        holder.chatTembinding.hideChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
             clickListener.hideChat(chat.id,chat.name)
         }
 
-        holder.image.setOnClickListener {
+        holder.chatTembinding.profilePic.setOnClickListener {
             val intent = Intent(context, SelectedImage::class.java)
-//            var fos  =  ByteArrayOutputStream()
-//            ((holder.image.drawable as BitmapDrawable).bitmap).compress(Bitmap.CompressFormat.JPEG, 100, fos)
-//            val byteArray = fos.toByteArray()
-//            ImageHolder.imageDraw=holder.image.drawable
             intent.putExtra("type","view")
-//            intent.putExtra("image", byteArray)
             intent.putExtra("userid",chat.id)
             intent.putExtra("name",chat.name)
             intent.putExtra("number",chat.number)
@@ -259,7 +282,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         var b:Bitmap?=null
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
-            holder.image.setImageBitmap(b)
+            holder.chatTembinding.profilePic.setImageBitmap(b)
 //            Picasso.get().load(f!!).into(image)
         }
         override fun doInBackground(vararg params: Void?): Boolean {

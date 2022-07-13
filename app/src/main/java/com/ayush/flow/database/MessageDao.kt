@@ -17,25 +17,22 @@ interface MessageDao {
     @Query("SELECT EXISTS(SELECT * FROM messages WHERE mid = :id)")
     fun isMsgExist(id : String) : Boolean
 
-    @Query("UPDATE messages SET recev = :rec, seen = :seen WHERE mid = :mid")
-    fun update(mid: String, rec: Boolean, seen: Boolean)
-
     @Delete
     fun delete(item: MessageEntity)
 
     @Query("DELETE FROM messages WHERE user_id = :id")
     fun deleteChat(id: String)
 
-    @Query("UPDATE messages SET sent = :sent WHERE mid = :mid")
-    fun isSent(sent: Boolean,mid: String)
+    @Query("UPDATE messages SET msg_status = :status WHERE mid = :mid")
+    fun updateMsgStatus(status: String,mid: String)
 
-    @Query("SELECT COUNT(seen) FROM messages WHERE sender_id = :id AND seen = 0")
+    @Query("SELECT COUNT(*) FROM messages WHERE sender_id = :id AND msg_status != 'seen'")
     fun getUnreads(id: String): LiveData<Int>
 
-    @Query("UPDATE messages SET seen = :seen WHERE mid = :mid")
-    fun isSeen(seen: Boolean, mid: String)
+    @Query("SELECT msg_status FROM messages WHERE mid = :mid")
+    fun getMsgStatus(mid: String):LiveData<String>
 
-    @Query("UPDATE messages SET seen = 1 WHERE user_id = :userid")
+    @Query("UPDATE messages SET msg_status = 'seen' WHERE sender_id = :userid")
     fun setMsgSeen(userid: String)
 
 //    @Query("SELECT * FROM contacts where contact_number=:number")

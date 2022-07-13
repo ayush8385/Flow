@@ -6,13 +6,20 @@ import android.content.Intent
 import android.graphics.*
 import android.media.ExifInterface
 import android.os.AsyncTask
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.ayush.flow.activity.Message
+import com.ayush.flow.activity.uploadImage
+import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
 
 
-class ImageCompression(context: Context,from:String,intent: Intent,application: Application) :
+class ImageCompression(
+    context: Context,
+    from:String,
+    intent: Intent,
+    application: Application) :
     AsyncTask<String?, Void?, Bitmap>() {
     private val context: Context
     private val from:String
@@ -33,6 +40,10 @@ class ImageCompression(context: Context,from:String,intent: Intent,application: 
                 intent.getStringExtra("image")!!,
                 application
             ).execute()
+        }
+        if(from=="profile"){
+            ImageHandling.saveToInternalStorage(imageBmp!!,Constants.PROFILE_PHOTO_LOCATION,Constants.MY_USERID+".jpg").execute()
+            uploadImage(imageBmp!!).execute()
         }
     }
 

@@ -16,10 +16,6 @@ class MessageRepository(private val messageDao: MessageDao) {
         return messageDao.isMsgExist(userid)
     }
 
-    fun update(mid: String, rec: Boolean, seen: Boolean) {
-        messageDao.update(mid,rec,seen)
-    }
-
     fun deleteMsg(item: MessageEntity) {
         messageDao.delete(item)
     }
@@ -28,16 +24,16 @@ class MessageRepository(private val messageDao: MessageDao) {
         messageDao.deleteChat(id)
     }
 
-    fun isSent(sent: Boolean,mid: String) {
-        messageDao.isSent(sent,mid)
+    fun updateMsgStatus(status: String,mid: String) {
+        messageDao.updateMsgStatus(status,mid)
     }
 
     fun getUnreads(id:String):LiveData<Int>{
         return messageDao.getUnreads(id)
     }
 
-    fun isSeen(seen: Boolean, mid: String) {
-        messageDao.isSeen(seen,mid)
+    fun getMsgStatus(mid: String):LiveData<String>{
+        return messageDao.getMsgStatus(mid)
     }
 
     fun setMsgSeen(userid: String) {

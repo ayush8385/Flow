@@ -12,6 +12,11 @@ android {
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
+
     defaultConfig {
         applicationId "com.ayush.flow"
         minSdkVersion 19

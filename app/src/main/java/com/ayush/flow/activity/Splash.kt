@@ -1,21 +1,15 @@
 package com.ayush.flow.activity
 
-import android.app.Application
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
+import android.graphics.Color
 import android.os.*
-import android.provider.Settings
-import android.view.Window
+import android.view.View
 import android.view.WindowManager
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.SwitchCompat
 import androidx.lifecycle.ViewModelProviders
+import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.Services.RetrieveMessage
 import com.ayush.flow.Services.SharedPreferenceUtils
@@ -27,21 +21,13 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.net.URL
-import java.text.SimpleDateFormat
 import java.util.*
-import javax.inject.Inject
 import kotlin.properties.Delegates
 
 
 class Splash : AppCompatActivity() {
     var firebaseuser: FirebaseUser?=null
-    lateinit var sharedPreferences: SharedPreferences
     lateinit var hiddenViewModel: HiddenViewModel
     var isLoggedIn by Delegates.notNull<Boolean>()
 
@@ -50,12 +36,11 @@ class Splash : AppCompatActivity() {
 
         hiddenViewModel= ViewModelProviders.of(this).get(HiddenViewModel::class.java)
         SharedPreferenceUtils.init(applicationContext)
-
+//
         intializeTheme()
-
         super.onCreate(savedInstanceState)
 
-        setFullScreen()
+
 
         FirebaseApp.initializeApp(this)
         firebaseuser= FirebaseAuth.getInstance().currentUser
@@ -75,11 +60,6 @@ class Splash : AppCompatActivity() {
         }
     }
 
-    private fun setFullScreen() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-    }
-
     private fun intializeTheme() {
         if(SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.NIGHT_MODE,false)){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -87,9 +67,6 @@ class Splash : AppCompatActivity() {
     }
 
     private fun callDashboard() {
-        GlobalScope.launch{
-            checkStatus()
-        }
         val username=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,"")
         if(username==""){
             startActivity(Intent(this@Splash,Addprofile::class.java))
@@ -101,29 +78,6 @@ class Splash : AppCompatActivity() {
                 finish()
             },200)
         }
-    }
-
-    fun checkStatus(){
-        val connectionReference= FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID)
-//        val lastConnected= FirebaseDatabase.getInstance().reference.child("lastConnected")
-        val infoConnected= FirebaseDatabase.getInstance().getReference(".info/connected")
-
-        infoConnected.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val connected:Boolean=snapshot.value as Boolean
-
-                if(connected){
-                    val con=connectionReference.child("status")
-                    con.setValue("online")
-                    con.onDisconnect().setValue("")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-
-        })
     }
 
 

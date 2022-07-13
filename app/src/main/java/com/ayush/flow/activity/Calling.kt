@@ -303,7 +303,7 @@ class Calling : BaseActivity(){
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
-                    Constants.MY_USERID,text1.text.toString(),System.currentTimeMillis(),"message","","","","",false,false,false)
+                    Constants.MY_USERID,text1.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
             Message().sendMessageToUser(text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
@@ -315,7 +315,7 @@ class Calling : BaseActivity(){
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
-                    Constants.MY_USERID,text2.text.toString(),System.currentTimeMillis(),"message","","","","",false,false,false)
+                    Constants.MY_USERID,text2.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
             Message().sendMessageToUser(text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
@@ -337,7 +337,7 @@ class Calling : BaseActivity(){
                     MessageViewModel(application).insertMessage(
                         MessageEntity(messageKey!!,
                             Constants.MY_USERID+"-"+call.remoteUserId,
-                            Constants.MY_USERID,callMsg.text.toString(),System.currentTimeMillis(),"message","","","","",false,false,false)
+                            Constants.MY_USERID,callMsg.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
                     )
                     Message().sendMessageToUser(callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
                     call.hangup()

@@ -511,39 +511,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     imagepath = contactEntity.image
                     val chatEntity= ChatViewModel(application).getChat(sender)
                     unread=chatEntity.unread+1
-//                    if (type == "image") {
-//                        ChatViewModel(application).inserChat(
-//                            ChatEntity(
-//                                name,
-//                                number,
-//                                imagepath,
-//                                "Photo",
-//                                sdf.format(tm),
-//                                date.format(tm),
-//                                false,
-//                                0,
-//                                sender
-//                            )
-//                        )
-//                    }
-//                    if(type=="doc"){
-//                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-//                    }
-//                    if(type=="message") {
-//                        ChatViewModel(application).inserChat(
-//                            ChatEntity(
-//                                name,
-//                                number,
-//                                imagepath,
-//                                msg,
-//                                sdf.format(tm),
-//                                date.format(tm),
-//                                false,
-//                                0,
-//                                sender
-//                            )
-//                        )
-//                    }
+
                 }
                 else if (ChatViewModel(application).isUserExist(sender)) {
                     //get image and name from room db
@@ -553,39 +521,6 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     imagepath = chatEntity.image
                     unread=chatEntity.unread+1
                     hide=chatEntity.hide
-//                    if (type == "image") {
-//                        ChatViewModel(application).inserChat(
-//                            ChatEntity(
-//                                name,
-//                                number,
-//                                imagepath,
-//                                "Photo",
-//                                sdf.format(tm),
-//                                date.format(tm),
-//                                chatEntity.hide,
-//                                unread+1,
-//                                sender
-//                            )
-//                        )
-//                    }
-//                    if(type=="doc"){
-//                        ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),chatEntity.hide,unread+1,sender))
-//                    }
-//                    if(type=="message") {
-//                        ChatViewModel(application).inserChat(
-//                            ChatEntity(
-//                                name,
-//                                number,
-//                                imagepath,
-//                                msg,
-//                                sdf.format(tm),
-//                                date.format(tm),
-//                                chatEntity.hide,
-//                                unread+1,
-//                                sender
-//                            )
-//                        )
-//                    }
                 }
                 else {
                     //get number as a name from firebase
@@ -595,72 +530,11 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                     refer.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             number = snapshot.child("number").value.toString()
-//                            if (type == "image") {
-//                                ChatViewModel(application).inserChat(
-//                                    ChatEntity(
-//                                        name,
-//                                        number,
-//                                        imagepath,
-//                                        "Photo",
-//                                        sdf.format(tm),
-//                                        date.format(tm),
-//                                        false,
-//                                        0,
-//                                        sender
-//                                    )
-//                                )
-//                            }
-//                            if(type=="doc"){
-//                                ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sdf.format(tm),date.format(tm),false,0,sender))
-//                            }
-//                            if(type=="message") {
-//                                ChatViewModel(application).inserChat(
-//                                    ChatEntity(
-//                                        name,
-//                                        number,
-//                                        imagepath,
-//                                        msg,
-//                                        sdf.format(tm),
-//                                        date.format(tm),
-//                                        false,
-//                                        0,
-//                                        sender
-//                                    )
-//                                )
-//                            }
                                 val image_url = snapshot.child("profile_photo").value.toString()
                                 if (image_url != "") {
                                     ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,sender+".jpg").execute(image_url)
                                     hide=false
                                     unread=1
-//                                    GetImageFromUrl(sender, application,msg,number,context).execute(image_url)
-//                                    if (type == "image") {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                sender+".jpg",
-//                                                "Image",
-//                                                sdf.format(tm),
-//                                                date.format(tm),
-//                                                false,0,
-//                                                sender
-//                                            )
-//                                        )
-//                                    } else {
-//                                        ChatViewModel(application).inserChat(
-//                                            ChatEntity(
-//                                                name,
-//                                                number,
-//                                                sender+".jpg",
-//                                                msg,
-//                                                sdf.format(tm),
-//                                                date.format(tm),
-//                                                false,0,
-//                                                sender
-//                                            )
-//                                        )
-//                                    }
                                 }
                                 else{
                                     sendNotif(sender,name,"","","", msg,context)
@@ -679,7 +553,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                 if (type == "image") {
 
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo",sender+".jpg",time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Photo",sender,messageKey,sender+".jpg",time.toLong(),hide,unread,sender))
 
 //                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
 
@@ -703,13 +577,13 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
 
                 }
                 if(type=="doc"){
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sender, time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,"Document",sender,messageKey,sender, time.toLong(),hide,unread,sender))
                 }
                 if(type=="message"){
-                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,"", time.toLong(),hide,unread,sender))
+                    ChatViewModel(application).inserChat(ChatEntity(name,number,imagepath,msg,sender,messageKey,sender, time.toLong(),hide,unread,sender))
                 }
 
-                MessageViewModel(application).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",thumbnail,url,true,false,false))
+                MessageViewModel(application).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",thumbnail,url,"sent"))
 
 
 //                if (!received) {

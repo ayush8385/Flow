@@ -57,7 +57,6 @@ class ImageHandling {
 
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
-            Log.e("starteddd","compressed")
             saveToInternalStorage(bmp!!,location,fileName).execute()
         }
 

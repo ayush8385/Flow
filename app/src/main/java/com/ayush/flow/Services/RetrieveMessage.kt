@@ -1,30 +1,9 @@
 package com.ayush.flow.Services
 
 import android.app.Application
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.*
-import android.provider.Settings
-import android.util.Log
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.Lifecycle
-import com.ayush.flow.activity.Dashboard
 import com.ayush.flow.database.*
 import com.google.firebase.database.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.*
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.*
 
 class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() {
     override fun doInBackground(vararg params: Void?): Boolean {
@@ -197,10 +176,9 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                 val type=snapshot.child("type").value.toString()
                 val thumbnail=snapshot.child("thumbnail").value.toString()
                 val msg_url=snapshot.child("url").value.toString()
-                val received=snapshot.child("received").value as Boolean
-                val seen=snapshot.child("seen").value as Boolean
+                val msgStatus=snapshot.child("msgStatus").value.toString()
 
-                if(seen||received){
+                if(msgStatus=="seen" || msgStatus=="Delivered"){
                     return
                 }
 
@@ -219,6 +197,7 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                         val chatEntity = ChatViewModel(applicat).getChat(sender)
                         unread = chatEntity.unread + 1
                     }
+                    saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                 } else if (ChatViewModel(applicat).isUserExist(sender)) {
                     //get image and name from room db
                     val chatEntity = ChatViewModel(applicat).getChat(sender)
@@ -227,20 +206,20 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                     imagepath = chatEntity.image
                     unread = chatEntity.unread + 1
                     hide = chatEntity.hide
+                    saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                 } else {
                     val refer =
                         FirebaseDatabase.getInstance().reference.child("Users").child(sender)
                     refer.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             number = snapshot.child("number").value.toString()
-
                             val image_url = snapshot.child("profile_photo").value.toString()
                             if (image_url != "") {
                                 ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION, sender + ".jpg").execute(image_url)
                                 hide = false
                                 unread = 1
                             }
-
+                            saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                         }
 
                         override fun onCancelled(error: DatabaseError) {
@@ -249,58 +228,8 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
 
                     })
                 }
-
-            //
-                if(type=="image"){
-                    ChatViewModel(applicat).inserChat(ChatEntity(name,number,imagepath,"Photo",sender+".jpg",time.toLong(),hide,unread,sender))
-
-                    //                            MessageViewModel(application).insertMessage(MessageEntity(messageKey,firebaseUser.uid+"-"+sender,sender,"",sdf.format(tm),type,false,false,false))
-//
-//                    if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
-//                        if (Environment.isExternalStorageManager()) {
-//                            //                                ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg").execute(msg_url)
-//                            val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",msg_url,false,false,false)
-//                            saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg",msg).execute(msg_url)
-//                        } else {
-//                            //request for the permission
-//                            //                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-//                            //                                val uri = Uri.fromParts("package", packageName, null)
-//                            //                                intent.data = uri
-//                            //                                startActivity(intent)
-//                        }
-//                    }
-//                    else{
-//                        val msg = MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",msg_url,false,false,false)
-//                        saveImagefromUrlMsg(Constants.ALL_PHOTO_LOCATION,messageKey+".jpg",msg).execute(msg_url)
-//                    }
-
-                }
-                if(type=="doc"){
-                    ChatViewModel(applicat).inserChat(ChatEntity(name,number,imagepath,"Document",sender, time.toLong(),hide,unread,sender))
-                }
-                if(type=="message"){
-                    ChatViewModel(applicat).inserChat(ChatEntity(name,number,imagepath,msg,"", time.toLong(),hide,unread,sender))
-                }
-
-                MessageViewModel(applicat).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,msg,time.toLong(),type,"","",thumbnail,msg_url,true,seen,false))
-
-
-                // sendNotification(sender,name,msg,imagepath,application).execute()
-
                 //Set Received
-                val refer= FirebaseDatabase.getInstance().reference.child("Messages").child(Constants.MY_USERID)
-                refer.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if(snapshot.child(messageKey).exists()){
-                            FirebaseDatabase.getInstance().reference.child("Messages").child(Constants.MY_USERID).child(messageKey).child("received").setValue(true)
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
-                    }
-
-                })
+                setMessageReceived(messageKey)
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -320,6 +249,52 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
             }
         })
         return true
+    }
+
+    private fun setMessageReceived(messageKey: String) {
+        val refer= FirebaseDatabase.getInstance().reference.child("Messages").child(Constants.MY_USERID)
+        refer.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.child(messageKey).exists()){
+                    FirebaseDatabase.getInstance().reference.child("Messages").child(Constants.MY_USERID).child(messageKey).child("msgStatus").setValue("Delivered")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    fun saveMessageToDatabase(
+        type: String,
+        name: String,
+        number: String,
+        msg: String,
+        imagepath: String,
+        sender: String,
+        messageKey: String,
+        time: String,
+        hide: Boolean,
+        unread: Int,
+        thumbnail: String,
+        msg_url: String,
+        msgStatus: String
+    ){
+        var path = ""
+        var message = msg
+        var lstmsg = msg
+        if(type=="image"){
+            message="Photo"
+            path = sender+".jpg"
+            lstmsg="Photo"
+        }
+        if(type=="doc"){
+            path = sender
+            lstmsg="Document"
+        }
+        ChatViewModel(applicat).inserChat(ChatEntity(name,number,imagepath,lstmsg,sender,messageKey,path, time.toLong(),hide,unread,sender))
+        MessageViewModel(applicat).insertMessage(MessageEntity(messageKey,Constants.MY_USERID+"-"+sender,sender,message,time.toLong(),type,"","",thumbnail,msg_url, msgStatus))
     }
 
 }
