@@ -52,7 +52,7 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
 
         holder.name.text=call.name
 
-        var tm: Date = Date((call.time)*1000)
+        var tm: Date = Date((call.time)!!)
         val time = SimpleDateFormat("hh:mm a")
         holder.time.text=time.format(tm)
 

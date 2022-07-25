@@ -5,11 +5,8 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.*
-import android.net.Uri
 import android.os.*
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -18,8 +15,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.SwitchCompat
-import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -27,7 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.alimuzaffar.lib.pin.PinEntryEditText
 import com.ayush.flow.Notification.MessagingService
 import com.ayush.flow.Notification.Token
 import com.ayush.flow.R
@@ -37,14 +31,12 @@ import com.ayush.flow.adapter.CallHistoryAdapter
 import com.ayush.flow.adapter.ChatAdapter
 import com.ayush.flow.adapter.StoryAdapter
 import com.ayush.flow.database.*
-import com.ayush.flow.databinding.ActivityAddprofileBinding
 import com.ayush.flow.databinding.ActivityDashboardBinding
 import com.ayush.flow.databinding.DeleteModalBottomsheetBinding
 import com.ayush.flow.databinding.PassVerifyBinding
 import com.ayush.flow.model.Chats
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -58,10 +50,10 @@ import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.lang.Exception
 
 
 class Dashboard : BaseActivity(), SinchService.StartFailedListener {
@@ -444,7 +436,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 callList.clear()
                 callList.addAll(list)
 
-                if(list.isEmpty()){
+                callList.sortByDescending{ it.time }
+                if(callList.isEmpty()){
                     binding.emptyLayout.visibility=View.VISIBLE
                     binding.emptyImg.setImageResource(R.drawable.no_call)
                     binding.startChat.visibility=View.GONE
@@ -453,7 +446,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     binding.emptyLayout.visibility=View.GONE
                 }
 
-                callAdapter.updateList(list)
+                callAdapter.updateList(callList)
             }
         })
 
@@ -581,7 +574,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             })
         }
 
-        updateUnsavedImage().execute()
+        try {
+            updateUnsavedImage().execute()
+        }catch (e:Exception){
+
+        }
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -597,8 +594,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         val callId=sinchServiceInterface!!.callUserVideo(id).callId
 
         Constants.isCurrentUser=true
-        CallViewModel(application).inserCall(CallEntity(name,"video","outgoing",System.currentTimeMillis()/1000,0,id))
-        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"video","outgoing",System.currentTimeMillis()/1000,0,id,callId))
+        CallViewModel(application).inserCall(CallEntity(name,"video","outgoing",System.currentTimeMillis(),0,id))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"video","outgoing",System.currentTimeMillis(),0,id,callId))
 
         val callScreen = Intent(this@Dashboard, Outgoing_vdo::class.java)
         callScreen.putExtra("name",name)
@@ -613,8 +610,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
         val callId=sinchServiceInterface!!.callUser(id).callId
 
         Constants.isCurrentUser=true
-        CallViewModel(application).inserCall(CallEntity(name,"audio","outgoing",System.currentTimeMillis()/1000,0,id))
-        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"audio","outgoing",System.currentTimeMillis()/1000,0,id,callId))
+        CallViewModel(application).inserCall(CallEntity(name,"audio","outgoing",System.currentTimeMillis(),0,id))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(name,"audio","outgoing",System.currentTimeMillis(),0,id,callId))
 
         val callScreen = Intent(this@Dashboard, Outgoing::class.java)
         callScreen.putExtra("name",name)

@@ -1,8 +1,8 @@
 package com.ayush.flow.model
 
 class ScreenItem {
-    lateinit var title:String
-    lateinit var desc:String
+    var title:String
+    var desc:String
     var image:Int = 0
 
 

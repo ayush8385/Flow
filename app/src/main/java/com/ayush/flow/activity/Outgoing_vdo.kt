@@ -18,7 +18,6 @@ import com.ayush.flow.database.CallHistoryViewModel
 import com.ayush.flow.database.CallViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallState
@@ -377,8 +376,8 @@ class Outgoing_vdo : BaseActivity() {
                 callStatus="missed"
             }
 
-            CallViewModel(application).inserCall(CallEntity(mCallerName?.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
-            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(mCallerName?.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,
+            CallViewModel(application).inserCall(CallEntity(mCallerName?.text.toString(),"video",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(mCallerName?.text.toString(),"video",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId,
                 mCallId!!
             ))
 
@@ -409,9 +408,9 @@ class Outgoing_vdo : BaseActivity() {
             mAudioPlayer!!.playProgressTone()
         }
 
-        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
-            // Send a push through your push provider here, e.g. GCM
-        }
+//        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
+//            // Send a push through your push provider here, e.g. GCM
+//        }
 
         @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
         override fun onVideoTrackAdded(call: Call?) {

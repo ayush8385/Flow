@@ -17,7 +17,6 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -25,7 +24,6 @@ import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import android.widget.*
 import androidx.appcompat.widget.SearchView
-import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
@@ -263,7 +261,7 @@ class Message : BaseActivity() {
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","","sending..."))
-                sendMessageToUser(msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
+                sendMessageToUser(application,msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
                 binding.sendText.setText("")
             }
         }
@@ -672,8 +670,8 @@ class Message : BaseActivity() {
         val callId=sinchServiceInterface!!.callUserVideo(userId).callId
 
         Constants.isCurrentUser=true
-        CallViewModel(application).inserCall(CallEntity(userName,"video","outgoing",System.currentTimeMillis()/1000,0,userId))
-        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(userName,"video","outgoing",System.currentTimeMillis()/1000,0,userid,callId))
+        CallViewModel(application).inserCall(CallEntity(userName,"video","outgoing",System.currentTimeMillis(),0,userId))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(userName,"video","outgoing",System.currentTimeMillis(),0,userid,callId))
 
         val callScreen = Intent(this, Outgoing_vdo::class.java)
         callScreen.putExtra("name",userName)
@@ -690,8 +688,8 @@ class Message : BaseActivity() {
         val callId=sinchServiceInterface!!.callUser(userId).callId
 
         Constants.isCurrentUser=true
-        CallViewModel(application).inserCall(CallEntity(userName,"audio","outgoing",System.currentTimeMillis()/1000,0,userId))
-        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(userName,"audio","outgoing",System.currentTimeMillis()/1000,0,userid,callId))
+        CallViewModel(application).inserCall(CallEntity(userName,"audio","outgoing",System.currentTimeMillis(),0,userId))
+        CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(userName,"audio","outgoing",System.currentTimeMillis(),0,userid,callId))
 
         val callScreen = Intent(this, Outgoing::class.java)
         callScreen.putExtra("name",userName)
@@ -959,17 +957,17 @@ class Message : BaseActivity() {
 //    }
 
 
-    inner class sendMessageToUser(val msg: String,val messageKey:String,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
+    inner class sendMessageToUser(val applicat: Application,val msg: String,val messageKey:String,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
             val ref=FirebaseDatabase.getInstance().reference
 
-            if(application!=null){
-                if(ChatViewModel(application).isUserExist(userid)){
-                    val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
+            if(applicat!=null){
+                if(ChatViewModel(applicat).isUserExist(userid)){
+                    val currentChat = ChatViewModel(applicat).getChat(userid)
+                    ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
             }
 
             val messageHashmap=HashMap<String,Any>()
@@ -984,7 +982,7 @@ class Message : BaseActivity() {
 
 
             ref.child("Messages").child(userid).child(messageKey).setValue(messageHashmap).addOnSuccessListener {
-                MessageViewModel(application).updateMsgStatus("sent",messageKey)
+                MessageViewModel(applicat).updateMsgStatus("sent",messageKey)
             }
 
             sendNotification(userid, Constants.MY_USERID, msg,messageKey, 0)
@@ -1116,7 +1114,7 @@ class Message : BaseActivity() {
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
                         MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","","sending..."))
-                        sendMessageToUser(msg.message,messageKey,chat.id,chat.name,chat.number,chat.image).execute()
+                        sendMessageToUser(application,msg.message,messageKey,chat.id,chat.name,chat.number,chat.image).execute()
                     }
                 }
             }

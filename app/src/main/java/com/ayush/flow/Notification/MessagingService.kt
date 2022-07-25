@@ -88,9 +88,9 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
                                     val editor: SharedPreferences.Editor = sharedPreferences.edit()
                                     editor.putString(callResult.remoteUserId, result.displayName)
                                     editor.apply()
-                                    Toast.makeText(applicationContext,"Here I am", Toast.LENGTH_SHORT).show()
+//                                    Toast.makeText(applicationContext,"Here I am", Toast.LENGTH_SHORT).show()
                                 }
-                                if (callResult != null && callResult.isCallCanceled) {
+                                if (callResult != null && result.callResult.isTimedOut) {
 
                                     var displayName = result.displayName
                                     if (displayName == null) {

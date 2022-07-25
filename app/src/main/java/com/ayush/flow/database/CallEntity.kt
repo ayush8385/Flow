@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "calls")
 data class CallEntity(
-    @ColumnInfo(name = "name") val name : String,
-    @ColumnInfo(name = "type") val type :String,
-    @ColumnInfo(name = "status") val calltype :String,
-    @ColumnInfo(name = "time") val time:Long,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "type") val type:String,
+    @ColumnInfo(name = "status") val calltype:String,
+    @ColumnInfo(name = "time") val time: Long?,
     @ColumnInfo(name = "duration") val duration:Int,
     @PrimaryKey var id:String
     )

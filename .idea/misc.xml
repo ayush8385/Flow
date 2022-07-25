@@ -139,6 +139,8 @@
         <entry key="app/src/main/res/layout/activity_image_view.xml" value="0.31875" />
         <entry key="app/src/main/res/layout/activity_incoming_vdo.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/activity_message.xml" value="0.22046142578125" />
+        <entry key="app/src/main/res/layout/activity_outgoing.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.26510416666666664" />
         <entry key="app/src/main/res/layout/activity_passcode.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.2632199968610491" />
         <entry key="app/src/main/res/layout/activity_slider.xml" value="0.25" />

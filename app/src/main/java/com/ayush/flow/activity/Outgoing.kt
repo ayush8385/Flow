@@ -1,10 +1,15 @@
 package com.ayush.flow.activity
 
-import android.graphics.BitmapFactory
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -22,13 +27,11 @@ import com.ayush.flow.database.CallHistoryViewModel
 import com.ayush.flow.database.CallViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
-import java.io.FileInputStream
 import java.util.*
 
 
@@ -50,6 +53,8 @@ class Outgoing : BaseActivity() {
     var isSpeaker:Boolean=false
     lateinit var userid: String
     lateinit var backimg: ImageView
+    var sensorManager: SensorManager? = null
+    var proximitySensor: Sensor? = null
 
 
     private inner class UpdateCallDurationTask : TimerTask() {
@@ -110,6 +115,56 @@ class Outgoing : BaseActivity() {
         mCallStart = System.currentTimeMillis()
         mCallId = intent.getStringExtra(SinchService.CALL_ID)!!
 
+
+        //sensor works
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        proximitySensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+
+        if (proximitySensor == null) {
+            Toast.makeText(this, "No proximity sensor found in device.", Toast.LENGTH_SHORT).show();
+
+        } else {
+            // registering our sensor with sensor manager.
+            sensorManager!!.registerListener(proximitySensorEventListener,
+                proximitySensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+    }
+
+    var proximitySensorEventListener: SensorEventListener = object : SensorEventListener {
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+            // method to check accuracy changed in sensor.
+        }
+
+        override fun onSensorChanged(event: SensorEvent) {
+            // check if the sensor type is proximity sensor.
+            val params: WindowManager.LayoutParams = getWindow().getAttributes()
+            if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
+
+
+                if (event.values[0].toInt() == 0) {
+                    params.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    params.screenBrightness = 0F
+                    window.attributes = params
+                    Log.e("onSensorChanged", "NEAR")
+                } else {
+
+                    params.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    params.screenBrightness = -2F
+                    window.attributes = params
+                    Log.e("onSensorChanged", "FAR")
+                }
+            }
+            else{
+                Handler().postDelayed({
+
+                    Toast.makeText(applicationContext,"Hello I'm worjing ",Toast.LENGTH_LONG).show()
+                },3000)
+            }
+        }
     }
 
     override fun onServiceConnected() {
@@ -186,8 +241,8 @@ class Outgoing : BaseActivity() {
                 callStatus="missed"
             }
 
-            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
-            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId))
+            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(mCallerName.text.toString(),"audio",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId,mCallId))
 
             mAudioPlayer!!.stopProgressTone()
             volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE
@@ -213,9 +268,9 @@ class Outgoing : BaseActivity() {
             mAudioPlayer!!.playProgressTone()
         }
 
-        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
-            // Send a push through your push provider here, e.g. GCM
-        }
+//        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
+//            // Send a push through your push provider here, e.g. GCM
+//        }
     }
 
     companion object {

@@ -3,16 +3,11 @@ package com.ayush.flow.activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.*
-import android.text.Editable
-import android.text.TextWatcher
-import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -25,27 +20,21 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
-import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
-import java.io.FileInputStream
-import android.view.animation.CycleInterpolator
 
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 
-import android.view.animation.RotateAnimation
 import android.widget.EditText
 import android.view.View.OnTouchListener
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.database.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import java.security.Permissions
 
 
 class Calling : BaseActivity(){
@@ -300,24 +289,26 @@ class Calling : BaseActivity(){
         text1.setOnClickListener {
             val ref=FirebaseDatabase.getInstance().reference
             val messageKey=ref.push().key
+            image=Constants.MY_USERID+".jpg"
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
                     Constants.MY_USERID,text1.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
-            Message().sendMessageToUser(text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
+            Message().sendMessageToUser(application,text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             finish()
         }
         text2.setOnClickListener {
             val ref=FirebaseDatabase.getInstance().reference
             val messageKey=ref.push().key
+            image=Constants.MY_USERID+".jpg"
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
                     Constants.MY_USERID,text2.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
-            Message().sendMessageToUser(text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
+            Message().sendMessageToUser(application,text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
             call.hangup()
             finish()
         }
@@ -328,6 +319,7 @@ class Calling : BaseActivity(){
             val DRAWABLE_TOP = 1
             val DRAWABLE_RIGHT = 2
             val DRAWABLE_BOTTOM = 3
+            image=Constants.MY_USERID+".jpg"
             if (event.action == MotionEvent.ACTION_UP) {
                 if (event.rawX >= callMsg.getRight() - callMsg.getCompoundDrawables()
                         .get(DRAWABLE_RIGHT).getBounds().width()
@@ -339,7 +331,7 @@ class Calling : BaseActivity(){
                             Constants.MY_USERID+"-"+call.remoteUserId,
                             Constants.MY_USERID,callMsg.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
                     )
-                    Message().sendMessageToUser(callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
+                    Message().sendMessageToUser(application,callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
                     call.hangup()
                     finish()
                     return@OnTouchListener true
@@ -400,7 +392,6 @@ class Calling : BaseActivity(){
         if (call != null) {
             call.hangup()
         }
-        finish()
     }
 
     private inner class SinchCallListener : CallListener {
@@ -408,15 +399,17 @@ class Calling : BaseActivity(){
 
             val callDetail = call.details
             val cause = callDetail.endCause
-            Log.d("Ended", "Call ended, cause: " + cause)
+            Log.d("Ended", "Call ended, cause: " + callDetail)
 
             var callStatus=CallHistoryViewModel(application).getCallStatus(mCallId)
             if(cause.toString()=="CANCELED"){
                 callStatus="missed"
             }
 
-            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
-            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId!!))
+//            Log.d("Timestamp",callDetail.startedTime.time.toString())
+//            Toast.makeText(applicationContext,"Hello BRuh",Toast.LENGTH_SHORT).show()
+            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"audio",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId,mCallId!!))
 
 
             mAudioPlayer!!.stopRingtone()
@@ -431,9 +424,9 @@ class Calling : BaseActivity(){
             Log.d(TAG, "Call progressing")
         }
 
-        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
-            // Send a push through your push provider here, e.g. GCM
-        }
+//        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
+//            // Send a push through your push provider here, e.g. GCM
+//        }
     }
 
     private val mClickListener = View.OnClickListener { v ->

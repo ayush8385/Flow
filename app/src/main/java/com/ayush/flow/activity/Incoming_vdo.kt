@@ -4,7 +4,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -25,15 +24,12 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.sinch.android.rtc.PushPair
 import com.sinch.android.rtc.calling.Call
-import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.video.VideoCallListener
 import com.sinch.android.rtc.video.VideoScalingType
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
-import java.io.FileInputStream
 
 
 class Incoming_vdo : BaseActivity() {
@@ -266,8 +262,8 @@ class Incoming_vdo : BaseActivity() {
                 callStatus="missed"
             }
 
-            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId))
-            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime,callDetail.duration,call.remoteUserId,mCallId!!))
+            CallViewModel(application).inserCall(CallEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId))
+            CallHistoryViewModel(application).insertCallHistory(CallHistoryEntity(remoteUser.text.toString(),"video",callStatus,callDetail.startedTime.time,callDetail.duration,call.remoteUserId,mCallId!!))
 
             mAudioPlayer!!.stopRingtone()
             localView.removeView(sinchServiceInterface!!.getVideoController()!!.localView)
@@ -282,9 +278,9 @@ class Incoming_vdo : BaseActivity() {
             Log.d(TAG, "Call progressing")
         }
 
-        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
-            // Send a push through your push provider here, e.g. GCM
-        }
+//        override fun onShouldSendPushNotification(call: Call?, pushPairs: List<PushPair?>?) {
+//            // Send a push through your push provider here, e.g. GCM
+//        }
 
         override fun onVideoTrackAdded(call: Call?) {
             // Display some kind of icon showing it's a video call

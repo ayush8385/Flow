@@ -42,7 +42,7 @@ class CallHistoryAdapter(val context: Context):RecyclerView.Adapter<CallHistoryA
             holder.image.setImageResource(R.drawable.miss_icon)
         }
 
-        var tm: Date = Date((call.time)*1000)
+        var tm: Date = Date(call.time)
         val time = SimpleDateFormat("hh:mm a")
         holder.time.text=time.format(tm)
 
