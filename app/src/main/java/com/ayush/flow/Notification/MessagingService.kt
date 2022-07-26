@@ -44,6 +44,7 @@ import kotlin.collections.HashMap
 import android.app.PendingIntent
 
 import android.content.Intent
+import com.ayush.flow.Services.AESEncryption
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.Services.ImageHandling
 import com.ayush.flow.Services.RetrieveMessage
@@ -137,7 +138,7 @@ class MessagingService : FirebaseMessagingService(),ServiceConnection {
               //  Toast.makeText(applicationContext,"Not sending Version Not Supported",Toast.LENGTH_SHORT).show()
             }
 
-            sendOreoNotif(remoteMessage.data["sender"]!!, remoteMessage.data["message"]!!,remoteMessage.data["type"].toString(),
+            sendOreoNotif(remoteMessage.data["sender"]!!, AESEncryption().decrypt(remoteMessage.data["message"]!!)!!,remoteMessage.data["type"].toString(),
                 remoteMessage.data["messageKey"]!!,this)
 
         }

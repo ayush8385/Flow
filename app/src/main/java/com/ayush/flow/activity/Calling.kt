@@ -296,7 +296,7 @@ class Calling : BaseActivity(){
                     Constants.MY_USERID,text1.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
             call.hangup()
-            Message().sendMessageToUser(application,text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
+            Message().sendMessageToUser(text1.text.toString(),messageKey,call.remoteUserId,username,usernumber,image,application).execute()
             finish()
         }
         text2.setOnClickListener {
@@ -308,7 +308,7 @@ class Calling : BaseActivity(){
                     Constants.MY_USERID+"-"+call.remoteUserId,
                     Constants.MY_USERID,text2.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
             )
-            Message().sendMessageToUser(application,text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
+            Message().sendMessageToUser(text2.text.toString(),messageKey,call.remoteUserId,username,usernumber,image,application).execute()
             call.hangup()
             finish()
         }
@@ -331,7 +331,7 @@ class Calling : BaseActivity(){
                             Constants.MY_USERID+"-"+call.remoteUserId,
                             Constants.MY_USERID,callMsg.text.toString(),System.currentTimeMillis(),"message","","","","","sending...")
                     )
-                    Message().sendMessageToUser(application,callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image).execute()
+                    Message().sendMessageToUser(callMsg.text.toString(),messageKey,call.remoteUserId,username,usernumber,image,application).execute()
                     call.hangup()
                     finish()
                     return@OnTouchListener true

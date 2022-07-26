@@ -178,6 +178,8 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                 val msg_url=snapshot.child("url").value.toString()
                 val msgStatus=snapshot.child("msgStatus").value.toString()
 
+                val decryptedMsg = AESEncryption().decrypt(msg)
+
                 if(msgStatus=="seen" || msgStatus=="Delivered"){
                     return
                 }
@@ -197,7 +199,8 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                         val chatEntity = ChatViewModel(applicat).getChat(sender)
                         unread = chatEntity.unread + 1
                     }
-                    saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
+                    saveMessageToDatabase(type,name,number,
+                        decryptedMsg!!,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                 } else if (ChatViewModel(applicat).isUserExist(sender)) {
                     //get image and name from room db
                     val chatEntity = ChatViewModel(applicat).getChat(sender)
@@ -206,7 +209,7 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                     imagepath = chatEntity.image
                     unread = chatEntity.unread + 1
                     hide = chatEntity.hide
-                    saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
+                    saveMessageToDatabase(type,name,number,decryptedMsg!!,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                 } else {
                     val refer =
                         FirebaseDatabase.getInstance().reference.child("Users").child(sender)
@@ -219,7 +222,7 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
                                 hide = false
                                 unread = 1
                             }
-                            saveMessageToDatabase(type,name,number,msg,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
+                            saveMessageToDatabase(type,name,number,decryptedMsg!!,imagepath,sender,messageKey,time,hide,unread,thumbnail,msg_url,msgStatus)
                         }
 
                         override fun onCancelled(error: DatabaseError) {

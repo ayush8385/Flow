@@ -16,6 +16,7 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.Base64.*
 import android.util.Log
 import android.view.View
 import android.view.animation.Animation
@@ -63,6 +64,9 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 
 class Message : BaseActivity() {
@@ -261,7 +265,7 @@ class Message : BaseActivity() {
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","","sending..."))
-                sendMessageToUser(application,msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image).execute()
+                sendMessageToUser(msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image,application).execute()
                 binding.sendText.setText("")
             }
         }
@@ -957,7 +961,7 @@ class Message : BaseActivity() {
 //    }
 
 
-    inner class sendMessageToUser(val applicat: Application,val msg: String,val messageKey:String,val userid:String,val user_name:String,val user_number:String,val user_img:String):AsyncTask<Void,Void,Boolean>(){
+    inner class sendMessageToUser(val msg: String,val messageKey:String,val userid:String,val user_name:String,val user_number:String,val user_img:String,val applicat: Application):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
 
             val ref=FirebaseDatabase.getInstance().reference
@@ -970,11 +974,13 @@ class Message : BaseActivity() {
                 ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
             }
 
+            val encryptedMsg = AESEncryption().encrypt(msg)
+
             val messageHashmap=HashMap<String,Any>()
             messageHashmap.put("mid", messageKey!!)
             messageHashmap.put("userid",userid)
             messageHashmap.put("sender",Constants.MY_USERID)
-            messageHashmap.put("message",msg)
+            messageHashmap.put("message",encryptedMsg!!)
             messageHashmap.put("msgStatus","")
             messageHashmap.put("url","")
             messageHashmap.put("time",System.currentTimeMillis())
@@ -985,7 +991,7 @@ class Message : BaseActivity() {
                 MessageViewModel(applicat).updateMsgStatus("sent",messageKey)
             }
 
-            sendNotification(userid, Constants.MY_USERID, msg,messageKey, 0)
+            sendNotification(userid, Constants.MY_USERID, encryptedMsg,messageKey, 0)
 
             return true
         }
@@ -1114,7 +1120,7 @@ class Message : BaseActivity() {
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
                         MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","","sending..."))
-                        sendMessageToUser(application,msg.message,messageKey,chat.id,chat.name,chat.number,chat.image).execute()
+                        sendMessageToUser(msg.message,messageKey,chat.id,chat.name,chat.number,chat.image,application).execute()
                     }
                 }
             }
