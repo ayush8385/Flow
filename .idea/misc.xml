@@ -6,6 +6,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.14855072463768115" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable-hdpi/dr.xml" value="0.22256410256410256" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable-v24/splash_background.xml" value="0.2755208333333333" />
         <entry key="..\:/Users/AYUSH MISHRA/Desktop/Flow/app/src/main/res/drawable/addprofileback.xml" value="0.17407407407407408" />
@@ -108,6 +109,7 @@
         <entry key="app/src/main/res/drawable-v24/splash_background.xml" value="0.11685754394531248" />
         <entry key="app/src/main/res/drawable-xxxhdpi/shape_rounded_dialog.xml" value="0.202" />
         <entry key="app/src/main/res/drawable/addprofileback.xml" value="0.172" />
+        <entry key="app/src/main/res/drawable/black_dot.xml" value="0.144" />
         <entry key="app/src/main/res/drawable/bottom_back.xml" value="0.172" />
         <entry key="app/src/main/res/drawable/bottom_nav_back.xml" value="0.172" />
         <entry key="app/src/main/res/drawable/button_reg.xml" value="0.172" />
@@ -138,7 +140,7 @@
         <entry key="app/src/main/res/layout/activity_dashboard.xml" value="0.17647058823529413" />
         <entry key="app/src/main/res/layout/activity_image_view.xml" value="0.31875" />
         <entry key="app/src/main/res/layout/activity_incoming_vdo.xml" value="0.28958333333333336" />
-        <entry key="app/src/main/res/layout/activity_message.xml" value="0.22046142578125" />
+        <entry key="app/src/main/res/layout/activity_message.xml" value="0.3232876712328767" />
         <entry key="app/src/main/res/layout/activity_outgoing.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.26510416666666664" />
         <entry key="app/src/main/res/layout/activity_passcode.xml" value="0.27447916666666666" />

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/msg_parent"
@@ -115,25 +115,24 @@
         <!--    </RelativeLayout>-->
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/message_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/send"
-            android:layout_below="@+id/toolbar"
-            android:id="@+id/message_recycler"/>
-
-
+            android:layout_below="@+id/toolbar" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/send"
-            app:cardElevation="40dp"
+            app:cardElevation="60dp"
+            android:layout_marginTop="6dp"
             android:layout_alignParentBottom="true">
             <RelativeLayout
+                android:id="@+id/msg_send_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@color/white">
-
                 <RelativeLayout
                     android:id="@+id/send_box"
                     android:layout_width="match_parent"
@@ -159,8 +158,8 @@
                         android:background="@drawable/chat_back"
                         android:fontFamily="@font/senregular"
                         android:hint="Send a message..."
-                        android:paddingHorizontal="12dp"
                         android:inputType="textCapSentences"
+                        android:paddingHorizontal="12dp"
                         android:paddingVertical="5dp"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
@@ -184,29 +183,196 @@
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:layout_marginHorizontal="20dp"
-                        android:id="@+id/send_con"
-                        android:src="@drawable/cons"/>
+                        android:id="@+id/send_canvas"
+                        android:src="@drawable/draw_pencil"/>
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:layout_marginHorizontal="20dp"
                         android:id="@+id/send_doc"
                         android:src="@drawable/documents"/>
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:id="@+id/send_cam"
                         android:layout_marginHorizontal="20dp"
                         android:src="@drawable/camera"/>
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:id="@+id/send_gall"
                         android:layout_marginHorizontal="20dp"
                         android:src="@drawable/gallery"/>
                 </LinearLayout>
             </RelativeLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="380dp"
+                android:visibility="gone"
+                android:id="@+id/canvas_send_view">
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/canvas_handle"
+                    android:layout_marginHorizontal="6dp"
+                    android:background="@drawable/editext_bg"
+                    android:paddingVertical="6dp">
+
+                    <ImageView
+                        android:id="@+id/undo"
+                        android:layout_width="78dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/undo"
+                        app:layout_constraintEnd_toStartOf="@+id/eraser"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/eraser"
+                        android:layout_width="79dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/eraser"
+                        app:layout_constraintEnd_toStartOf="@+id/color"
+                        app:layout_constraintStart_toEndOf="@+id/undo" />
+
+                    <ImageView
+                        android:id="@+id/color"
+                        android:layout_width="78dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/color_palette"
+                        app:layout_constraintEnd_toStartOf="@+id/pencil"
+                        app:layout_constraintStart_toEndOf="@+id/eraser" />
+
+                    <ImageView
+                        android:id="@+id/pencil"
+                        android:layout_width="79dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/draw_pencil"
+                        app:layout_constraintEnd_toStartOf="@+id/close_canvas"
+                        app:layout_constraintStart_toEndOf="@+id/color" />
+
+                    <ImageView
+                        android:id="@+id/close_canvas"
+                        android:layout_width="79dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_baseline_close_24"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/pencil" />
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.ayush.flow.customview.DrawingCanvas
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="10"
+                    android:layout_marginTop="3dp"
+                    android:background="#FFFFFF"
+                    app:layout_constraintTop_toBottomOf="@id/canvas_handle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:id="@+id/drawing_canvas"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="6dp"
+                    app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/drawing_canvas">
+
+                    <View
+                        android:id="@+id/size1"
+                        android:tag="@string/size1"
+                        android:layout_width="2dp"
+                        android:layout_height="2dp"
+                        android:onClick="setBrushSize"
+                        android:background="@drawable/black_dot"
+                        android:backgroundTint="@color/black"
+                        app:layout_constraintBottom_toTopOf="@+id/size2"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <View
+                        android:id="@+id/size2"
+                        android:layout_width="5dp"
+                        android:tag="@string/size2"
+                        android:layout_height="5dp"
+                        android:onClick="setBrushSize"
+                        android:background="@drawable/black_dot"
+                        android:backgroundTint="@color/black"
+                        app:layout_constraintBottom_toTopOf="@+id/size3"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/size1" />
+
+                    <View
+                        android:id="@+id/size3"
+                        android:layout_width="10dp"
+                        android:tag="@string/size3"
+                        android:layout_height="10dp"
+                        android:onClick="setBrushSize"
+                        android:background="@drawable/black_dot"
+                        android:backgroundTint="@color/black"
+                        app:layout_constraintBottom_toTopOf="@+id/size4"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/size2" />
+
+                    <View
+                        android:id="@+id/size4"
+                        android:layout_width="15dp"
+                        android:tag="@string/size4"
+                        android:layout_height="15dp"
+                        android:onClick="setBrushSize"
+                        android:background="@drawable/black_dot"
+                        android:backgroundTint="@color/black"
+                        app:layout_constraintBottom_toTopOf="@+id/size5"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/size3" />
+
+                    <View
+                        android:id="@+id/size5"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:tag="@string/size5"
+                        android:background="@drawable/black_dot"
+                        android:onClick="setBrushSize"
+                        android:backgroundTint="@color/black"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/size4" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/send_canvas_btn"
+                    android:layout_width="39dp"
+                    android:layout_height="40dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/send" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView

@@ -43,6 +43,9 @@ import com.ayush.flow.database.*
 import com.ayush.flow.databinding.ActivityMessageBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.github.dhaval2404.colorpicker.MaterialColorPickerDialog
+import com.github.dhaval2404.colorpicker.model.ColorShape
+import com.github.dhaval2404.colorpicker.model.ColorSwatch
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
@@ -64,9 +67,6 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 
 class Message : BaseActivity() {
@@ -77,6 +77,8 @@ class Message : BaseActivity() {
     lateinit var viewModel: MessageViewModel
     var userid:String=""
     var user_image:String=""
+    var user_name:String=""
+    var user_number:String=""
     var number:String=""
     var photo:Bitmap?=null
     var rotatedBitmap:Bitmap?=null
@@ -116,11 +118,14 @@ class Message : BaseActivity() {
             onBackPressed()
         }
 
-        if(intent.getStringExtra("name")==""){
-            binding.userName.text=intent.getStringExtra("number")!!
+        user_name=intent.getStringExtra("name")!!
+        user_number=intent.getStringExtra("number")!!
+
+        if(user_name==""){
+            binding.userName.text=user_number
         }
         else{
-            binding.userName.text=intent.getStringExtra("name")!!
+            binding.userName.text=user_name
         }
         userid= intent.getStringExtra("userid")!!
         user_image=intent.getStringExtra("image")!!
@@ -308,6 +313,11 @@ class Message : BaseActivity() {
 
        }
 
+       binding.sendCanvas.setOnClickListener {
+           openCanvas()
+           binding.moreCard.visibility=View.GONE
+       }
+
 
        binding.sendimgBtn.setOnClickListener {
            if(gallImagesPath.size!=0){
@@ -332,11 +342,64 @@ class Message : BaseActivity() {
            allSelectedUri.clear()
        }
 
+       binding.undo.setOnClickListener {
+           binding.drawingCanvas.undoPreviousOperation()
+       }
+        binding.eraser.setOnClickListener {
+            binding.drawingCanvas.setCurrentOperation(Constants.OPERATION_ERASE)
+        }
+        binding.color.setOnClickListener {
+            openColorPalette()
+        }
+        binding.pencil.setOnClickListener {
+            binding.drawingCanvas.setCurrentOperation(Constants.OPERATION_DRAW_PENCIL)
+            binding.drawingCanvas.changeFillStyle(Constants.PAINT_STYLE_STROKE);
+        }
+        binding.closeCanvas.setOnClickListener {
+            closeCanvas()
+        }
+        binding.sendCanvasBtn.setOnClickListener {
+            binding.drawingCanvas.isDrawingCacheEnabled=true
+            val bitmap = binding.drawingCanvas.drawingCache
+
+            sendImageMessageToUser(bitmap,userid,user_name,user_number,user_image,application).execute()
+            closeCanvas()
+        }
+
 //        Dashboard().checkStatus()
         checkSeen().execute()
         searchElement()
        // deleteMessage()
 
+    }
+
+    private fun closeCanvas() {
+        binding.drawingCanvas.clearCompleteCanvas()
+        binding.canvasSendView.visibility=View.GONE
+        binding.msgSendView.visibility=View.VISIBLE
+    }
+
+    fun setBrushSize(v:View){
+        val itemTag = Integer.valueOf(v.getTag() as String)
+        binding.drawingCanvas.changeBrushStroke(itemTag)
+    }
+
+    private fun openColorPalette() {
+        // Kotlin Code
+        MaterialColorPickerDialog
+            .Builder(this)
+            .setTitle("Pick Color")
+            .setColorShape(ColorShape.SQAURE)
+            .setColorSwatch(ColorSwatch._600)
+            .setColorListener { color, colorHex ->
+                binding.drawingCanvas.changeBrushColor(color)
+            }
+            .show()
+    }
+
+    private fun openCanvas() {
+        binding.msgSendView.visibility=View.GONE
+        binding.canvasSendView.visibility=View.VISIBLE
     }
 
     private fun setAllMsgSeen() {

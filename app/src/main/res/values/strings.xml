@@ -5,5 +5,10 @@
     <string name="contact_permission">To get your friends list using Flow chat application allow Flow to access your contacts</string>
     <string name="mic_permission">To do and receive Audio/Video Calls allow Flow to access to your Microphone</string>
     <string name="mic_and_cam_permission">To do and receive Video Calls allow Flow to access to your Camera and Microphone</string>
+    <string name="size1">5</string>
+    <string name="size2">12</string>
+    <string name="size3">20</string>
+    <string name="size4">30</string>
+    <string name="size5">40</string>
 
 </resources>

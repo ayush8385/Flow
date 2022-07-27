@@ -23,6 +23,9 @@ class AESEncryption {
     }
 
     fun decrypt(value: String?): String? {
+        if(value==""){
+            return ""
+        }
         try {
             val skeySpec = SecretKeySpec(SECRET_KEY.toByteArray(charset("UTF-8")), "AES")
             val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
