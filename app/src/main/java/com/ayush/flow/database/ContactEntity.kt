@@ -9,6 +9,6 @@ data class ContactEntity(
     @ColumnInfo(name = "contact_name") val name : String,
     @PrimaryKey val number: String,
     @ColumnInfo(name = "contact_image") val image: String,
-    @ColumnInfo(name = "isUser") val isUser:Boolean,
+    @ColumnInfo(name = "isUser") var isUser:Boolean,
     @ColumnInfo(name = "contact_id") var id:String
     )

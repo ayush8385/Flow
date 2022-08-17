@@ -165,7 +165,7 @@ class RetrieveMessage(val applicat: Application):AsyncTask<Void,Void,Boolean>() 
 //            }
 //
 //            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
+
 //            }
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val messageKey=snapshot.child("mid").value.toString()

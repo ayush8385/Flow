@@ -1,9 +1,8 @@
 package com.ayush.flow.adapter
 
 
-import android.app.Application
+
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.AsyncTask
@@ -19,6 +18,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
@@ -31,7 +31,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class CallAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<CallAdapter.HomeViewHolder>() {
+class CallAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):
+    ListAdapter<CallEntity, CallAdapter.HomeViewHolder>(DiffUtil()) {
     val allCalls=ArrayList<CallEntity>()
     class HomeViewHolder(val view: View):RecyclerView.ViewHolder(view){
         val image:CircleImageView=view.findViewById(R.id.caller_pic)
@@ -102,17 +103,13 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         notifyDataSetChanged()
     }
 
-    inner class loadImage(val image:String,val holder: HomeViewHolder):
-        AsyncTask<Void, Void, Boolean>(){
-        var b: Bitmap?=null
-        override fun onPostExecute(result: Boolean?) {
-            super.onPostExecute(result)
-            holder.image.setImageBitmap(b)
+    class DiffUtil:androidx.recyclerview.widget.DiffUtil.ItemCallback<CallEntity>(){
+        override fun areItemsTheSame(oldItem: CallEntity, newItem: CallEntity): Boolean {
+            return oldItem.id==newItem.id
         }
-        override fun doInBackground(vararg params: Void?): Boolean {
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),image)
-            b= BitmapFactory.decodeStream(FileInputStream(f))
-            return true
+
+        override fun areContentsTheSame(oldItem: CallEntity, newItem: CallEntity): Boolean {
+            return oldItem==newItem
         }
     }
 }

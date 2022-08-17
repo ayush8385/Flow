@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -68,17 +69,12 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     lateinit var callAdapter: CallAdapter
 
     val hashMap: HashMap<Int, NotificationCompat.MessagingStyle?> = HashMap()
-    var messageStyle: NotificationCompat.MessagingStyle? =NotificationCompat.MessagingStyle("Me")
-
     var controller:LayoutAnimationController?=null
     var previousMenuItem: MenuItem?=null
-    lateinit var firebaseUser: FirebaseUser
     lateinit var hiddenViewModel: HiddenViewModel
     lateinit var vibrator: Vibrator
-
     var callname=""
     var callId=""
-
     lateinit var binding: ActivityDashboardBinding
 
     override fun onServiceConnected() {
@@ -88,29 +84,16 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityDashboardBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding= DataBindingUtil.setContentView(this,R.layout.activity_dashboard)
 
         SharedPreferenceUtils.init(applicationContext)
         hiddenViewModel= ViewModelProvider(this).get(HiddenViewModel::class.java)
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-        if(ConnectionManager().checkconnectivity(this)){
-            if(Permissions().checkContactpermission(this)){
-                startService(Intent(this, LoadContacts::class.java))
-            }
-            else{
-                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
-            }
-        }
-
+        loadContacts()
 
         GlobalScope.launch(Dispatchers.IO){
             checkStatus()
-        }
-
-        GlobalScope.launch(Dispatchers.Main) {
-            searchElement()
             UpdateToken()
         }
 
@@ -137,7 +120,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                         binding.storyTxt.text="Me"
                         binding.chats.text="Chats"
 
-                        openChatHome(0)
+                        openChatHome(Constants.OPEN_CHAT_HOME)
 
                         it.isCheckable=true
                         it.isChecked=true
@@ -176,7 +159,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
         binding.closeHidden.setOnClickListener {
             SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,0)
-            openChatHome(0)
+            openChatHome(Constants.OPEN_CHAT_HOME)
         }
 
         binding.mode.setOnClickListener {
@@ -203,6 +186,20 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 }
             },600)
         }
+
+        GlobalScope.launch(Dispatchers.Main) { searchElement() }
+    }
+
+    private fun loadContacts() {
+        if(ConnectionManager().checkconnectivity(this)){
+            if(Permissions().checkContactpermission(this)){
+                startService(Intent(this, LoadContacts::class.java))
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+            }
+        }
+
     }
 
     fun checkStatus(){
@@ -259,9 +256,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     if(passcode==str.toString()) {
                         SharedPreferenceUtils.setStringPreference(SharedPreferenceUtils.HIDE_PASS,str.toString())
                         SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,1)
-                        openChatHome(1)
+                        openChatHome(Constants.OPEN_HIDE_HOME)
                         instance.dismiss()
-                        //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                     }
                     else{
                         val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
@@ -273,19 +269,17 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
                 }
                 else if(passcode==str.toString()){
-                    if(n==0){
+                    if(n==Constants.OPEN_CHAT_HOME){
                         ChatViewModel(application).setPrivate(id,false)
                     }
-                    else if(n==1){
+                    else if(n==Constants.OPEN_HIDE_HOME){
                         ChatViewModel(application).setPrivate(id,true)
                     }
                     else{
-//                        hiddenViewModel.setText("1")
                         SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,1)
-                        openChatHome(1)
+                        openChatHome(Constants.OPEN_HIDE_HOME)
                     }
                     instance.dismiss()
-                    //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 }
                 else{
                     val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)

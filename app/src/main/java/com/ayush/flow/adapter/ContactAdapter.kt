@@ -14,6 +14,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
@@ -27,7 +29,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
 
-class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.HomeViewHolder>() {
+class ContactAdapter(val context: Context):ListAdapter<ContactEntity,ContactAdapter.HomeViewHolder>(DiffUtil()) {
 
     val allCons=ArrayList<ContactEntity>()
 
@@ -139,5 +141,16 @@ class ContactAdapter(val context: Context):RecyclerView.Adapter<ContactAdapter.H
                 b= BitmapFactory.decodeStream(FileInputStream(f))
             return true
         }
+    }
+
+    class DiffUtil:androidx.recyclerview.widget.DiffUtil.ItemCallback<ContactEntity>(){
+        override fun areItemsTheSame(oldItem: ContactEntity, newItem: ContactEntity): Boolean {
+            return oldItem.id==newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: ContactEntity, newItem: ContactEntity): Boolean {
+            return oldItem==newItem
+        }
+
     }
 }

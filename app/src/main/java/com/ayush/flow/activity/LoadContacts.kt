@@ -26,6 +26,8 @@ import java.io.File
 class LoadContacts : IntentService(TAG) {
     override fun onHandleIntent(intent: Intent?) {
 
+        val contactMap : MutableMap<String,ContactEntity> = mutableMapOf()
+
         val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
         //       var contactMap:HashMap<String,String> = HashMap<String,String>()
@@ -41,8 +43,9 @@ class LoadContacts : IntentService(TAG) {
             }
 
             if (phoneNumber.length==10){
-                ContactViewModel(application).inserContact(ContactEntity(name,phoneNumber,"",false,""))
-//                contactMap.put(phoneNumber,name)
+//                contactList.add()
+//                ContactViewModel(application).inserContact()
+                contactMap[phoneNumber]=ContactEntity(name,phoneNumber,"",false,"")
             }
         }
         contacts!!.close()
@@ -56,11 +59,16 @@ class LoadContacts : IntentService(TAG) {
                     val userid=snapshot.child("uid").value.toString()
                     val profile_url=snapshot.child("profile_photo").value.toString()
 
-                    if(userid!= Constants.MY_USERID && ContactViewModel(application).isContactExist(num)/*contactMap.containsKey(num)*/){
-                        val usercon = ContactViewModel(application).getContactByNum(num)
+                    if(userid!= Constants.MY_USERID && contactMap.containsKey(num)/*contactMap.containsKey(num)*/){
+//                        val usercon = ContactViewModel(application).getContactByNum(num)
 
-                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
-                        ContactViewModel(application).inserContact(consEntity)
+                        val contactObj = contactMap.get(num)
+                        contactObj!!.isUser=true
+                        contactObj!!.id=userid
+                        contactMap[num]=contactObj
+
+//                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
+//                        ContactViewModel(application).inserContact(consEntity)
 
                         if(profile_url!=""){
                             ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
@@ -79,7 +87,7 @@ class LoadContacts : IntentService(TAG) {
                             }
                         }
                         if(ChatViewModel(application).isUserExist(userid)){
-                            ChatViewModel(application).updateName(usercon.name,userid)
+                            ChatViewModel(application).updateName(contactObj.name,userid)
                         }
                     }
 
@@ -91,10 +99,10 @@ class LoadContacts : IntentService(TAG) {
 
         })
 
-    }
+        for (contact in contactMap){
+            ContactViewModel(application).inserContact(contact.value)
+        }
 
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     companion object {

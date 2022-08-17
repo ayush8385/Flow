@@ -57,15 +57,10 @@ class Contact : AppCompatActivity() {
 
         pullToRefresh = findViewById(R.id.pullToRefresh)
 
+        loadContacts()
+
         pullToRefresh.setOnRefreshListener {
-            if(ConnectionManager().checkconnectivity(this)){
-                if(Permissions().checkContactpermission(this)){
-                    startService(Intent(this, LoadContacts::class.java))
-                }
-                else{
-                    Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
-                }
-            }
+            loadContacts()
             Handler().postDelayed({
                 pullToRefresh.isRefreshing=false
             },4000)
@@ -134,8 +129,16 @@ class Contact : AppCompatActivity() {
         }
     }
 
-
-
+    private fun loadContacts() {
+        if(ConnectionManager().checkconnectivity(this)){
+            if(Permissions().checkContactpermission(this)){
+                startService(Intent(this, LoadContacts::class.java))
+            }
+            else{
+                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+            }
+        }
+    }
 
 
     fun searchElement() {

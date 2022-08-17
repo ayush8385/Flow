@@ -8,37 +8,30 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.AsyncTask
 import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.Constants
+import com.ayush.flow.activity.EmojiActivity
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.MessageViewModel
 import com.ayush.flow.databinding.ChatTemSwipeBinding
 import com.bumptech.glide.Glide
-import com.chauthai.swipereveallayout.SwipeRevealLayout
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.chauthai.swipereveallayout.ViewBinderHelper
-import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<ChatAdapter.HomeViewHolder>() {
+class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):ListAdapter<ChatEntity,ChatAdapter.HomeViewHolder>(DiffUtil()) {
     val allChats=ArrayList<ChatEntity>()
     final val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
     lateinit var viewModel: MessageViewModel
@@ -91,7 +84,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             holder.chatTembinding.waitingTick.visibility=View.GONE
             holder.chatTembinding.sentTick.visibility=View.GONE
             holder.chatTembinding.seenTick.visibility=View.GONE
-            holder.chatTembinding.sentTick.visibility=View.GONE
+            holder.chatTembinding.deliveredTick.visibility=View.GONE
             MessageViewModel(context).getUnreads(chat.id).observe(context as LifecycleOwner) {
                 if(it!=0){
                     holder.chatTembinding.unreadChat.visibility=View.VISIBLE
@@ -169,7 +162,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             if(chat.lst_msg=="Photo"){
                 dr = ContextCompat.getDrawable(context, R.drawable.gallery)
             }
-            if(chat.lst_msg=="Document"){
+            else if(chat.lst_msg=="Document"){
                 dr = ContextCompat.getDrawable(context, R.drawable.documents)
             }
         }
@@ -177,20 +170,23 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             dr!!.setBounds(0, 0, 36, 36)
             holder.chatTembinding.profileMsg.setCompoundDrawables(dr, null, null, null)
         }
-
-
-        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
-        if(f.exists()){
-//            val b = BitmapFactory.decodeStream(FileInputStream(f))
-//            holder.image.setImageBitmap(b)
-            Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.chatTembinding.profilePic)
-        }
         else{
-            holder.chatTembinding.profilePic.setImageResource(R.drawable.user)
+            holder.chatTembinding.profileMsg.setCompoundDrawables(null, null, null, null)
         }
-//        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-//            DiskCacheStrategy.NONE)
-//            .skipMemoryCache(true).into(holder.image)
+
+
+//        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
+//        if(f.exists()){
+//            val b = BitmapFactory.decodeStream(FileInputStream(f))
+//            holder.chatTembinding.profilePic.setImageBitmap(b)
+////            Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.chatTembinding.profilePic)
+//        }
+//        else{
+//            holder.chatTembinding.profilePic.setImageResource(R.drawable.user)
+//        }
+        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+            DiskCacheStrategy.NONE)
+            .skipMemoryCache(true).into(holder.chatTembinding.profilePic)
 
         holder.chatTembinding.paren.setOnClickListener {
 
@@ -219,24 +215,11 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
         holder.chatTembinding.callChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
             clickListener.audioCall(holder.chatTembinding.profileName.text.toString(),chat.id)
-//            if(Permissions().checkMicpermission(context)){
-//
-//            }
-//            else{
-//                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
-//            }
         }
 
         holder.chatTembinding.vdoCallChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
             clickListener.videoCall(holder.chatTembinding.profileName.text.toString(),chat.id)
-//            if(Permissions().checkCamAndMicPermission(context)){
-//
-//            }
-//            else{
-//                Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,context.resources.getString(R.string.mic_and_cam_permission),context,"micandcam")
-//            }
-
         }
         holder.chatTembinding.delChat.setOnClickListener {
             viewBinderHelper.closeLayout(chat.id)
@@ -290,6 +273,17 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             b= BitmapFactory.decodeStream(FileInputStream(f))
             return true
         }
+    }
+
+    class DiffUtil:androidx.recyclerview.widget.DiffUtil.ItemCallback<ChatEntity>(){
+        override fun areItemsTheSame(oldItem: ChatEntity, newItem: ChatEntity): Boolean {
+            return oldItem.id==newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: ChatEntity, newItem: ChatEntity): Boolean {
+            return oldItem==newItem
+        }
+
     }
 
 }

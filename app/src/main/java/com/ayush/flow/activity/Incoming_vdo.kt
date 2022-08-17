@@ -167,7 +167,7 @@ class Incoming_vdo : BaseActivity() {
 
                 pickintent.putExtra("name",remoteUser.text)
 
-                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Contacts Images"),call.remoteUserId+".jpg")
+                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),call.remoteUserId+".jpg")
 
                 Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
 

@@ -10,7 +10,7 @@ data class ChatEntity(
     @ColumnInfo(name = "number") var number : String="",
     @ColumnInfo(name = "image") var image : String="",
     @ColumnInfo(name = "last_msg") var lst_msg:String="",
-    @ColumnInfo(name = "last_sender") val last_sender:String="",
+    @ColumnInfo(name = "last_sender") var last_sender:String="",
     @ColumnInfo(name = "last_mid") var last_mid:String="",
     @ColumnInfo(name = "path") var path:String="",
     @ColumnInfo(name = "time") var time:Long=0,

@@ -16,8 +16,10 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
+import android.text.method.PasswordTransformationMethod
 import android.util.Base64.*
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -57,6 +59,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
+import com.vanniktech.emoji.EmojiPopup
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -113,6 +116,11 @@ class Message : BaseActivity() {
         sharedPreferences=getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
        fwdViewModel=ViewModelProviders.of(this).get(ForwardViewModel::class.java)
        mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+
+        val emojiPopup = EmojiPopup
+            .Builder
+            .fromRootView(binding.root)
+            .build(binding.msgText)
 
         binding.back.setOnClickListener {
             onBackPressed()
@@ -181,6 +189,14 @@ class Message : BaseActivity() {
            openProfileBottomSheet(this,binding.userName.text.toString(),userid,true)
        }
 
+        binding.copy.setOnClickListener {
+            var copiedMsg = ""
+            for(message in selectedMsg) copiedMsg += message.message+"\n"
+
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Flow Copied Text",copiedMsg)
+            clipboard.setPrimaryClip(clip)
+        }
 
         layoutManager= LinearLayoutManager(this)
         (layoutManager as LinearLayoutManager).stackFromEnd=true
@@ -193,6 +209,7 @@ class Message : BaseActivity() {
             override fun updateSeen(mid: String) {
 //                MessageViewModel(application).isMsgSeen(true,mid)
             }
+
 
         })
         binding.messageRecycler.adapter=adapter
@@ -207,7 +224,7 @@ class Message : BaseActivity() {
            else{
                binding.selectText.text=it+" Selected"
                binding.selected.visibility=View.VISIBLE
-               binding.sendBox.visibility=View.INVISIBLE
+               binding.sendBox.visibility=View.GONE
            }
        })
 
@@ -264,8 +281,11 @@ class Message : BaseActivity() {
         }
 
         binding.send.setOnClickListener {
-            val msg=binding.sendText.text.toString()
+            var msg=binding.sendText.text.toString()
             if(msg!=""){
+                if(msg.contains("\uD83D\uDE12")){
+                   msg = msg.replace("\uD83D\uDE12","\uD83D\uDE04")
+                }
                 val ref=FirebaseDatabase.getInstance().reference
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
@@ -365,6 +385,33 @@ class Message : BaseActivity() {
             sendImageMessageToUser(bitmap,userid,user_name,user_number,user_image,application).execute()
             closeCanvas()
         }
+
+        binding.sendText.setOnTouchListener(View.OnTouchListener { v, event ->
+            val DRAWABLE_LEFT = 0
+            val DRAWABLE_TOP = 1
+            val DRAWABLE_RIGHT = 2
+            val DRAWABLE_BOTTOM = 3
+            if (event.action == MotionEvent.ACTION_UP) {
+                if (event.rawX >= binding.sendText.left - binding.sendText.getCompoundDrawables().get(DRAWABLE_LEFT)
+                        .getBounds().width()-60
+                ) {
+                    if (binding.sendText.transformationMethod != null) {
+                        binding.sendText.transformationMethod = null
+                        binding.sendText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            R.drawable.lock,0,
+                            0,0)
+                        emojiPopup.toggle()
+                    } else {
+                        binding.sendText.transformationMethod = PasswordTransformationMethod()
+                        binding.sendText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            R.drawable.delete,0,
+                            0,0)
+                    }
+                    return@OnTouchListener false
+                }
+            }
+            false
+        })
 
 //        Dashboard().checkStatus()
         checkSeen().execute()
@@ -1289,7 +1336,7 @@ class Message : BaseActivity() {
                     binding.sendImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                     binding.sendSelectImg.setImageBitmap(photo)
-                    selectedPath = getRealPathFromURI(this,imageuri!!).execute().get()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
+                    selectedPath = Addprofile().getRealPathFromURI_API19(this,imageuri!!).execute().get()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
                 }
             } catch (e: IOException) {
                 e.printStackTrace();
@@ -1327,7 +1374,7 @@ class Message : BaseActivity() {
                     // adding imageuri in array
                     val imageurI: Uri = mClipData.getItemAt(i).getUri()
                     allSelectedUri.add(imageurI)
-                    gallImagesPath.add(getRealPathFromURI(this,imageurI).execute().get())
+                    gallImagesPath.add(Addprofile().getRealPathFromURI_API19(this,imageurI).execute().get())
                 }
                 selectedImgAdapter=SelectedImgAdapter(this,allSelectedUri,object :SelectedImgAdapter.OnImageCardClickListener{
                     override fun loadNewImage(uri: Uri) {
@@ -1355,7 +1402,7 @@ class Message : BaseActivity() {
                 photo=MediaStore.Images.Media.getBitmap(contentResolver,imageurl)
 //                sendImg.setImageURI(imageurl)
                 binding.sendSelectImg.setImageBitmap(photo)
-                gallImagesPath.add(getRealPathFromURI(this,imageurl).execute().get())
+                gallImagesPath.add(Addprofile().getRealPathFromURI_API19(this,imageurl).execute().get())
 
 //                position = 0
             }

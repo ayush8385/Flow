@@ -117,14 +117,6 @@ class UserProfile : AppCompatActivity(),MessageListener {
                 .show()
         }
 
-        binding.userImg.setOnClickListener {
-          //  ImageHolder.imageDraw=image.drawable
-            val intent = Intent(this,SelectedImage::class.java)
-            intent.putExtra("type","view")
-            intent.putExtra("userid",Constants.MY_USERID)
-            startActivity(intent)
-        }
-
         binding.backNow.setOnClickListener {
             binding.updateSelectImg.setImageResource(android.R.color.transparent)
             photo=null
@@ -286,7 +278,7 @@ class UserProfile : AppCompatActivity(),MessageListener {
                     binding.updateImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                     binding.updateSelectImg.setImageBitmap(photo)
-                    imagepath = getRealPathFromURI(this,imageuri!!).execute().get()
+                    imagepath = Addprofile().getRealPathFromURI_API19(this,imageuri!!).execute().get()
                 }
             } catch (e: IOException) {
                 e.printStackTrace();

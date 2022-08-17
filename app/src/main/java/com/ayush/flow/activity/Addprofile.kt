@@ -156,31 +156,6 @@ class Addprofile : AppCompatActivity(),MessageListener {
         }
     }
 
-//    private fun mSaveMediaToStorage(bitmap: Bitmap?) {
-//        val filename = "${System.currentTimeMillis()}.jpg"
-//        var fos: OutputStream? = null
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
-//            this.contentResolver?.also { resolver ->
-//                val contentValues = ContentValues().apply {
-//                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-//                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
-//                    put(MediaStore.MediaColumns.RELATIVE_PATH,Environment.DIRECTORY_PICTURES)
-//                }
-//                val imageUri: Uri? = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-//                fos = imageUri?.let { resolver.openOutputStream(it) }
-//            }
-//        } else {
-//            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-//            val image = File(imagesDir, filename)
-//            fos = FileOutputStream(image)
-//        }
-//        fos?.use {
-//            bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, it)
-//            Toast.makeText(this , "Saved to Gallery" , Toast.LENGTH_SHORT).show()
-//        }
-//    }
-
     override fun onResume() {
         super.onResume()
         if(addingUser){
@@ -242,52 +217,6 @@ class Addprofile : AppCompatActivity(),MessageListener {
 
     }
 
-
-//    inner class getRealPathFromURI(val inContext: Context,val inImage: Bitmap?):AsyncTask<Void,Void,String>(){
-//        override fun onPostExecute(result: String?) {
-//            super.onPostExecute(result)
-//            val bmp = ImageCompression(inContext,"").execute(result).get()
-//            userimage.setImageBitmap(bmp)
-//        }
-//        override fun doInBackground(vararg p0: Void?): String? {
-//            val bytes = ByteArrayOutputStream()
-//            inImage!!.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-//            val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Te", null)
-//            var contentURI:Uri?=null
-//            contentURI = Uri.parse(path)
-//
-//
-//            val cursor: Cursor? = inContext.contentResolver.query(contentURI!!, null, null, null, null)
-//            if (cursor == null) {
-//                return contentURI.getPath()!!
-//            } else {
-//                cursor.moveToFirst()
-//                val idx: Int = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
-//                return cursor.getString(idx)
-//            }
-//        }
-//
-//    }
-//    fun getRealPathFromURI(inContext: Context, inImage: Bitmap): String {
-//
-//        val bytes = ByteArrayOutputStream()
-//        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-//        val path = MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, "Title", null)
-//        val contentURI = Uri.parse(path)
-//
-//
-//        val cursor: Cursor? = this.contentResolver.query(contentURI, null, null, null, null)
-//         if (cursor == null) {
-//             return contentURI.getPath()!!
-//        } else {
-//            cursor.moveToFirst()
-//            val idx: Int = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
-//             return cursor.getString(idx)
-//        }
-//    }
-
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -327,9 +256,6 @@ class Addprofile : AppCompatActivity(),MessageListener {
         override fun doInBackground(vararg p0: Void?): String? {
             val isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
 
-            // DocumentProvider
-
-            // DocumentProvider
             if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
                 // ExternalStorageProvider
                 if (isExternalStorageDocument(uri!!)) {
@@ -340,7 +266,6 @@ class Addprofile : AppCompatActivity(),MessageListener {
                         return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                     }
 
-                    // TODO handle non-primary volumes
                 } else if (isDownloadsDocument(uri)) {
                     val id = DocumentsContract.getDocumentId(uri)
                     val contentUri = ContentUris.withAppendedId(
@@ -478,31 +403,6 @@ class Addprofile : AppCompatActivity(),MessageListener {
 
         }
     }
-
-//    inner class saveToInternalStorage(val bitmapImage:Bitmap):AsyncTask<Void,Void,Boolean>(){
-//        val firebaseUser=FirebaseAuth.getInstance().currentUser!!
-//        val directory: File = File(Environment.getExternalStorageDirectory().toString(), "/Flow/Medias/Flow Profile photos")
-//        var path:String=firebaseUser.uid+".jpg"
-//        var file:File = File(directory,path)
-//        override fun doInBackground(vararg params: Void?):Boolean {
-//            if(!directory.exists()){
-//                directory.mkdirs()
-//            }
-//            var fos: FileOutputStream = FileOutputStream(file)
-//            try {
-//                bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            } finally {
-//                try {
-//                    fos.close()
-//                } catch (e: IOException) {
-//                    e.printStackTrace()
-//                }
-//            }
-//            return true
-//        }
-//    }
 }
 
 class uploadImage(val bmp:Bitmap):AsyncTask<Void,Void,Boolean>(){
@@ -530,14 +430,5 @@ class uploadImage(val bmp:Bitmap):AsyncTask<Void,Void,Boolean>(){
         return true
     }
 }
-
-//private fun mStringToURL(string: String): URL? {
-//    try {
-//        return URL(string)
-//    } catch (e: MalformedURLException) {
-//        e.printStackTrace()
-//    }
-//    return null
-//}
 
 

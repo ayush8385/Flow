@@ -11,6 +11,8 @@ class Constants {
         const val ALL_PHOTO_LOCATION = "/Flow/Medias/Images"
         const val DOC_LOCATION = "/Flow/Medias/Documents"
         const val APP_SHARED_PREFERENCE: String = "flow_shared_prefs"
+        const val OPEN_CHAT_HOME = 0
+        const val OPEN_HIDE_HOME = 1
         var isCurrentUser = false
 
         const val PAINT_STYLE_STROKE = 1

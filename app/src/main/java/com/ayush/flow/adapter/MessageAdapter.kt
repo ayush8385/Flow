@@ -24,12 +24,14 @@ import android.widget.*
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
 import com.ayush.flow.Services.BlurTransformation
 import com.ayush.flow.Services.Constants
 import com.ayush.flow.activity.FileDownloader
 import com.ayush.flow.activity.SelectedImage
+import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.MessageEntity
 import com.ayush.flow.database.MessageViewModel
 import com.bumptech.glide.Glide
@@ -51,7 +53,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEntity>,private val clickListener: OnAdapterItemClickListener):ListAdapter<MessageEntity,MessageAdapter.MessageViewHolder>(DiffUtil()) {
     val firebaseUser=FirebaseAuth.getInstance().currentUser
     val allMsgs=ArrayList<MessageEntity>()
     var searchedText: String = ""
@@ -73,9 +75,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         val dim:View =view.findViewById(R.id.dim)
         val downloadBar:ImageView=view.findViewById(R.id.download_bar)
         val download:ImageView=view.findViewById(R.id.download)
-
-
-      //  val box:CardView=view.findViewById(R.id.box)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -172,7 +171,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
         if(chat.type=="message"){
 
             holder.message.text=chat.message
-            holder.message.movementMethod = LinkMovementMethod.getInstance()
 
             if(searchedText!=""){
                 if(chat.message.toLowerCase().contains(searchedText)){
@@ -181,7 +179,6 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
                     val spanString = Spannable.Factory.getInstance().newSpannable(chat.message)
                     spanString.setSpan(ForegroundColorSpan(Color.GREEN),start,end,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                     holder.message.text=spanString
-
                 }
             }
             holder.seen_txt.text="sent"
@@ -493,5 +490,17 @@ class MessageAdapter(val context: Context,val selectedMsg: ArrayList<MessageEnti
             }
             return true
         }
+    }
+
+    class DiffUtil : androidx.recyclerview.widget.DiffUtil.ItemCallback<MessageEntity>(){
+        override fun areItemsTheSame(oldItem: MessageEntity, newItem: MessageEntity): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun areContentsTheSame(oldItem: MessageEntity, newItem: MessageEntity): Boolean {
+            TODO("Not yet implemented")
+        }
+
+
     }
 }

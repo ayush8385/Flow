@@ -12,67 +12,48 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.viewpager.widget.ViewPager
 import com.ayush.flow.R
 import com.ayush.flow.adapter.ViewPagerAdapter
+import com.ayush.flow.databinding.ActivitySliderBinding
 import com.ayush.flow.model.ScreenItem
 import com.google.android.material.tabs.TabLayout
 
 class Slider : AppCompatActivity() {
-    lateinit var viewPager: ViewPager
     lateinit var adapter: ViewPagerAdapter
-    lateinit var tabIndicator:TabLayout
-    lateinit var next:ImageButton
-    lateinit var getStarted:Button
     var position:Int=0
-    lateinit var skip:TextView
     val mList: ArrayList<ScreenItem> = ArrayList()
+    lateinit var binding:ActivitySliderBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_slider)
-
-
-
-        tabIndicator=findViewById(R.id.tab_indicator)
-        next=findViewById(R.id.next)
-        skip=findViewById(R.id.skip)
-        getStarted=findViewById(R.id.button)
-
-
+        binding=DataBindingUtil.setContentView(this,R.layout.activity_slider)
 
         mList.add(ScreenItem("Chats","Send one to one messages to your friends in Realtime with one tap",R.mipmap.messages))
         mList.add(ScreenItem("Calls","Make a call to your friend with video/audio calling for free",R.mipmap.calls))
         mList.add(ScreenItem("Private","Hide your chat in Private section inside the application",R.mipmap.secure))
         mList.add(ScreenItem("Stories","Share your moments on the go with stories",R.mipmap.upload))
 
-        viewPager=findViewById(R.id.viewpager)
-        adapter=ViewPagerAdapter(this,mList)
+        binding.viewpager.adapter=ViewPagerAdapter(this,mList)
+        binding.tabIndicator.setupWithViewPager(binding.viewpager)
 
-        viewPager.adapter=adapter
-
-        tabIndicator.setupWithViewPager(viewPager)
-
-        next.setOnClickListener {
-
-            position=viewPager.currentItem
-
+        binding.next.setOnClickListener {
+            position=binding.viewpager.currentItem
             if(position<mList.size){
                 position++
-                viewPager.setCurrentItem(position,true)
+                binding.viewpager.setCurrentItem(position,true)
             }
-
             if(position==mList.size-1){
                 loadlastScreen()
             }
-
         }
 
-        getStarted.setOnClickListener {
+        binding.button.setOnClickListener {
             openRegistration()
         }
 
-        tabIndicator.addOnTabSelectedListener(object :TabLayout.OnTabSelectedListener{
+        binding.tabIndicator.addOnTabSelectedListener(object :TabLayout.OnTabSelectedListener{
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 if(tab!!.position==mList.size-1){
                     loadlastScreen()
@@ -89,7 +70,7 @@ class Slider : AppCompatActivity() {
 
         })
 
-        skip.setOnClickListener {
+        binding.skip.setOnClickListener {
             loadlastScreen()
         }
 
@@ -100,11 +81,9 @@ class Slider : AppCompatActivity() {
     }
 
     private fun loadlastScreen() {
-        next.visibility=View.INVISIBLE
-        skip.visibility=View.INVISIBLE
-        viewPager.setCurrentItem(mList.size-1,true)
-
-        getStarted.visibility=View.VISIBLE
-
+        binding.viewpager.setCurrentItem(mList.size-1,true)
+        binding.next.visibility=View.INVISIBLE
+        binding.skip.visibility=View.INVISIBLE
+        binding.button.visibility=View.VISIBLE
     }
 }

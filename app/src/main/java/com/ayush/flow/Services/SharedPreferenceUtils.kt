@@ -16,6 +16,8 @@ object SharedPreferenceUtils {
     val ABOUT = "about"
     val MY_PROFILE_URL = "profile"
     val HIDE_PASS = "passcode"
+    val APP_KEY = "app_key"
+    val APP_SECRET = "app_secret"
     private var mSharedPref: SharedPreferences? = null
 
 

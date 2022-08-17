@@ -10,16 +10,14 @@ import android.widget.TextView
 import androidx.viewpager.widget.PagerAdapter
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-
 import com.ayush.flow.R
 import com.ayush.flow.model.ScreenItem
-import java.io.ByteArrayOutputStream
 
 
 class ViewPagerAdapter : PagerAdapter {
 
-    lateinit var mContext: Context
-    lateinit var screenItem: List<ScreenItem>
+    var mContext: Context
+    var screenItem: List<ScreenItem>
 
     constructor(mContext: Context, screenItem: List<ScreenItem>) : super() {
         this.mContext = mContext
@@ -28,20 +26,15 @@ class ViewPagerAdapter : PagerAdapter {
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
 
-        val inflater:LayoutInflater =  mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val layoutScreen:View = inflater.inflate(R.layout.layout_screen,null)
+        val inflater =  mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val layoutScreen:View = inflater.inflate(R.layout.viewpager_item,null)
 
         var image :ImageView=layoutScreen.findViewById(R.id.image)
         val title:TextView=layoutScreen.findViewById(R.id.title)
         val desc:TextView=layoutScreen.findViewById(R.id.desc)
 
-
         val img = BitmapFactory.decodeResource(mContext.resources,screenItem[position].image)
-
-
-
         image.setImageBitmap(resizeBitmap(img))
-
         title.setText(screenItem[position].title)
         desc.setText(screenItem[position].desc)
 
@@ -50,7 +43,6 @@ class ViewPagerAdapter : PagerAdapter {
         return layoutScreen
 
     }
-
 
     override fun getCount(): Int {
         return screenItem.size

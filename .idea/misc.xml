@@ -138,14 +138,15 @@
         <entry key="app/src/main/res/layout/activity_calling.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/activity_contact.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_dashboard.xml" value="0.17647058823529413" />
+        <entry key="app/src/main/res/layout/activity_emoji.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_image_view.xml" value="0.31875" />
         <entry key="app/src/main/res/layout/activity_incoming_vdo.xml" value="0.28958333333333336" />
-        <entry key="app/src/main/res/layout/activity_message.xml" value="0.3232876712328767" />
+        <entry key="app/src/main/res/layout/activity_message.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_outgoing.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.26510416666666664" />
         <entry key="app/src/main/res/layout/activity_passcode.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.2632199968610491" />
-        <entry key="app/src/main/res/layout/activity_slider.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/activity_slider.xml" value="0.2471131639722864" />
         <entry key="app/src/main/res/layout/activity_user_profile.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/add_contact_box.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/layout/calls_single_row.xml" value="0.25" />
@@ -153,6 +154,7 @@
         <entry key="app/src/main/res/layout/chats_single_row.xml" value="0.3333333333333333" />
         <entry key="app/src/main/res/layout/contacts_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/delete_modal_bottomsheet.xml" value="0.26510416666666664" />
+        <entry key="app/src/main/res/layout/emoji_view.xml" value="0.6353383458646616" />
         <entry key="app/src/main/res/layout/forward_modal_bottomsheet.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/fwd_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/fwd_to_single_row.xml" value="0.28958333333333336" />

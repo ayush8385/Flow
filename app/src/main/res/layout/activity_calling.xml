@@ -1,152 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/parent"
-    tools:context=".flow.activity.Calling">
-
-    <ImageView
+<layout>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:id="@+id/back_img"/>
-    <View
-        android:id="@+id/dim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#B4000000" />
+        android:id="@+id/parent"
+        tools:context=".flow.activity.Calling">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/user"
-            android:scaleType="centerCrop"
-            android:layout_marginTop="60dp"
-            android:layout_centerHorizontal="true"
-            android:id="@+id/user_img"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/user_img"
-            android:text="Mark"
-            android:textColor="#FFFFFF"
-            android:id="@+id/user_name"
-            android:layout_marginTop="5dp"
-            android:layout_centerHorizontal="true"
-            android:fontFamily="@font/open_sans"
-            android:textSize="22sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/user_name"
-            android:id="@+id/status"
-            android:text="Calling..."
-            android:textColor="#FFFFFF"
-            android:fontFamily="@font/michroma"
-            android:layout_centerHorizontal="true"
-            android:textSize="8sp"/>
-
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/call_back"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="40dp"
-            android:scaleType="centerCrop"
-            android:padding="18dp"
-            android:id="@+id/pick_btn"
-            android:src="@drawable/ic_baseline_call_24"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Answer"
-            android:fontFamily="@font/michroma"
-            android:textColor="#FFFFFF"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/pick_btn"
-            android:layout_marginLeft="50dp"
-            android:textSize="12sp"/>
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/end_btn"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="40dp"
-            android:background="@drawable/callend_back"
-            android:padding="18dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_baseline_call_end_24" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Decline"
-            android:fontFamily="@font/michroma"
-            android:textColor="#FFFFFF"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/end_btn"
-            android:layout_marginRight="50dp"
-            android:textSize="12sp"/>
-        <LinearLayout
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginHorizontal="40dp"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:id="@+id/back_img"/>
+        <View
+            android:id="@+id/dim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#B4000000" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/user"
+                android:scaleType="centerCrop"
+                android:layout_marginTop="60dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/user_img"/>
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/calltext_back"
-                android:textAlignment="center"
-                android:paddingVertical="16dp"
-                android:id="@+id/text1"
-                android:text="I'll calll you back!"
+                android:layout_below="@+id/user_img"
+                android:text="Mark"
                 android:textColor="#FFFFFF"
-                android:fontFamily="@font/senregular"
-                android:textSize="16sp"/>
+                android:id="@+id/user_name"
+                android:layout_marginTop="5dp"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="@font/open_sans"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/user_name"
+                android:id="@+id/status"
+                android:text="Calling..."
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/michroma"
+                android:layout_centerHorizontal="true"
+                android:textSize="8sp"/>
+
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/call_back"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="40dp"
+                android:scaleType="centerCrop"
+                android:padding="18dp"
+                android:id="@+id/pick_btn"
+                android:src="@drawable/ic_baseline_call_24"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Answer"
+                android:fontFamily="@font/michroma"
+                android:textColor="#FFFFFF"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/pick_btn"
+                android:layout_marginLeft="50dp"
+                android:textSize="12sp"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/end_btn"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="40dp"
+                android:background="@drawable/callend_back"
+                android:padding="18dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_baseline_call_end_24" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Decline"
+                android:fontFamily="@font/michroma"
+                android:textColor="#FFFFFF"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/end_btn"
+                android:layout_marginRight="50dp"
+                android:textSize="12sp"/>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:layout_marginTop="6dp"
-                android:paddingVertical="16dp"
-                android:id="@+id/text2"
-                android:background="@drawable/calltext_back"
-                android:text="Sorry, can't talk right now"
-                android:textColor="#FFFFFF"
-                android:fontFamily="@font/senregular"
-                android:textSize="16sp"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Type Message..."
-                android:textColorHint="#FFFFFF"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:paddingVertical="16dp"
-                android:layout_marginTop="6dp"
-                android:drawableRight="@drawable/fwd_send"
-                android:paddingLeft="12dp"
-                android:paddingRight="20dp"
-                android:drawablePadding="10dp"
-                android:id="@+id/call_msg"
-                android:background="@drawable/calltext_back"
-                android:cursorVisible="false"
-                android:fontFamily="@font/senregular"
-                android:layout_marginBottom="16dp"
-                android:textSize="16sp"/>
-        </LinearLayout>
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="40dp"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/calltext_back"
+                    android:textAlignment="center"
+                    android:paddingVertical="16dp"
+                    android:id="@+id/text1"
+                    android:text="I'll calll you back!"
+                    android:textColor="#FFFFFF"
+                    android:fontFamily="@font/senregular"
+                    android:textSize="16sp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:layout_marginTop="6dp"
+                    android:paddingVertical="16dp"
+                    android:id="@+id/text2"
+                    android:background="@drawable/calltext_back"
+                    android:text="Sorry, can't talk right now"
+                    android:textColor="#FFFFFF"
+                    android:fontFamily="@font/senregular"
+                    android:textSize="16sp"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Type Message..."
+                    android:textColorHint="#FFFFFF"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:paddingVertical="16dp"
+                    android:layout_marginTop="6dp"
+                    android:drawableRight="@drawable/fwd_send"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="20dp"
+                    android:drawablePadding="10dp"
+                    android:id="@+id/call_msg"
+                    android:background="@drawable/calltext_back"
+                    android:cursorVisible="false"
+                    android:fontFamily="@font/senregular"
+                    android:layout_marginBottom="16dp"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+        </RelativeLayout>
+
+
     </RelativeLayout>
-
-
-</RelativeLayout>
+</layout>

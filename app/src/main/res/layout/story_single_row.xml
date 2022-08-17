@@ -18,7 +18,7 @@
             android:layout_width="100dp"
             android:layout_height="150dp"
             android:id="@+id/story_img"
-            android:src="@drawable/mark"/>
+            android:src="@drawable/user"/>
 
     </androidx.cardview.widget.CardView>
     <TextView
