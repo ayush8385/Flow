@@ -1,26 +1,25 @@
 package com.ayush.flow.activity
 
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
-import android.os.Parcelable
-import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.ImageHandling
-import com.ayush.flow.Services.ImageHolder
-import com.ayush.flow.Services.SharedPreferenceUtils
+import com.ayush.flow.utils.Constants
+import com.ayush.flow.utils.ImageHandling
+import com.ayush.flow.utils.ImageHolder
+import com.ayush.flow.utils.SharedPreferenceUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestOptions
 import java.io.File
+import java.io.FileNotFoundException
+
 
 class SelectedImage : AppCompatActivity() {
     lateinit var image:TouchImageView
@@ -39,22 +38,38 @@ class SelectedImage : AppCompatActivity() {
         val type=intent.getStringExtra("type")
         userId=intent.getStringExtra("userid")!!
 
-        if(type=="view" || type=="msgImg"){
-            if(userId==Constants.MY_USERID){
-                Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),userId+".jpg")).placeholder(android.R.color.transparent).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(image)
+
+        val circularProgressDrawable = CircularProgressDrawable(this)
+        circularProgressDrawable.strokeWidth = 5f
+        circularProgressDrawable.centerRadius = 30f
+        circularProgressDrawable.start()
+
+        val requestOptions = RequestOptions()
+        requestOptions.placeholder(circularProgressDrawable)
+        requestOptions.error(R.drawable.user)
+        requestOptions.fitCenter()
+        if(type=="view"){
+            try {
+                val profileUri = ImageHandling(this).getUserProfileImageUri(userId)
+                Glide.with(this).load(profileUri).apply(requestOptions) // here you have all options you need
+                    .transition(DrawableTransitionOptions.withCrossFade(150)) .diskCacheStrategy(
+                    DiskCacheStrategy.NONE).skipMemoryCache(true).into(image)
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
             }
-            else{
-                Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),userId+".jpg")).placeholder(android.R.color.transparent).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(image)
+            sendImg.visibility= View.GONE
+        }
+        else if(type=="msgImg"){
+            try {
+                val f = File(File(Environment.getExternalStorageDirectory(), Constants.ALL_PHOTO_LOCATION),
+                    "$userId.jpg"
+                )
+                Glide.with(this).load(f).apply(requestOptions) // here you have all options you need
+                    .transition(DrawableTransitionOptions.withCrossFade(100)).diskCacheStrategy(
+                        DiskCacheStrategy.NONE).skipMemoryCache(true).into(image)
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
             }
-//            image.setImageDrawable(ImageHolder.imageDraw)
-//                Log.e("imagepath",ImageHolder.imagePath.toString())
-//            Glide.with(this).load(ImageHolder.imagePath).placeholder(R.drawable.user).diskCacheStrategy(
-//                DiskCacheStrategy.NONE)
-//                .skipMemoryCache(true).into(image)
             sendImg.visibility= View.GONE
         }
         else{
@@ -72,12 +87,8 @@ class SelectedImage : AppCompatActivity() {
 
         sendImg.setOnClickListener {
             if(type=="profile"){
-                ImageHandling.saveToInternalStorage(photoBitmap!!,Constants.PROFILE_PHOTO_LOCATION,SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")
-               // var imagepath = Addprofile().saveToInternalStorage(photoBitmap!!).execute().get()
-
+                ImageHandling(this).saveImageToFileProviderCache(Constants.MY_USERID,photoBitmap!!)
                 uploadImage(photoBitmap).execute()
-//                getSharedPreferences("Shared Preference", Context.MODE_PRIVATE).edit().putString("profile", imagepath).apply()
-                finish()
             }
             if(type=="message"){
                 Message().sendImageMessageToUser(
@@ -88,9 +99,8 @@ class SelectedImage : AppCompatActivity() {
                     intent.getStringExtra("user_image")!!,
                     application
                 ).execute()
-                finish()
             }
-
+            finish()
         }
     }
 

@@ -15,9 +15,10 @@ import android.view.animation.AnimationUtils
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.Permissions
+import com.ayush.flow.utils.Constants
+import com.ayush.flow.utils.Permissions
 import com.ayush.flow.database.*
+import com.ayush.flow.utils.ImageHandling
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.database.DataSnapshot
@@ -30,6 +31,7 @@ import com.sinch.android.rtc.video.VideoScalingType
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
+import java.io.FileNotFoundException
 
 
 class Incoming_vdo : BaseActivity() {
@@ -152,11 +154,17 @@ class Incoming_vdo : BaseActivity() {
 
                     pickintent.putExtra("name",remoteUser.text)
 
-                    val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),call.remoteUserId+".jpg")
-
-                    Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                        DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true).into(mCallerimg)
+                    try {
+                        val profileUri = ImageHandling(this).getUserProfileImageUri(call.remoteUserId)
+                        if(profileUri!=null){
+                            mCallerimg.setImageURI(profileUri)
+                        }
+                        if(mCallerimg.drawable==null){
+                            mCallerimg.setImageResource(R.drawable.user)
+                        }
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    }
 
                     pickintent.putExtra("userid",call.remoteUserId)
 
@@ -167,9 +175,17 @@ class Incoming_vdo : BaseActivity() {
 
                 pickintent.putExtra("name",remoteUser.text)
 
-                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),call.remoteUserId+".jpg")
-
-                Glide.with(this).load(f).placeholder(R.drawable.user).into(mCallerimg)
+                try {
+                    val profileUri = ImageHandling(this).getUserProfileImageUri(call.remoteUserId)
+                    if(profileUri!=null){
+                        mCallerimg.setImageURI(profileUri)
+                    }
+                    if(mCallerimg.drawable==null){
+                        mCallerimg.setImageResource(R.drawable.user)
+                    }
+                } catch (e: FileNotFoundException) {
+                    e.printStackTrace()
+                }
 
                 pickintent.putExtra("userid",call.remoteUserId)
             }
@@ -179,11 +195,8 @@ class Incoming_vdo : BaseActivity() {
             finish()
         }
 
-        if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
-
-        }
-        else{
-            com.ayush.flow.Services.Permissions().requestMicPermission(this)
+        if(!Permissions().checkMicpermission(this)){
+            Permissions().requestMicPermission(this)
         }
     }
 

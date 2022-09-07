@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginStart="10dp"
+    android:id="@+id/fwd_card"
+    android:layout_height="500dp"
+    android:layout_gravity="bottom"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Invite"
+        android:textSize="26sp"
+        android:layout_marginStart="15dp"
+        android:fontFamily="@font/senbold"
+        android:textColor="@color/black"
+        android:paddingVertical="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="6dp"
+        android:id="@+id/fwd_txt"/>
+
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchview_invite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        app:queryBackground="@android:color/transparent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/inviterecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/searchview_invite"
+        tools:listitem="@layout/invite_single_row" />
+</RelativeLayout>

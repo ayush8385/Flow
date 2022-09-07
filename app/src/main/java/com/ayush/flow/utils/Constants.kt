@@ -1,4 +1,4 @@
-package com.ayush.flow.Services
+package com.ayush.flow.utils
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
@@ -13,6 +13,20 @@ class Constants {
         const val APP_SHARED_PREFERENCE: String = "flow_shared_prefs"
         const val OPEN_CHAT_HOME = 0
         const val OPEN_HIDE_HOME = 1
+        const val MAX_API_FOR_PERMISSION = 18
+        const val CAMERA_PERMISSION = "camera"
+        const val STORAGE_PERMISSION = "storage"
+        const val CONTACT_PERMISSION = "contact"
+        const val MIC_PERMISSION = "mic"
+        const val MIC_CAM_PERMISSION = "mic_cam"
+        const val CAMERA_REQUEST_CODE = 110
+        const val STORAGE_REQUEST_CODE = 112
+        const val DOCUMENT_REQUEST_CODE:Int = 113
+        const val PERMISSION_CAMERA_REQUEST_CODE = 101
+        const val PERMISSION_STORAGE_REQUEST_CODE = 102
+        const val PERMISSION_CONTACT_REQUEST_CODE = 103
+        const val PERMISSION_MIC_REQUEST_CODE = 104
+        const val PERMISSION_MIC_CAM_REQUEST_CODE = 105
         var isCurrentUser = false
 
         const val PAINT_STYLE_STROKE = 1

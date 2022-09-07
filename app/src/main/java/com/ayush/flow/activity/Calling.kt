@@ -31,10 +31,13 @@ import android.view.animation.AnimationUtils
 
 import android.widget.EditText
 import android.view.View.OnTouchListener
-import com.ayush.flow.Services.Constants
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.database.*
+import com.ayush.flow.utils.ImageHandling
+import com.ayush.flow.utils.Permissions
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import java.io.FileNotFoundException
 
 
 class Calling : BaseActivity(){
@@ -229,14 +232,19 @@ class Calling : BaseActivity(){
                     username=chat.name
                     usernumber=chat.number
 
-                    val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
-
-                    Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                        DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true).into(backimg)
-                    Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                        DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true).into(mCallerimg)
+                    try {
+                        val profileUri = ImageHandling(this).getUserProfileImageUri(chat.id)
+                        if(profileUri!=null){
+                            mCallerimg.setImageURI(profileUri)
+                            backimg.setImageURI(profileUri)
+                        }
+                        if(mCallerimg.drawable==null){
+                            mCallerimg.setImageResource(R.drawable.user)
+                            backimg.setImageResource(R.drawable.user)
+                        }
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    }
 
                     pickintent.putExtra("userid",call.remoteUserId)
 
@@ -252,14 +260,19 @@ class Calling : BaseActivity(){
                 username=cons.name
                 usernumber=cons.number
 
-                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")
-
-                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(backimg)
-                Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                    DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true).into(mCallerimg)
+                try {
+                    val profileUri = ImageHandling(this).getUserProfileImageUri(cons.id)
+                    if(profileUri!=null){
+                        mCallerimg.setImageURI(profileUri)
+                        backimg.setImageURI(profileUri)
+                    }
+                    if(mCallerimg.drawable==null){
+                        mCallerimg.setImageResource(R.drawable.user)
+                        backimg.setImageResource(R.drawable.user)
+                    }
+                } catch (e: FileNotFoundException) {
+                    e.printStackTrace()
+                }
 
                 pickintent.putExtra("userid",call.remoteUserId)
 
@@ -279,17 +292,17 @@ class Calling : BaseActivity(){
             finish()
         }
 
-        if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
+        if(Permissions().checkMicpermission(this)){
 
         }
         else{
-            com.ayush.flow.Services.Permissions().requestMicPermission(this)
+            Permissions().requestMicPermission(this)
         }
 
         text1.setOnClickListener {
             val ref=FirebaseDatabase.getInstance().reference
             val messageKey=ref.push().key
-            image=Constants.MY_USERID+".jpg"
+            image= Constants.MY_USERID+".jpg"
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
@@ -302,7 +315,7 @@ class Calling : BaseActivity(){
         text2.setOnClickListener {
             val ref=FirebaseDatabase.getInstance().reference
             val messageKey=ref.push().key
-            image=Constants.MY_USERID+".jpg"
+            image= Constants.MY_USERID+".jpg"
             MessageViewModel(application).insertMessage(
                 MessageEntity(messageKey!!,
                     Constants.MY_USERID+"-"+call.remoteUserId,
@@ -319,7 +332,7 @@ class Calling : BaseActivity(){
             val DRAWABLE_TOP = 1
             val DRAWABLE_RIGHT = 2
             val DRAWABLE_BOTTOM = 3
-            image=Constants.MY_USERID+".jpg"
+            image= Constants.MY_USERID+".jpg"
             if (event.action == MotionEvent.ACTION_UP) {
                 if (event.rawX >= callMsg.getRight() - callMsg.getCompoundDrawables()
                         .get(DRAWABLE_RIGHT).getBounds().width()
@@ -374,11 +387,11 @@ class Calling : BaseActivity(){
         if (call != null) {
             startActivity(intent)
 
-            if(com.ayush.flow.Services.Permissions().checkMicpermission(this)){
+            if(Permissions().checkMicpermission(this)){
                 call.answer()
             }
             else{
-                com.ayush.flow.Services.Permissions().requestMicPermission(this)
+                Permissions().requestMicPermission(this)
             }
 
         } else {

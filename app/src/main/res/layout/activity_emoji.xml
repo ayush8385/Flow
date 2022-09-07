@@ -1,40 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.EmojiActivity">
+    <com.aghajari.emojiview.view.AXEmojiEditText
+        android:id="@+id/edt"
         android:layout_width="match_parent"
+        app:emojiSize="40sp"
         android:layout_height="match_parent"
-        tools:context=".activity.EmojiActivity">
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:hint="enter your message ..." />
 
-        <com.vanniktech.emoji.EmojiEditText
-            android:id="@+id/sendText"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginLeft="5dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginRight="5dp"
-            android:drawablePadding="8dp"
-            android:hint="Send a message..."
-            android:inputType="textCapSentences"
-            android:paddingVertical="5dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="12dp"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:emojiSize="30sp" />
+    <com.aghajari.emojiview.view.AXEmojiPopupLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"/>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/happy"
-            app:layout_constraintEnd_toEndOf="@id/sendText"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/emojibtn"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/emoji_recent"
+        app:layout_constraintEnd_toEndOf="@+id/edt"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/emojibtn"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

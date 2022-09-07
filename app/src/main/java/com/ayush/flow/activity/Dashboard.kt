@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.*
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -36,11 +37,14 @@ import com.ayush.flow.databinding.ActivityDashboardBinding
 import com.ayush.flow.databinding.DeleteModalBottomsheetBinding
 import com.ayush.flow.databinding.PassVerifyBinding
 import com.ayush.flow.model.Chats
+import com.ayush.flow.utils.Constants
+import com.ayush.flow.utils.ImageHandling
+import com.ayush.flow.utils.Permissions
+import com.ayush.flow.utils.SharedPreferenceUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -196,14 +200,15 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 startService(Intent(this, LoadContacts::class.java))
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,Constants.CONTACT_PERMISSION)
             }
         }
 
     }
 
     fun checkStatus(){
-        val connectionReference= FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID)
+        val connectionReference= FirebaseDatabase.getInstance().reference.child("Users").child(
+            Constants.MY_USERID)
 //        val lastConnected= FirebaseDatabase.getInstance().reference.child("lastConnected")
         val infoConnected= FirebaseDatabase.getInstance().getReference(".info/connected")
 
@@ -269,10 +274,10 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
                 }
                 else if(passcode==str.toString()){
-                    if(n==Constants.OPEN_CHAT_HOME){
+                    if(n== Constants.OPEN_CHAT_HOME){
                         ChatViewModel(application).setPrivate(id,false)
                     }
-                    else if(n==Constants.OPEN_HIDE_HOME){
+                    else if(n== Constants.OPEN_HIDE_HOME){
                         ChatViewModel(application).setPrivate(id,true)
                     }
                     else{
@@ -306,34 +311,34 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     }
 
-    inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
-        override fun onPostExecute(result: Boolean?) {
-            chatAdapter.notifyDataSetChanged()
-        }
-        override fun doInBackground(vararg params: Void?): Boolean {
-            for(chat in chatList){
-                if(chat.name==""){
-                    val ref=FirebaseDatabase.getInstance().reference.child("Users").child(chat.id)
-                    ref.addValueEventListener(object :ValueEventListener{
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            val image_url=snapshot.child("profile_photo").value.toString()
-                            if(image_url!=""){
-                                ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,chat.id+".jpg").execute(image_url)
-//                                GetImageFromUrl(chat.id,application).execute(image_url)
-                            }
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-
-                        }
-
-                    })
-                }
-            }
-            return true
-        }
-
-    }
+//    inner class updateUnsavedImage():AsyncTask<Void,Void,Boolean>() {
+//        override fun onPostExecute(result: Boolean?) {
+//            chatAdapter.notifyDataSetChanged()
+//        }
+//        override fun doInBackground(vararg params: Void?): Boolean {
+//            for(chat in chatList){
+//                if(chat.name==""){
+//                    val ref=FirebaseDatabase.getInstance().reference.child("Users").child(chat.id)
+//                    ref.addValueEventListener(object :ValueEventListener{
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            val image_url=snapshot.child("profile_photo").value.toString()
+//                            if(image_url!=""){
+//                                ImageHandling(this@Dashboard).GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,chat.id+".jpg","profile").execute(image_url)
+////                                GetImageFromUrl(chat.id,application).execute(image_url)
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {
+//
+//                        }
+//
+//                    })
+//                }
+//            }
+//            return true
+//        }
+//
+//    }
 
     private fun openCallHome() {
         val itemselect = binding.bottomNavigation.menu.findItem(R.id.call)
@@ -351,7 +356,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     audioCalling(name,id)
                 }
                 else{
-                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,"mic")
+                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,Constants.MIC_PERMISSION)
                 }
             }
 
@@ -363,7 +368,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     videoCalling(name,id)
                 }
                 else{
-                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,"micandcam")
+                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,Constants.MIC_CAM_PERMISSION)
                 }
             }
 
@@ -391,8 +396,13 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                 val historyAdapter = CallHistoryAdapter(this@Dashboard)
 
                 username.text=name
-                val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),id+".jpg")
-                Glide.with(this@Dashboard).load(f).diskCacheStrategy(DiskCacheStrategy.NONE).placeholder(R.drawable.user).into(userimage)
+
+                try {
+                    val profileUri = ImageHandling(this@Dashboard).getUserProfileImageUri(id)
+                    Glide.with(this@Dashboard).load(profileUri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.user).into(userimage)
+                } catch (e: FileNotFoundException) {
+                    e.printStackTrace()
+                }
 
                 (layoutManager as LinearLayoutManager).reverseLayout = true
                 historyRecycler.setHasFixedSize(true)
@@ -469,7 +479,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     audioCalling(name,id)
                 }
                 else{
-                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,"mic")
+                    Permissions().openPermissionBottomSheet(R.drawable.mic_permission,getString(R.string.mic_permission),this@Dashboard,Constants.MIC_PERMISSION)
                 }
             }
 
@@ -480,7 +490,7 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
                     videoCalling(name,id)
                 }
                 else{
-                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,"micandcam")
+                    Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,getString(R.string.mic_and_cam_permission),this@Dashboard,Constants.MIC_CAM_PERMISSION)
                 }
             }
 
@@ -568,11 +578,11 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             })
         }
 
-        try {
-            updateUnsavedImage().execute()
-        }catch (e:Exception){
-
-        }
+//        try {
+//            updateUnsavedImage().execute()
+//        }catch (e:Exception){
+//
+//        }
 
 //        storyRecyclerView.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        runAnimation(storyRecyclerView,1)
@@ -808,7 +818,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
 
     inner class deleteMsgs(val application: Application,val id:String):AsyncTask<Void,Void,Boolean>(){
         override fun doInBackground(vararg params: Void?): Boolean {
-            val myuserId=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")
+            val myuserId=
+                SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")
             MessageViewModel(application).deleteMsgWithId(myuserId+"-"+id)
 
             val refer=FirebaseDatabase.getInstance().reference.child("Messages")
@@ -854,17 +865,8 @@ class Dashboard : BaseActivity(), SinchService.StartFailedListener {
             openCallHome()
         }
         try {
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")
-            if(f.exists()){
-                val b = BitmapFactory.decodeStream(FileInputStream(f))
-                binding.userImg.setImageBitmap(b)
-            }
-            else{
-                binding.userImg.setImageResource(R.drawable.user)
-            }
-//            Glide.with(this).load(f).diskCacheStrategy(
-//                DiskCacheStrategy.RESOURCE)
-//                .skipMemoryCache(true).into(profile)
+            val profileUri = ImageHandling(this).getUserProfileImageUri(Constants.MY_USERID)
+            Glide.with(this).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(binding.userImg)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }

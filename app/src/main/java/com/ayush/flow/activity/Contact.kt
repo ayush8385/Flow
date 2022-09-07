@@ -6,71 +6,57 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.cardview.widget.CardView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.ayush.flow.R
 import com.ayush.flow.Services.ConnectionManager
-import com.ayush.flow.Services.Permissions
+import com.ayush.flow.utils.Permissions
 import com.ayush.flow.adapter.ContactAdapter
+import com.ayush.flow.adapter.ForwardAdapter
+import com.ayush.flow.adapter.ForwardToAdapter
+import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.ContactEntity
 import com.ayush.flow.database.ContactViewModel
+import com.ayush.flow.databinding.ActivityContactBinding
+import com.ayush.flow.utils.Constants
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class Contact : AppCompatActivity() {
-    lateinit var recyclerView: RecyclerView
     lateinit var layoutManager: RecyclerView.LayoutManager
     lateinit var recyclerAdapter: ContactAdapter
-    lateinit var back: ImageView
-    lateinit var title:TextView
-    lateinit var add: ImageView
-    lateinit var search: androidx.appcompat.widget.SearchView
     val sortCon = arrayListOf<ContactEntity>()
-    lateinit var dim:View
-    lateinit var pullToRefresh:SwipeRefreshLayout
     lateinit var firebaseUser: FirebaseUser
+    lateinit var binding:ActivityContactBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contact)
+        binding=ActivityContactBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         layoutManager=LinearLayoutManager(this)
-        recyclerView=findViewById(R.id.contact_recycler)
-        search=findViewById(R.id.searchview)
-        back=findViewById(R.id.back)
-        title=findViewById(R.id.title)
-        add=findViewById(R.id.add_con)
-        dim=findViewById(R.id.dim)
         firebaseUser= FirebaseAuth.getInstance().currentUser!!
 
-        pullToRefresh = findViewById(R.id.pullToRefresh)
-
-        loadContacts()
-
-        pullToRefresh.setOnRefreshListener {
+        binding.pullToRefresh.setOnRefreshListener {
             loadContacts()
             Handler().postDelayed({
-                pullToRefresh.isRefreshing=false
+                binding.pullToRefresh.isRefreshing=false
             },4000)
         }
 
 
 
         recyclerAdapter=ContactAdapter(this@Contact)
-        recyclerView.layoutManager=layoutManager
-        recyclerView.adapter=recyclerAdapter
+        binding.contactRecycler.layoutManager=layoutManager
+        binding.contactRecycler.adapter=recyclerAdapter
 
          ContactViewModel(application).allContacts.observe(this, Observer {list->
             list?.let {
@@ -88,7 +74,7 @@ class Contact : AppCompatActivity() {
 
         searchElement()
 
-        add.setOnClickListener {
+        binding.addCon.setOnClickListener {
             val contactBoxView = LayoutInflater.from(this).inflate(R.layout.add_contact_box, null,false)
             val contactBoxBuilder = AlertDialog.Builder(this,R.style.CustomAlertDialog)
             contactBoxBuilder.setView(contactBoxView)
@@ -124,10 +110,23 @@ class Contact : AppCompatActivity() {
             }
         }
 
-        back.setOnClickListener {
+//        binding.inviteBtn.setOnClickListener {
+//            openInviteBottomSheet(this)
+//        }
+
+        binding.back.setOnClickListener {
             onBackPressed()
         }
     }
+
+//    private fun openInviteBottomSheet(context:Context) {
+//        val bottomSheetDialog = BottomSheetDialog(context,R.style.RoundedBottomSheetTheme)
+//        bottomSheetDialog.setContentView(R.layout.forward_modal_bottomsheet)
+//        bottomSheetDialog.setCancelable(true)
+//        bottomSheetDialog.show()
+//
+//
+//    }
 
     private fun loadContacts() {
         if(ConnectionManager().checkconnectivity(this)){
@@ -135,46 +134,50 @@ class Contact : AppCompatActivity() {
                 startService(Intent(this, LoadContacts::class.java))
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,"contact")
+                Permissions().openPermissionBottomSheet(R.drawable.contact_permission,this.resources.getString(R.string.contact_permission),this,Constants.CONTACT_PERMISSION)
             }
         }
     }
 
+    override fun onResume() {
+        loadContacts()
+        super.onResume()
+    }
 
     fun searchElement() {
 
-        search.queryHint="Search Your friends..."
-        val searchIcon: ImageView = search.findViewById(R.id.search_mag_icon)
+        binding.searchview.queryHint="Search Your friends..."
+        val searchIcon: ImageView = binding.searchview.findViewById(R.id.search_mag_icon)
 
-        val theTextArea = search.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
+        val theTextArea = binding.searchview.findViewById<View>(R.id.search_src_text) as androidx.appcompat.widget.SearchView.SearchAutoComplete
 
         theTextArea.isCursorVisible=false
 
-        search.setOnSearchClickListener {
-            back.visibility= View.GONE
-            title.visibility=View.GONE
-            add.visibility=View.GONE
+        binding.searchview.setOnSearchClickListener {
+            binding.back.visibility= View.GONE
+            binding.title.visibility=View.GONE
+            binding.addCon.visibility=View.GONE
             val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
-            search.layoutParams=params
+            binding.searchview.layoutParams=params
         }
 
-        search.setOnCloseListener(object :SearchView.OnCloseListener{
+        binding.searchview.setOnCloseListener(object :SearchView.OnCloseListener{
             override fun onClose(): Boolean {
-                back.visibility= View.VISIBLE
-                title.visibility=View.VISIBLE
-                add.visibility=View.VISIBLE
+                binding.back.visibility= View.VISIBLE
+                binding.title.visibility=View.VISIBLE
+                binding.addCon.visibility=View.VISIBLE
                 val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-                search.layoutParams=params
+                binding.searchview.layoutParams=params
                 return false
             }
 
         })
 
         val manager=getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        search.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
+        binding.searchview.setOnQueryTextListener(object :androidx.appcompat.widget.SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                search.clearFocus()
+                binding.searchview.clearFocus()
                 return true
             }
 

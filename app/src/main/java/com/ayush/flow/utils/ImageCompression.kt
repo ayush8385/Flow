@@ -1,4 +1,4 @@
-package com.ayush.flow.Services
+package com.ayush.flow.utils
 
 import android.app.Application
 import android.content.Context
@@ -6,12 +6,8 @@ import android.content.Intent
 import android.graphics.*
 import android.media.ExifInterface
 import android.os.AsyncTask
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.uploadImage
-import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
 
 
@@ -42,8 +38,8 @@ class ImageCompression(
             ).execute()
         }
         if(from=="profile"){
-            ImageHandling.saveToInternalStorage(imageBmp!!,Constants.PROFILE_PHOTO_LOCATION,Constants.MY_USERID+".jpg").execute()
-            uploadImage(imageBmp!!).execute()
+            ImageHandling(context).saveImageToFileProviderCache(Constants.MY_USERID,imageBmp!!)
+            uploadImage(imageBmp).execute()
         }
     }
 

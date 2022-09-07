@@ -13,7 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.ayush.flow.R;
-import com.ayush.flow.Services.Constants;
+import com.ayush.flow.utils.Constants;
 import com.ayush.flow.model.PathStore;
 import com.ayush.flow.model.Shape;
 

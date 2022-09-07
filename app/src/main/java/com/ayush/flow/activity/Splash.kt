@@ -1,28 +1,15 @@
 package com.ayush.flow.activity
 
 import android.content.Intent
-import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.*
-import android.view.View
-import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProviders
-import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.RetrieveMessage
-import com.ayush.flow.Services.SharedPreferenceUtils
-import com.ayush.flow.database.*
+import com.ayush.flow.utils.RetrieveMessage
+import com.ayush.flow.utils.SharedPreferenceUtils
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.*
-import java.util.*
 import kotlin.properties.Delegates
 
 
@@ -40,7 +27,7 @@ class Splash : AppCompatActivity() {
         
         FirebaseApp.initializeApp(this)
         firebaseuser= FirebaseAuth.getInstance().currentUser
-        isLoggedIn=SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.IS_LOGGED,false)
+        isLoggedIn= SharedPreferenceUtils.getBooleanPreference(SharedPreferenceUtils.IS_LOGGED,false)
 
         SharedPreferenceUtils.setIntPreference(SharedPreferenceUtils.IS_PRIVATE,0)
 
@@ -68,7 +55,7 @@ class Splash : AppCompatActivity() {
     }
 
     private fun callDashboard() {
-        val username=SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,"")
+        val username= SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_NAME,"")
         if(username==""){
             openActivity(Intent(this@Splash,Addprofile::class.java))
         }

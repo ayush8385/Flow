@@ -1,4 +1,4 @@
-package com.ayush.flow.Services
+package com.ayush.flow.utils
 
 import android.Manifest
 import android.app.Activity
@@ -27,19 +27,19 @@ class Permissions {
         summary!!.text=requestText
 
         allow!!.setOnClickListener {
-            if(type=="camera"){
+            if(type== Constants.CAMERA_PERMISSION){
                 requestCameraPermission(context)
             }
-            if(type=="storage"){
+            if(type== Constants.STORAGE_PERMISSION){
                 requestStoragePermission(context)
             }
-            if(type=="contact"){
+            if(type== Constants.CONTACT_PERMISSION){
                 requestContactPermission(context)
             }
-            if(type=="mic"){
+            if(type== Constants.MIC_PERMISSION){
                 requestMicPermission(context)
             }
-            if(type=="micandcam"){
+            if(type== Constants.MIC_CAM_PERMISSION){
                 requestCamAndMicPermission(context)
             }
             bottomSheetDialog.dismiss()
@@ -77,7 +77,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.CAMERA),
-            101
+            Constants.PERMISSION_CAMERA_REQUEST_CODE
         )
     }
 
@@ -85,7 +85,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.MANAGE_EXTERNAL_STORAGE),
-            102
+            Constants.PERMISSION_STORAGE_REQUEST_CODE
         )
     }
 
@@ -93,7 +93,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.READ_CONTACTS),
-            103
+            Constants.PERMISSION_CONTACT_REQUEST_CODE
         )
     }
 
@@ -101,7 +101,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.RECORD_AUDIO),
-            104
+            Constants.PERMISSION_MIC_REQUEST_CODE
         )
     }
 
@@ -109,7 +109,7 @@ class Permissions {
         ActivityCompat.requestPermissions(
             context as Activity,
             arrayOf(Manifest.permission.RECORD_AUDIO,Manifest.permission.CAMERA),
-            105
+            Constants.PERMISSION_MIC_CAM_REQUEST_CODE
         )
     }
 }

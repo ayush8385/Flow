@@ -15,7 +15,7 @@ class ReplyReciever : BroadcastReceiver() {
         val stringExtra: String = intent.getStringExtra("title")!!
         val sender_img:String=intent.getStringExtra("image")!!
 
-        val resultsFromIntent: Bundle = RemoteInput.getResultsFromIntent(intent)
+        val resultsFromIntent: Bundle = RemoteInput.getResultsFromIntent(intent)!!
 
         val sharedPreferences:SharedPreferences = context!!.getSharedPreferences("Shared Preference", Context.MODE_PRIVATE)
 

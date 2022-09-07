@@ -3,5 +3,7 @@
     <external-path
         name="external_path"
         path="."/>
-
+    <files-path
+        name="files_path"
+        path="."/>
 </paths>

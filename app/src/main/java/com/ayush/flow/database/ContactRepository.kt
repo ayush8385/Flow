@@ -33,6 +33,15 @@ class ContactRepository(private val contactDao: ContactDao) {
         return contactDao.getContactbyNum(num)
     }
 
+    fun getProfileUrl(userid: String,num: String): String {
+        if(userid==""){
+            return contactDao.getProfileUrlByNum(num)
+        }
+        else{
+            return contactDao.getProfileUrlById(userid)
+        }
+    }
+
 //    suspend fun delete(noteEntity: NoteEntity){
 //        noteDao.delete(noteEntity)
 //    }

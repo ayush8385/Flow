@@ -16,22 +16,25 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
-import android.widget.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import com.ayush.flow.R
 import com.ayush.flow.Services.*
-import com.ayush.flow.databinding.ActivityAddprofileBinding
 import com.ayush.flow.databinding.ActivityUserProfileBinding
+import com.ayush.flow.utils.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import de.hdodenhof.circleimageview.CircleImageView
-import java.io.*
+import com.google.firebase.database.ValueEventListener
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 class UserProfile : AppCompatActivity(),MessageListener {
@@ -81,12 +84,17 @@ class UserProfile : AppCompatActivity(),MessageListener {
         }
 
         binding.cam.setOnClickListener {
-            if(Permissions().checkCamerapermission(this)){
-                openCamera()
+            if(Build.VERSION.SDK_INT<= Constants.MAX_API_FOR_PERMISSION){
+                if(Permissions().checkCamerapermission(this)){
+                    openCamera()
+                }
+                else{
+                    Permissions().openPermissionBottomSheet(R.drawable.camera_permission,
+                        this.resources.getString(R.string.camera_permission),this, Constants.CAMERA_PERMISSION)
+                }
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.camera,
-                    this.resources.getString(R.string.camera_permission),this,"camera")
+                openCamera()
             }
         }
 
@@ -96,7 +104,8 @@ class UserProfile : AppCompatActivity(),MessageListener {
                 openGallery()
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
+                Permissions().openPermissionBottomSheet(R.drawable.gallery_permission,this.resources.getString(R.string.storage_permission),this,
+                    Constants.STORAGE_PERMISSION)
             }
         }
 
@@ -138,12 +147,12 @@ class UserProfile : AppCompatActivity(),MessageListener {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            101 -> {
+            Constants.PERMISSION_CAMERA_REQUEST_CODE -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     openCamera()
                 }
             }
-            102->{
+            Constants.PERMISSION_STORAGE_REQUEST_CODE -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.R){
                         if(!Environment.isExternalStorageManager()){
@@ -169,13 +178,14 @@ class UserProfile : AppCompatActivity(),MessageListener {
 
         if(delete){
             FirebaseDatabase.getInstance().reference.child("Users").child(Constants.MY_USERID).child("profile_photo").setValue("")
-            val directory: File = File(Environment.getExternalStorageDirectory().toString(), Constants.PROFILE_PHOTO_LOCATION)
-            var file: File = File(directory,Constants.MY_USERID+".jpg")
-            file.delete()
+            val imageUri = ImageHandling(this).getUserProfileImageUri(Constants.MY_USERID)
+            if(imageUri!=null){
+                contentResolver.delete(imageUri,null,null)
+            }
         }
 
         if(photo!=null){
-            if(imagepath!=null && imagepath!=""){
+            if(imagepath!=""){
                 ImageCompression(this,"profile",intent,application).execute(imagepath)
             }
         }
@@ -199,21 +209,23 @@ class UserProfile : AppCompatActivity(),MessageListener {
         }
     }
 
-    private fun signoutUser() {
-
-    }
-
     override fun onResume() {
-        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(binding.userImg)
+//        Glide.with(this).load(File(File(Environment.getExternalStorageDirectory(),Constants.PROFILE_PHOTO_LOCATION),SharedPreferenceUtils.getStringPreference(SharedPreferenceUtils.MY_USERID,"")+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
+//            DiskCacheStrategy.NONE)
+//            .skipMemoryCache(true).into(binding.userImg)
+        try {
+            val profileUri = ImageHandling(this).getUserProfileImageUri(Constants.MY_USERID)
+            Glide.with(this).load(profileUri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.user).into(binding.userImg)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
         super.onResume()
     }
 
     fun openGallery() {
         var intent= Intent(Intent.ACTION_GET_CONTENT)
         intent.type="image/*"
-        startActivityForResult(intent,112)
+        startActivityForResult(intent,Constants.STORAGE_REQUEST_CODE)
     }
 
     fun openCamera(){
@@ -222,7 +234,7 @@ class UserProfile : AppCompatActivity(),MessageListener {
         imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
         val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
-        startActivityForResult(intent,110)
+        startActivityForResult(intent,Constants.CAMERA_REQUEST_CODE)
     }
 
     fun getphotofile(fileName: String):File{
@@ -260,7 +272,7 @@ class UserProfile : AppCompatActivity(),MessageListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode==110 && resultCode== Activity.RESULT_OK){
+        if(requestCode==Constants.CAMERA_REQUEST_CODE && resultCode== Activity.RESULT_OK){
             try {
                 if(imageuri!=null){
                     binding.updateImgNow.visibility=View.VISIBLE
@@ -271,50 +283,19 @@ class UserProfile : AppCompatActivity(),MessageListener {
                 e.printStackTrace();
             }
         }
-        else if(requestCode==112 && resultCode== Activity.RESULT_OK){
+        else if(requestCode==Constants.STORAGE_REQUEST_CODE && resultCode== Activity.RESULT_OK){
             imageuri=data!!.data
             try {
                 if(imageuri!=null){
                     binding.updateImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                     binding.updateSelectImg.setImageBitmap(photo)
-                    imagepath = Addprofile().getRealPathFromURI_API19(this,imageuri!!).execute().get()
+                    imagepath = ImageHandling(this).getRealPathFromURI_API19(this,imageuri!!).execute().get()
                 }
             } catch (e: IOException) {
                 e.printStackTrace();
             }
         }
-//        if(photo!=null){
-//            val intent = Intent(this,SelectedImage::class.java)
-////            var fos  =  ByteArrayOutputStream()
-////            photo!!.compress(Bitmap.CompressFormat.JPEG, 50, fos)
-////            val byteArray = fos.toByteArray()
-//            ImageHolder.imageBitmap=photo
-//            intent.putExtra("type","profile")
-//        //    intent.putExtra("image", byteArray)
-//            intent.putExtra("userid",firebaseUser.uid)
-//            intent.putExtra("name","")
-//            intent.putExtra("number","")
-//            intent.putExtra("user_image","")
-//            startActivity(intent)
-//        }
     }
 
-
-//    inner class setImage(val imageView: CircleImageView):AsyncTask<Void,Void,Boolean>(){
-//        var b:Bitmap?=null
-//        override fun onPostExecute(result: Boolean?) {
-//            super.onPostExecute(result)
-//            image.setImageBitmap(b)
-//        }
-//        override fun doInBackground(vararg params: Void?): Boolean {
-//            try {
-//                val f = File(File(Environment.getExternalStorageDirectory(),"/Flow/Medias/Flow Profile photos"),sharedPreferences.getString("profile",""))
-//                b = BitmapFactory.decodeStream(FileInputStream(f))
-//            } catch (e: FileNotFoundException) {
-//                e.printStackTrace()
-//            }
-//            return true
-//        }
-//    }
 }

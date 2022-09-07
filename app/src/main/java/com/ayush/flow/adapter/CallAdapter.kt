@@ -5,28 +5,25 @@ package com.ayush.flow.adapter
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
-import android.os.AsyncTask
 import android.os.Environment
-import android.text.SpannableString
-import android.text.style.ImageSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.database.CallEntity
-import com.ayush.flow.database.CallHistoryViewModel
+import com.ayush.flow.utils.ImageHandling
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -70,13 +67,12 @@ class CallAdapter(val context: Context,private val clickListener: ChatAdapter.On
         dr!!.setBounds(0, 0, 34, 34)
         holder.time.setCompoundDrawables(dr, null, null, null)
 
-        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),call.id+".jpg")
-        if(f.exists()){
-            val b = BitmapFactory.decodeStream(FileInputStream(f))
-            holder.image.setImageBitmap(b)
-        }
-        else{
-            holder.image.setImageResource(R.drawable.user)
+        try {
+            val profileUri = ImageHandling(context).getUserProfileImageUri(call.id)
+            Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
         }
 
         holder.audioCall.setOnClickListener {

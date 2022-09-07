@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/msg_par"
     android:longClickable="true"
     android:layout_height="wrap_content">
@@ -58,20 +59,21 @@
         android:background="@drawable/receive_back"
         android:layout_alignParentLeft="true">
 
-        <TextView
+        <com.aghajari.emojiview.view.AXEmojiTextView
             android:id="@+id/txt_msg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:autoLink="all"
             android:fontFamily="@font/senregular"
             android:linksClickable="true"
             android:maxWidth="260dp"
             android:paddingHorizontal="16dp"
             android:paddingVertical="10dp"
             android:text=""
-            android:autoLink="all"
             android:textColor="@color/white"
             android:textColorLink="@android:color/holo_blue_dark"
-            android:textSize="16sp" />
+            android:textSize="18sp"
+            app:emojiSize="25sp"/>
     </RelativeLayout>
     <TextView
         android:layout_width="wrap_content"

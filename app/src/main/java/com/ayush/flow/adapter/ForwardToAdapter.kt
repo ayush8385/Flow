@@ -11,12 +11,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.database.ChatEntity
+import com.ayush.flow.utils.ImageHandling
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.util.*
 
 class ForwardToAdapter(val context: Context,val listener:ForwardAdapter.OnAdapterItemClickListener):RecyclerView.Adapter<ForwardToAdapter.HomeViewHolder>() {
@@ -34,8 +37,13 @@ class ForwardToAdapter(val context: Context,val listener:ForwardAdapter.OnAdapte
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         var chat=allChats[position]
 
-        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
-        Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
+        try {
+            val profileUri = ImageHandling(context).getUserProfileImageUri(chat.id)
+            Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
         holder.delete.setOnClickListener {
             listener.delChat(allChats[holder.adapterPosition])

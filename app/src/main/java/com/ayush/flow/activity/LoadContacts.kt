@@ -2,25 +2,17 @@ package com.ayush.flow.activity
 
 import android.app.IntentService
 import android.content.Intent
-import android.database.Cursor
-import android.os.Bundle
-import android.os.Environment
 import android.provider.ContactsContract
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.ImageHandling
+import android.util.Log
 import com.ayush.flow.database.ChatViewModel
 import com.ayush.flow.database.ContactEntity
 import com.ayush.flow.database.ContactViewModel
+import com.ayush.flow.utils.Constants
+import com.ayush.flow.utils.ImageHandling
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Response
 import java.io.File
 
 class LoadContacts : IntentService(TAG) {
@@ -31,7 +23,7 @@ class LoadContacts : IntentService(TAG) {
         val contacts = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null)
 
         //       var contactMap:HashMap<String,String> = HashMap<String,String>()
-
+        var curr_profile_url = ""
         while (contacts?.moveToNext() == true) {
             val name = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
             var phoneNumber = contacts.getString(contacts.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
@@ -43,9 +35,10 @@ class LoadContacts : IntentService(TAG) {
             }
 
             if (phoneNumber.length==10){
-//                contactList.add()
-//                ContactViewModel(application).inserContact()
-                contactMap[phoneNumber]=ContactEntity(name,phoneNumber,"",false,"")
+                if(ContactViewModel(application).isContactExist(phoneNumber)){
+                    curr_profile_url = ContactViewModel(application).getCurrProfileUrl("",phoneNumber)
+                }
+                contactMap[phoneNumber]=ContactEntity(name,phoneNumber,"",false,"",curr_profile_url)
             }
         }
         contacts!!.close()
@@ -64,31 +57,33 @@ class LoadContacts : IntentService(TAG) {
 
                         val contactObj = contactMap.get(num)
                         contactObj!!.isUser=true
-                        contactObj!!.id=userid
+                        contactObj.id=userid
                         contactMap[num]=contactObj
 
 //                        val consEntity = ContactEntity(usercon.name,usercon.number,"",true,userid)
 //                        ContactViewModel(application).inserContact(consEntity)
-
-                        if(profile_url!=""){
-                            ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
+                        if(profile_url!=contactObj.profile_url){
+                            contactObj.profile_url=profile_url
+//                            ImageHandling(this@LoadContacts).GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid,"profile").execute(profile_url)
 //                            val bmp = ImageHandling.GetImageFromUrl().execute(profile_url).get()
 //                            val selectedPtah = getRealPathFromURI(getImageUri(this@Dashboard,bmp!!))
-                            // ImageCompression(this@Dashboard).execute(selectedPtah)
-                            //ImageHandling.GetUrlImageAndSave(Constants.ALL_PHOTO_LOCATION,userid+".jpg").execute(profile_url)
+//                             ImageCompression(this@Dashboard).execute(selectedPtah)
+                            ImageHandling(this@LoadContacts).GetUrlImageAndSave("",userid,"profile").execute(profile_url)
                         }
-                        else{
-                            val f = File(
-                                File(
-                                    Environment.getExternalStorageDirectory(),
-                                    Constants.ALL_PHOTO_LOCATION),userid+".jpg")
-                            if(f.exists()){
-                                f.delete()
+                        if(profile_url==""){
+                            val imageName = "/${userid}.jpg"
+                            val imagePath = File(this@LoadContacts.filesDir, "profile_images")
+                            val newFile = File(imagePath, imageName)
+                            if(imagePath.exists()){
+                                if(newFile.exists()){
+                                    newFile.delete()
+                                }
                             }
                         }
                         if(ChatViewModel(application).isUserExist(userid)){
                             ChatViewModel(application).updateName(contactObj.name,userid)
                         }
+                        ContactViewModel(application).inserContact(contactObj)
                     }
 
                 }

@@ -12,12 +12,15 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.activity.ForwardViewModel
 import com.ayush.flow.database.ChatEntity
+import com.ayush.flow.utils.ImageHandling
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
 class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListener):RecyclerView.Adapter<ForwardAdapter.HomeViewHolder>() {
@@ -49,9 +52,12 @@ class ForwardAdapter(val context: Context,val listener: OnAdapterItemClickListen
             holder.name.text=chat.name
         }
 
-        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")
-        if(f.exists()){
-            Glide.with(context).load(f).placeholder(R.drawable.user).into(holder.image)
+        try {
+            val profileUri = ImageHandling(context).getUserProfileImageUri(chat.id)
+            Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+                DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
         }
 
 

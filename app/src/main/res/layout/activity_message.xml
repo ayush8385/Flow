@@ -9,26 +9,6 @@
         android:orientation="vertical"
         tools:context=".flow.activity.Message">
 
-        <com.vanniktech.emoji.EmojiEditText
-            android:id="@+id/msgText"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginLeft="5dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginRight="5dp"
-            android:drawablePadding="8dp"
-            android:hint="Send a message..."
-            android:inputType="textCapSentences"
-            android:paddingVertical="5dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="12dp"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:emojiSize="30sp" />
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -138,8 +118,18 @@
             android:id="@+id/message_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/send"
+            android:layout_above="@+id/typing"
             android:layout_below="@+id/toolbar" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="typing..."
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:visibility="gone"
+            android:layout_marginStart="8dp"
+            android:layout_above="@id/send"
+            android:id="@+id/typing"/>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -165,34 +155,53 @@
                         android:layout_width="39dp"
                         android:layout_height="40dp"
                         android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
                         android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
 
-                    <com.vanniktech.emoji.EmojiEditText
-                        android:id="@+id/sendText"
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="40dp"
+                        android:layout_height="46dp"
                         android:layout_marginLeft="5dp"
                         android:layout_marginRight="5dp"
-                        android:layout_toLeftOf="@+id/send_btn"
-                        android:layout_toRightOf="@+id/more"
+                        android:layout_toLeftOf="@id/send_btn"
+                        android:layout_toRightOf="@id/more"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/chat_back"
-                        android:drawableLeft="@drawable/happy"
-                        android:drawablePadding="8dp"
-                        android:drawableTint="@color/grey_600"
-                        android:fontFamily="@font/senregular"
-                        android:hint="Send a message..."
-                        android:inputType="textCapSentences"
                         android:paddingVertical="5dp"
                         android:paddingStart="8dp"
-                        android:paddingEnd="12dp"
-                        android:textColor="@color/black"
-                        android:textSize="16sp"
-                        app:emojiSize="30sp" />
+                        android:paddingEnd="12dp">
+                        <ImageView
+                            android:id="@+id/emoji_tab"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_baseline_emoji_emotions_24"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"/>
+
+                        <com.aghajari.emojiview.view.AXEmojiEditText
+                            android:id="@+id/sendText"
+                            app:layout_constraintStart_toEndOf="@id/emoji_tab"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:background="@android:color/transparent"
+                            android:layout_marginStart="8dp"
+                            android:layout_width="0dp"
+                            android:layout_height="46dp"
+                            android:fontFamily="@font/senregular"
+                            android:hint="Send a message..."
+                            android:inputType="textCapSentences"
+                            android:textColor="@color/black"
+                            android:textSize="19sp"
+                            app:emojiSize="25sp"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <ImageView
                         android:id="@+id/send_btn"
                         android:layout_width="39dp"
                         android:layout_height="40dp"
+                        android:layout_centerVertical="true"
                         android:layout_alignParentRight="true"
                         android:src="@drawable/send" />
                 </RelativeLayout>
@@ -449,46 +458,46 @@
                     android:src="@drawable/ic_baseline_close_24"
                     android:layout_alignParentRight="true"/>
             </RelativeLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/searched"
-            app:cardCornerRadius="10dp"
-            android:visibility="gone"
-            android:layout_marginHorizontal="5dp"
-            android:layout_alignParentBottom="true">
-            <RelativeLayout
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="12dp"
-                android:paddingHorizontal="6dp"
-                android:layout_marginHorizontal="10dp"
-                android:background="@color/white">
-                <TextView
-                    android:layout_width="wrap_content"
+                android:id="@+id/searched"
+                app:cardCornerRadius="10dp"
+                android:visibility="gone"
+                android:elevation="20dp"
+                android:layout_marginHorizontal="5dp"
+                android:layout_alignParentBottom="true">
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="0 of 10"
-                    android:layout_marginLeft="20dp"
-                    android:textSize="19sp"
-                    android:textColor="@color/black"
-                    android:id="@+id/search_text" />
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/up_log"
-                    android:layout_marginLeft="30dp"
-                    android:layout_toRightOf="@+id/search_text"
-                    android:src="@drawable/ic_baseline_keyboard_arrow_up_24"/>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/down_log"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/up_log"
-                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24"/>
-            </RelativeLayout>
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="6dp"
+                    android:layout_marginHorizontal="10dp"
+                    android:background="@color/white">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 of 10"
+                        android:layout_marginLeft="20dp"
+                        android:textSize="19sp"
+                        android:textColor="@color/black"
+                        android:id="@+id/search_text" />
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/up_log"
+                        android:layout_marginLeft="30dp"
+                        android:layout_toRightOf="@+id/search_text"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_up_24"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/down_log"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/up_log"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_down_24"/>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
         </androidx.cardview.widget.CardView>
 
         <!--    <androidx.cardview.widget.CardView-->

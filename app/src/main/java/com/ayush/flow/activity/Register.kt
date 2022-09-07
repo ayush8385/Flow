@@ -2,7 +2,6 @@ package com.ayush.flow.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -11,7 +10,6 @@ import android.os.CountDownTimer
 import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -20,8 +18,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.SharedPreferenceUtils
+import com.ayush.flow.utils.Constants
+import com.ayush.flow.utils.SharedPreferenceUtils
 import com.ayush.flow.databinding.ActivityRegisterBinding
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.FirebaseException
@@ -143,17 +141,14 @@ class Register : AppCompatActivity() {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 val userHashmap=HashMap<String, Any>()
                                 if(!snapshot.hasChild(Constants.MY_USERID)){
-
-                                    Toast.makeText(this@Register,"Not exist",Toast.LENGTH_SHORT).show()
-
-                                    userHashmap["uid"]=Constants.MY_USERID
+                                    userHashmap["uid"]= Constants.MY_USERID
                                     userHashmap["number"]=binding.numberEdt.text.toString()
                                     userHashmap["username"]=""
                                     userHashmap["about"]="I'm with the Flow"
                                     userHashmap["profile_photo"]=""
                                 }
                                 else{
-                                    userHashmap["uid"]=Constants.MY_USERID
+                                    userHashmap["uid"]= Constants.MY_USERID
                                     userHashmap["number"]=snapshot.child(Constants.MY_USERID).child("number").value.toString()
                                     userHashmap["username"]=snapshot.child(Constants.MY_USERID).child("username").value.toString()
                                     userHashmap["about"]=snapshot.child(Constants.MY_USERID).child("about").value.toString()

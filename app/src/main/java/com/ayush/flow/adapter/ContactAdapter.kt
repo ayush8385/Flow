@@ -1,7 +1,6 @@
 package com.ayush.flow.adapter
 
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,20 +13,20 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.Services.ImageHolder
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ContactEntity
+import com.ayush.flow.utils.ImageHandling
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 
 class ContactAdapter(val context: Context):ListAdapter<ContactEntity,ContactAdapter.HomeViewHolder>(DiffUtil()) {
 
@@ -64,14 +63,20 @@ class ContactAdapter(val context: Context):ListAdapter<ContactEntity,ContactAdap
 //                DiskCacheStrategy.NONE)
 //                .skipMemoryCache(true).into(holder.image)
 
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),cons.id+".jpg")
-            if(f.exists()) {
-                val b = BitmapFactory.decodeStream(FileInputStream(f))
-                holder.image.setImageBitmap(b)
+            try {
+                val profileUri = ImageHandling(context).getUserProfileImageUri(cons.id)
+                if(profileUri!=null){
+                    holder.image.setImageURI(profileUri)
+                }
+                if(holder.image.drawable==null){
+                    holder.image.setImageResource(R.drawable.user)
+                }
+//                Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+//                    DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
             }
-            else{
-                holder.image.setImageResource(R.drawable.user)
-            }
+
             holder.start_chat.setOnClickListener {
                 if(cons.isUser){
                     val intent= Intent(context, Message::class.java)

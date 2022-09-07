@@ -1,4 +1,4 @@
-package com.ayush.flow.Services
+package com.ayush.flow.utils
 
 import android.app.Application
 import android.graphics.Bitmap

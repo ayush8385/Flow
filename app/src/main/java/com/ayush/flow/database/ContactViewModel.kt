@@ -44,4 +44,8 @@ class ContactViewModel(application: Application):AndroidViewModel(application) {
     fun getContactByNum(num: String): ContactEntity {
         return repository.getContactbyNum(num)
     }
+
+    fun getCurrProfileUrl(userid: String,num: String):String{
+        return repository.getProfileUrl(userid,num)
+    }
 }

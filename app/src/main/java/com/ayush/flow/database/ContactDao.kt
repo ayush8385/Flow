@@ -37,6 +37,12 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE number = :num")
     fun getContactbyNum(num: String): ContactEntity
 
+    @Query("SELECT profile_url FROM contacts WHERE contact_id = :userid")
+    fun getProfileUrlById(userid: String): String
+
+    @Query("SELECT profile_url FROM contacts WHERE number = :num")
+    fun getProfileUrlByNum(num: String): String
+
 //    @Query("SELECT * FROM contacts where contact_number=:number")
 //    fun getRestaurantsbyId(number:String):ContactEntity
 }

@@ -10,5 +10,6 @@ data class ContactEntity(
     @PrimaryKey val number: String,
     @ColumnInfo(name = "contact_image") val image: String,
     @ColumnInfo(name = "isUser") var isUser:Boolean,
-    @ColumnInfo(name = "contact_id") var id:String
+    @ColumnInfo(name = "contact_id") var id:String,
+    @ColumnInfo(name = "profile_url") var profile_url:String,
     )

@@ -16,25 +16,26 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ayush.flow.R
-import com.ayush.flow.Services.Constants
-import com.ayush.flow.activity.EmojiActivity
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.activity.Message
 import com.ayush.flow.activity.SelectedImage
 import com.ayush.flow.database.ChatEntity
 import com.ayush.flow.database.MessageViewModel
 import com.ayush.flow.databinding.ChatTemSwipeBinding
+import com.ayush.flow.utils.ImageHandling
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.OnAdapterItemClickListener):ListAdapter<ChatEntity,ChatAdapter.HomeViewHolder>(DiffUtil()) {
     val allChats=ArrayList<ChatEntity>()
-    final val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
-    lateinit var viewModel: MessageViewModel
+    val viewBinderHelper:ViewBinderHelper = ViewBinderHelper()
 
     class HomeViewHolder(val binding: ChatTemSwipeBinding):RecyclerView.ViewHolder(binding.root){
         var chatTembinding: ChatTemSwipeBinding = binding
@@ -55,7 +56,7 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
             holder.chatTembinding.profileName.text=chat.name
         }
 
-        if(chat.last_sender==Constants.MY_USERID){
+        if(chat.last_sender== Constants.MY_USERID){
             holder.chatTembinding.unreadChat.visibility=View.GONE
             holder.chatTembinding.waitingTick.visibility=View.VISIBLE
             MessageViewModel(context).getMsgStatus(chat.last_mid).observe(context as LifecycleOwner,
@@ -184,9 +185,19 @@ class ChatAdapter(val context: Context,private val clickListener: ChatAdapter.On
 //        else{
 //            holder.chatTembinding.profilePic.setImageResource(R.drawable.user)
 //        }
-        Glide.with(context).load(File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),chat.id+".jpg")).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(holder.chatTembinding.profilePic)
+        try {
+            val profileUri = ImageHandling(context).getUserProfileImageUri(chat.id)
+            if(profileUri!=null){
+                holder.chatTembinding.profilePic.setImageURI(profileUri)
+            }
+            if(holder.chatTembinding.profilePic.drawable==null){
+                holder.chatTembinding.profilePic.setImageResource(R.drawable.user)
+            }
+//                Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+//                    DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
         holder.chatTembinding.paren.setOnClickListener {
 

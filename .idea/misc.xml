@@ -139,9 +139,10 @@
         <entry key="app/src/main/res/layout/activity_contact.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/activity_dashboard.xml" value="0.17647058823529413" />
         <entry key="app/src/main/res/layout/activity_emoji.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_emoji2.xml" value="0.26510416666666664" />
         <entry key="app/src/main/res/layout/activity_image_view.xml" value="0.31875" />
         <entry key="app/src/main/res/layout/activity_incoming_vdo.xml" value="0.28958333333333336" />
-        <entry key="app/src/main/res/layout/activity_message.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_message.xml" value="0.335" />
         <entry key="app/src/main/res/layout/activity_outgoing.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_outgoing_vdo.xml" value="0.26510416666666664" />
         <entry key="app/src/main/res/layout/activity_passcode.xml" value="0.27447916666666666" />
@@ -159,6 +160,8 @@
         <entry key="app/src/main/res/layout/fwd_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/fwd_to_single_row.xml" value="0.28958333333333336" />
         <entry key="app/src/main/res/layout/history_box.xml" value="0.321644816306159" />
+        <entry key="app/src/main/res/layout/invite_modal_bottomsheet.xml" value="0.26510416666666664" />
+        <entry key="app/src/main/res/layout/invite_single_row.xml" value="0.2640625" />
         <entry key="app/src/main/res/layout/layout_screen.xml" value="0.165" />
         <entry key="app/src/main/res/layout/message_box.xml" value="0.27447916666666666" />
         <entry key="app/src/main/res/layout/navigation_state.xml" value="0.1" />

@@ -20,18 +20,18 @@ import androidx.annotation.RequiresApi
 import com.ayush.flow.Notification.*
 import com.ayush.flow.R
 import com.ayush.flow.Services.APIService
-import com.ayush.flow.Services.Constants
+import com.ayush.flow.utils.Constants
 import com.ayush.flow.database.CallEntity
 import com.ayush.flow.database.CallHistoryEntity
 import com.ayush.flow.database.CallHistoryViewModel
 import com.ayush.flow.database.CallViewModel
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.ayush.flow.utils.ImageHandling
 import com.sinch.android.rtc.calling.Call
 import com.sinch.android.rtc.calling.CallEndCause
 import com.sinch.android.rtc.calling.CallListener
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
 
@@ -174,14 +174,19 @@ class Outgoing : BaseActivity() {
             mCallerName.text=intent.getStringExtra("name")
             mCallState.setText(call.getState().toString())
 
-            val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),intent.getStringExtra("userid")+".jpg")
-            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(mCallerimg)
-
-            Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-                DiskCacheStrategy.NONE)
-                .skipMemoryCache(true).into(backimg)
+            try {
+                val profileUri = ImageHandling(this).getUserProfileImageUri(intent.getStringExtra("userid")!!)
+                if(profileUri!=null){
+                    mCallerimg.setImageURI(profileUri)
+                    backimg.setImageURI(profileUri)
+                }
+                if(mCallerimg.drawable==null){
+                    mCallerimg.setImageResource(R.drawable.user)
+                    backimg.setImageResource(R.drawable.user)
+                }
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
+            }
 
 //            CallViewModel(application).inserCall(CallEntity(mCallerName.text.toString(),"audio","out",System.currentTimeMillis(),"", intent.getStringExtra("userid")!!))
 

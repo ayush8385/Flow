@@ -28,8 +28,7 @@ abstract class ChatDatabase: RoomDatabase() {
             // if it is, then create the database
             return INSTANCE ?: synchronized(this){
                 val instance=
-                    Room.databaseBuilder(context.applicationContext, ChatDatabase::class.java,"chat-db").allowMainThreadQueries().addMigrations(
-                        migration_1_2).build()
+                    Room.databaseBuilder(context.applicationContext, ChatDatabase::class.java,"chat-db").allowMainThreadQueries().build()
                 INSTANCE =instance
                 instance
             }

@@ -16,11 +16,12 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.text.method.PasswordTransformationMethod
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Base64.*
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
+import android.view.ViewTreeObserver
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
@@ -33,16 +34,19 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aghajari.emojiview.view.AXEmojiPopup
+import com.aghajari.emojiview.view.AXEmojiView
 import com.ayush.flow.Notification.*
 import com.ayush.flow.R
 import com.ayush.flow.Services.*
-import com.ayush.flow.Services.Constants
 import com.ayush.flow.adapter.ForwardAdapter
 import com.ayush.flow.adapter.ForwardToAdapter
 import com.ayush.flow.adapter.MessageAdapter
 import com.ayush.flow.adapter.SelectedImgAdapter
 import com.ayush.flow.database.*
 import com.ayush.flow.databinding.ActivityMessageBinding
+import com.ayush.flow.utils.*
+import com.ayush.flow.utils.Constants
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.github.dhaval2404.colorpicker.MaterialColorPickerDialog
@@ -59,7 +63,6 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
-import com.vanniktech.emoji.EmojiPopup
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -100,6 +103,7 @@ class Message : BaseActivity() {
     lateinit var allSelectedUri:ArrayList<Uri>
     lateinit var selectedImgAdapter: SelectedImgAdapter
     lateinit var selectedLayoutManager: RecyclerView.LayoutManager
+    lateinit var emoji_layout:AXEmojiPopup
 
     lateinit var binding:ActivityMessageBinding
     @SuppressLint("RestrictedApi")
@@ -117,14 +121,27 @@ class Message : BaseActivity() {
        fwdViewModel=ViewModelProviders.of(this).get(ForwardViewModel::class.java)
        mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
 
-        val emojiPopup = EmojiPopup
-            .Builder
-            .fromRootView(binding.root)
-            .build(binding.msgText)
-
         binding.back.setOnClickListener {
             onBackPressed()
         }
+
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object :ViewTreeObserver.OnGlobalLayoutListener{
+            override fun onGlobalLayout() {
+                val r = Rect()
+                binding.root.getWindowVisibleDisplayFrame(r)
+                val screenHeight: Int = binding.root.getRootView().getHeight()
+                val keypadHeight = screenHeight - r.bottom
+                if (keypadHeight <= screenHeight * 0.15) {
+                    binding.emojiTab.setImageResource(R.drawable.ic_baseline_emoji_emotions_24)
+                }
+            }
+
+        })
+
+        val emojiView = AXEmojiView(this)
+        emojiView.editText = binding.sendText
+        emoji_layout = AXEmojiPopup(emojiView)
+//        emoji_layout.initPopupView(emojiView)
 
         user_name=intent.getStringExtra("name")!!
         user_number=intent.getStringExtra("number")!!
@@ -242,13 +259,13 @@ class Message : BaseActivity() {
             if(binding.moreCard.visibility== View.GONE){
                 val rotate = RotateAnimation(
                     0F,
-                    360F,
+                    180F,
                     Animation.RELATIVE_TO_SELF,
                     0.5f,
                     Animation.RELATIVE_TO_SELF,
                     0.5f
                 )
-                rotate.duration = 400
+                rotate.duration = 200
                 rotate.fillAfter=true
                 rotate.interpolator = LinearInterpolator()
                 binding.more.startAnimation(rotate)
@@ -263,14 +280,14 @@ class Message : BaseActivity() {
             }
             else{
                 val rotate = RotateAnimation(
-                    0F,
                     180F,
+                    360F,
                     Animation.RELATIVE_TO_SELF,
                     0.5f,
                     Animation.RELATIVE_TO_SELF,
                     0.5f
                 )
-                rotate.duration = 300
+                rotate.duration = 200
                 rotate.fillAfter=true
                 rotate.interpolator = LinearInterpolator()
                 binding.more.startAnimation(rotate)
@@ -280,7 +297,7 @@ class Message : BaseActivity() {
             }
         }
 
-        binding.send.setOnClickListener {
+        binding.sendBtn.setOnClickListener {
             var msg=binding.sendText.text.toString()
             if(msg!=""){
                 if(msg.contains("\uD83D\uDE12")){
@@ -289,7 +306,8 @@ class Message : BaseActivity() {
                 val ref=FirebaseDatabase.getInstance().reference
                 val messageKey=ref.push().key
                 MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
-                    Constants.MY_USERID+"-"+userid,Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","","sending..."))
+                    Constants.MY_USERID+"-"+userid,
+                    Constants.MY_USERID,msg,System.currentTimeMillis(),"message","","","","","sending..."))
                 sendMessageToUser(msg,messageKey,userid,intent.getStringExtra("name")!!, intent.getStringExtra("number")!!,user_image,application).execute()
                 binding.sendText.setText("")
             }
@@ -297,18 +315,18 @@ class Message : BaseActivity() {
 
 
        binding.sendCam.setOnClickListener {
-
-           if(Permissions().checkCamerapermission(this)){
-               openCamera()
-               binding.moreCard.visibility=View.GONE
-
+           if(Build.VERSION.SDK_INT<= Constants.MAX_API_FOR_PERMISSION){
+               if(Permissions().checkCamerapermission(this)){
+                   openCamera()
+               }
+               else{
+                   Permissions().openPermissionBottomSheet(R.drawable.camera_permission,
+                       this.resources.getString(R.string.camera_permission),this, Constants.CAMERA_PERMISSION)
+               }
            }
            else{
-               Permissions().openPermissionBottomSheet(R.drawable.camera_permission,
-                   this.resources.getString(R.string.camera_permission),this,"camera")
+               openCamera()
            }
-
-
        }
 
        binding.sendGall.setOnClickListener {
@@ -317,7 +335,7 @@ class Message : BaseActivity() {
                binding.moreCard.visibility=View.GONE
            }
            else{
-               Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
+               Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,Constants.STORAGE_PERMISSION)
            }
 
        }
@@ -328,7 +346,7 @@ class Message : BaseActivity() {
                binding.moreCard.visibility=View.GONE
            }
            else{
-               Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,"storage")
+               Permissions().openPermissionBottomSheet(R.drawable.gallery,this.resources.getString(R.string.storage_permission),this,Constants.STORAGE_PERMISSION)
            }
 
        }
@@ -386,32 +404,68 @@ class Message : BaseActivity() {
             closeCanvas()
         }
 
-        binding.sendText.setOnTouchListener(View.OnTouchListener { v, event ->
-            val DRAWABLE_LEFT = 0
-            val DRAWABLE_TOP = 1
-            val DRAWABLE_RIGHT = 2
-            val DRAWABLE_BOTTOM = 3
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= binding.sendText.left - binding.sendText.getCompoundDrawables().get(DRAWABLE_LEFT)
-                        .getBounds().width()-60
-                ) {
-                    if (binding.sendText.transformationMethod != null) {
-                        binding.sendText.transformationMethod = null
-                        binding.sendText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.lock,0,
-                            0,0)
-                        emojiPopup.toggle()
-                    } else {
-                        binding.sendText.transformationMethod = PasswordTransformationMethod()
-                        binding.sendText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            R.drawable.delete,0,
-                            0,0)
-                    }
-                    return@OnTouchListener false
-                }
+        binding.emojiTab.setOnClickListener {
+            if(emoji_layout.isShowing){
+                binding.emojiTab.setImageResource(R.drawable.ic_baseline_emoji_emotions_24)
+                emoji_layout.toggle()
             }
-            false
-        })
+            else{
+                binding.emojiTab.setImageResource(R.drawable.ic_baseline_keyboard_24)
+                emoji_layout.toggle()
+            }
+        }
+
+//        val connectionReference= FirebaseDatabase.getInstance().reference.child("Users").child(
+//            Constants.MY_USERID)
+//        val infoConnected= FirebaseDatabase.getInstance().getReference(".info/connected")
+
+//        binding.sendText.addTextChangedListener(object :TextWatcher{
+//            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//
+//            }
+//
+//            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//
+//                infoConnected.addValueEventListener(object : ValueEventListener {
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        val connected:Boolean=snapshot.value as Boolean
+//
+//                        if(connected){
+//                            val con=connectionReference.child("status")
+//                            con.setValue("typing...")
+//                            con.onDisconnect().setValue("")
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//
+//                    }
+//
+//                })
+//            }
+//
+//            override fun afterTextChanged(p0: Editable?) {
+//                infoConnected.addValueEventListener(object : ValueEventListener {
+//                    override fun onDataChange(snapshot: DataSnapshot) {
+//                        val connected:Boolean=snapshot.value as Boolean
+//
+//                        if(connected){
+//                            val con=connectionReference.child("status")
+//
+//                                con.setValue("online")
+//
+//                            con.onDisconnect().setValue("")
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//
+//                    }
+//
+//                })
+//            }
+//
+//        })
 
 //        Dashboard().checkStatus()
         checkSeen().execute()
@@ -484,7 +538,7 @@ class Message : BaseActivity() {
         galleryIntent.type = "application/pdf"
         galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 //        startActivityForResult(Intent.createChooser(intent, "Open With"), 113)
-        startActivityForResult(galleryIntent, 113)
+        startActivityForResult(galleryIntent, Constants.DOCUMENT_REQUEST_CODE)
     }
 
     fun openForwardBottomSheet(context: Context) {
@@ -694,14 +748,23 @@ class Message : BaseActivity() {
         val block=bottomSheetDialog.findViewById<TextView>(R.id.user_block)
         val report=bottomSheetDialog.findViewById<TextView>(R.id.user_report)
 
-        val f = File(File(Environment.getExternalStorageDirectory(), Constants.ALL_PHOTO_LOCATION),userid+".jpg")
-        Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(profile_image!!)
+        try {
+            val profileUri = ImageHandling(this).getUserProfileImageUri(userid)
+            if(profileUri!=null){
+                profile_image!!.setImageURI(profileUri)
+            }
+            if(binding.userPic.drawable==null){
+                profile_image!!.setImageResource(R.drawable.user)
+            }
+//                Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+//                    DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
         user_name!!.text=username
 
-        profile_image.setOnClickListener {
+        profile_image!!.setOnClickListener {
             val intent = Intent(context, SelectedImage::class.java)
             intent.putExtra("type","view")
             intent.putExtra("userid",user_id)
@@ -726,7 +789,7 @@ class Message : BaseActivity() {
                 audioCalling(username,user_id)
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,"mic")
+                Permissions().openPermissionBottomSheet(R.drawable.mic_permission,context.resources.getString(R.string.mic_permission),context,Constants.MIC_PERMISSION)
             }
         }
 
@@ -735,7 +798,7 @@ class Message : BaseActivity() {
                 videoCalling(username,user_id)
             }
             else{
-                Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,context.resources.getString(R.string.mic_and_cam_permission),context,"micandcam")
+                Permissions().openPermissionBottomSheet(R.drawable.camera_mic_permission,context.resources.getString(R.string.mic_and_cam_permission),context,Constants.MIC_CAM_PERMISSION)
             }
 
         }
@@ -822,7 +885,7 @@ class Message : BaseActivity() {
         // allowing multiple image to be selected
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         intent.action = Intent.ACTION_GET_CONTENT
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), 111)
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), Constants.STORAGE_REQUEST_CODE)
     }
 
     fun openCamera(){
@@ -831,7 +894,7 @@ class Message : BaseActivity() {
         imageuri = let { it1 -> FileProvider.getUriForFile(it1, "com.ayush.flow.fileprovider", photofile) }
         val intent= Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT,imageuri)
-        startActivityForResult(intent,110)
+        startActivityForResult(intent,Constants.CAMERA_REQUEST_CODE)
     }
 
     fun getphotofile(fileName: String):File{
@@ -866,11 +929,19 @@ class Message : BaseActivity() {
     }
 
     override fun onResume() {
-
-        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),userid+".jpg")
-        Glide.with(this).load(f).placeholder(R.drawable.user).diskCacheStrategy(
-            DiskCacheStrategy.NONE)
-            .skipMemoryCache(true).into(binding.userPic)
+        try {
+            val profileUri = ImageHandling(this).getUserProfileImageUri(userid)
+            if(profileUri!=null){
+                binding.userPic.setImageURI(profileUri)
+            }
+            if(binding.userPic.drawable==null){
+                binding.userPic.setImageResource(R.drawable.user)
+            }
+//                Glide.with(context).load(profileUri).placeholder(R.drawable.user).diskCacheStrategy(
+//                    DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.image)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
         RetrieveMessage(application).execute()
         handler.postDelayed(Runnable {
@@ -917,7 +988,7 @@ class Message : BaseActivity() {
                 binding.userProfile.visibility=View.VISIBLE
                 binding.userPic.visibility=View.VISIBLE
                 binding.searched.visibility=View.GONE
-                binding.sendBox.visibility=View.VISIBLE
+                binding.msgSendView.visibility=View.VISIBLE
                 setOnlineStatus()
                 val params:RelativeLayout.LayoutParams=RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT)
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
@@ -948,11 +1019,19 @@ class Message : BaseActivity() {
         reference.addValueEventListener(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 val stat=snapshot.child("status").value.toString()
-                if(stat=="online"){
+                if(stat=="online" || stat=="typing..."){
+                    binding.status.text=stat
                     binding.status.visibility=View.VISIBLE
+                    if(stat=="typing..."){
+                        binding.typing.visibility=View.VISIBLE
+                    }
+                    else{
+                        binding.typing.visibility=View.GONE
+                    }
                 }
                 else{
                     binding.status.visibility=View.GONE
+                    binding.typing.visibility=View.GONE
                 }
             }
 
@@ -969,19 +1048,19 @@ class Message : BaseActivity() {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            101->{
+            Constants.PERMISSION_CAMERA_REQUEST_CODE->{
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     openCamera()
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
-            104 -> {
+            Constants.PERMISSION_MIC_REQUEST_CODE -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     audioCalling(binding.userName.text.toString(),userid)
                 }
                 super.onRequestPermissionsResult(requestCode, permissions!!, grantResults)
             }
-            105->{
+            Constants.PERMISSION_MIC_CAM_REQUEST_CODE->{
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     videoCalling(binding.userName.text.toString(),userid)
                 }
@@ -1006,7 +1085,9 @@ class Message : BaseActivity() {
         }
         else{
             binding.searched.visibility=View.VISIBLE
-            binding.sendBox.visibility=View.INVISIBLE
+            binding.msgSendView.visibility=View.GONE
+            binding.canvasSendView.visibility=View.GONE
+            binding.selected.visibility=View.GONE
 
             binding.searchText.text=(n+1).toString()+" of "+filteredlist.size.toString()
             binding.messageRecycler.smoothScrollToPosition(allMsg.indexOf(filteredlist.get(n)))
@@ -1079,9 +1160,11 @@ class Message : BaseActivity() {
             if(applicat!=null){
                 if(ChatViewModel(applicat).isUserExist(userid)){
                     val currentChat = ChatViewModel(applicat).getChat(userid)
-                    ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
+                    ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,
+                        Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),currentChat.hide,currentChat.unread,userid))
                 }
-                ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(applicat).inserChat(ChatEntity(user_name,user_number,user_img,msg,
+                    Constants.MY_USERID,messageKey,"",System.currentTimeMillis(),false,0,userid))
             }
 
             val encryptedMsg = AESEncryption().encrypt(msg)
@@ -1089,7 +1172,7 @@ class Message : BaseActivity() {
             val messageHashmap=HashMap<String,Any>()
             messageHashmap.put("mid", messageKey!!)
             messageHashmap.put("userid",userid)
-            messageHashmap.put("sender",Constants.MY_USERID)
+            messageHashmap.put("sender", Constants.MY_USERID)
             messageHashmap.put("message",encryptedMsg!!)
             messageHashmap.put("msgStatus","")
             messageHashmap.put("url","")
@@ -1162,8 +1245,8 @@ class Message : BaseActivity() {
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
                         msg.mid=messageKey!!
-                        msg.sender=Constants.MY_USERID
-                        msg.userid=Constants.MY_USERID+"-"+chat.id
+                        msg.sender= Constants.MY_USERID
+                        msg.userid= Constants.MY_USERID+"-"+chat.id
                         msg.msgStatus=""
 
                         MessageViewModel(application).insertMessage(msg)
@@ -1184,7 +1267,7 @@ class Message : BaseActivity() {
                         val messageHashmap=HashMap<String,Any>()
                         messageHashmap.put("mid", messageKey!!)
                         messageHashmap.put("userid",chat.id)
-                        messageHashmap.put("sender",Constants.MY_USERID)
+                        messageHashmap.put("sender", Constants.MY_USERID)
                         messageHashmap.put("message",msg.message)
                         messageHashmap.put("time",System.currentTimeMillis())
                         messageHashmap.put("type","doc")
@@ -1204,8 +1287,8 @@ class Message : BaseActivity() {
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
                         msg.mid=messageKey!!
-                        msg.sender=Constants.MY_USERID
-                        msg.userid=Constants.MY_USERID+"-"+chat.id
+                        msg.sender= Constants.MY_USERID
+                        msg.userid= Constants.MY_USERID+"-"+chat.id
                         msg.msgStatus=""
 
                         MessageViewModel(application).insertMessage(msg)
@@ -1221,7 +1304,7 @@ class Message : BaseActivity() {
                         }
                         ChatViewModel(application).inserChat(chat)
 
-                        val f = File(File(Environment.getExternalStorageDirectory(),Constants.ALL_PHOTO_LOCATION),msg.path)
+                        val f = File(File(Environment.getExternalStorageDirectory(), Constants.ALL_PHOTO_LOCATION),msg.path)
                         val bmp= BitmapFactory.decodeStream(FileInputStream(f))
                         uploadImageToFirebase(bmp,messageKey,chat.id,application).execute()
 //                        sendImageMessageToUser(bmp,chat.id,chat.name,chat.number,chat.image,application).execute()
@@ -1229,7 +1312,9 @@ class Message : BaseActivity() {
                     else{
                         val ref=FirebaseDatabase.getInstance().reference
                         val messageKey=ref.push().key
-                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+chat.id,Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","","sending..."))
+                        MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
+                            Constants.MY_USERID+"-"+chat.id,
+                            Constants.MY_USERID,msg.message,System.currentTimeMillis(),"message","","","","","sending..."))
                         sendMessageToUser(msg.message,messageKey,chat.id,chat.name,chat.number,chat.image,application).execute()
                     }
                 }
@@ -1316,7 +1401,7 @@ class Message : BaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode==110 && resultCode== Activity.RESULT_OK){
+        if(requestCode==Constants.CAMERA_REQUEST_CODE && resultCode== Activity.RESULT_OK){
             try {
 //                photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                 if(imageuri!=null){
@@ -1336,13 +1421,13 @@ class Message : BaseActivity() {
                     binding.sendImgNow.visibility=View.VISIBLE
                     photo=MediaStore.Images.Media.getBitmap(contentResolver,imageuri)
                     binding.sendSelectImg.setImageBitmap(photo)
-                    selectedPath = Addprofile().getRealPathFromURI_API19(this,imageuri!!).execute().get()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
+                    selectedPath = ImageHandling(this).getRealPathFromURI_API19(this,imageuri!!).execute().get()  //get path of image and compress in onPostexecute and store in photo bitmap compressed image
                 }
             } catch (e: IOException) {
                 e.printStackTrace();
             }
         }
-        if(requestCode==113 && resultCode== Activity.RESULT_OK){
+        if(requestCode==Constants.DOCUMENT_REQUEST_CODE && resultCode== Activity.RESULT_OK){
 
             if (data?.clipData != null) {
                 val mClipData: ClipData? = data.clipData
@@ -1360,7 +1445,7 @@ class Message : BaseActivity() {
 //            val docpath=data!!.data
 //             sendDocumentMessage(docpath,userid,intent.getStringExtra("name")!!,intent.getStringExtra("number")!!,user_image).execute()
         }
-        if (requestCode === 111 && resultCode === RESULT_OK && null != data) {
+        if (requestCode === Constants.STORAGE_REQUEST_CODE && resultCode === RESULT_OK && null != data) {
             // Get the Image from data
             if (data.getClipData() != null) {
 
@@ -1374,7 +1459,7 @@ class Message : BaseActivity() {
                     // adding imageuri in array
                     val imageurI: Uri = mClipData.getItemAt(i).getUri()
                     allSelectedUri.add(imageurI)
-                    gallImagesPath.add(Addprofile().getRealPathFromURI_API19(this,imageurI).execute().get())
+                    gallImagesPath.add(ImageHandling(this).getRealPathFromURI_API19(this,imageurI).execute().get())
                 }
                 selectedImgAdapter=SelectedImgAdapter(this,allSelectedUri,object :SelectedImgAdapter.OnImageCardClickListener{
                     override fun loadNewImage(uri: Uri) {
@@ -1402,7 +1487,7 @@ class Message : BaseActivity() {
                 photo=MediaStore.Images.Media.getBitmap(contentResolver,imageurl)
 //                sendImg.setImageURI(imageurl)
                 binding.sendSelectImg.setImageBitmap(photo)
-                gallImagesPath.add(Addprofile().getRealPathFromURI_API19(this,imageurl).execute().get())
+                gallImagesPath.add(ImageHandling(this).getRealPathFromURI_API19(this,imageurl).execute().get())
 
 //                position = 0
             }
@@ -1488,9 +1573,11 @@ class Message : BaseActivity() {
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,currentChat.unread,userid))
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",
+                        Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Document",
+                    Constants.MY_USERID,messageKey,userid,System.currentTimeMillis(),false,0,userid))
 
             }
 
@@ -1618,7 +1705,7 @@ class Message : BaseActivity() {
                                 val messageHashmap=HashMap<String,Any>()
                                 messageHashmap.put("mid", messageKey!!)
                                 messageHashmap.put("userid",recvid)
-                                messageHashmap.put("sender",Constants.MY_USERID)
+                                messageHashmap.put("sender", Constants.MY_USERID)
                                 messageHashmap.put("message","")
                                 messageHashmap.put("msgStatus","sent")
                                 messageHashmap.put("time",System.currentTimeMillis())
@@ -1705,13 +1792,17 @@ class Message : BaseActivity() {
 
             if(application!=null){
                 if(!MessageViewModel(application).isMsgExist(messageKey!!)){
-                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,Constants.MY_USERID+"-"+userid,Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","","","sending..."))
+                    MessageViewModel(application).insertMessage(MessageEntity(messageKey!!,
+                        Constants.MY_USERID+"-"+userid,
+                        Constants.MY_USERID,"",System.currentTimeMillis(),"image",path!!,"","","","sending..."))
                 }
                 if(ChatViewModel(application).isUserExist(userid)){
                     val currentChat = ChatViewModel(application).getChat(userid)
-                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,currentChat.unread,userid))
+                    ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",
+                        Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,currentChat.unread,userid))
                 }
-                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,0,userid))
+                ChatViewModel(application).inserChat(ChatEntity(user_name,user_number,user_img,"Photo",
+                    Constants.MY_USERID,messageKey!!,userid+".jpg",System.currentTimeMillis(),false,0,userid))
 
             }
 
